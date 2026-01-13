@@ -1,0 +1,38 @@
+.document-preview {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  margin-top: 10px;
+  background-color: #f9f9f9;
+}
+
+.document-preview .preview-image {
+  max-width: 80px;
+  max-height: 80px;
+  object-fit: contain;
+  margin-right: 10px;
+  border-radius: 4px;
+}
+
+.document-preview p {
+  margin: 0;
+  flex-grow: 1;
+  font-size: 0.9em;
+  color: #333;
+}
+
+.document-preview ion-button {
+  --padding-start: 8px;
+  --padding-end: 8px;
+  --padding-top: 4px;
+  --padding-bottom: 4px;
+  height: auto;
+}
+
+/* Style for the hidden file input */
+.document-upload-hidden-input {
+  display: none;
+}

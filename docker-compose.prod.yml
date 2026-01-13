@@ -1,0 +1,81 @@
+# Production Environment
+version: '3.8'
+
+services:
+  # Production MySQL
+  mysql-prod:
+    image: mysql:8.0
+    container_name: eduthrift-mysql-prod
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${PROD_DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: eduthrift_prod
+      MYSQL_USER: eduthrift_prod_user
+      MYSQL_PASSWORD: ${PROD_DB_PASSWORD}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_prod_data:/var/lib/mysql
+      - ./backEnd/database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - eduthrift-prod-network
+
+  # Production Backend
+  backend-prod:
+    build:
+      context: ./backEnd
+      dockerfile: Dockerfile
+    container_name: eduthrift-backend-prod
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      DB_HOST: mysql-prod
+      DB_PORT: 3306
+      DB_USER: eduthrift_prod_user
+      DB_PASSWORD: ${PROD_DB_PASSWORD}
+      DB_NAME: eduthrift_prod
+      JWT_SECRET: ${PROD_JWT_SECRET}
+      PORT: 3001
+      FRONTEND_URL: https://yourdomain.com
+      # Production PayFast
+      PAYFAST_MERCHANT_ID: ${PROD_PAYFAST_MERCHANT_ID}
+      PAYFAST_MERCHANT_KEY: ${PROD_PAYFAST_MERCHANT_KEY}
+      PAYFAST_PASSPHRASE: ${PROD_PAYFAST_PASSPHRASE}
+      PAYFAST_URL: https://www.payfast.co.za/eng/process
+      # Production Pudo
+      PUDO_API_KEY: ${PROD_PUDO_API_KEY}
+      PUDO_API_URL: https://api.pudo.co.za
+    ports:
+      - "3001:3001"
+    depends_on:
+      - mysql-prod
+    volumes:
+      - backend_prod_uploads:/app/uploads
+    networks:
+      - eduthrift-prod-network
+
+  # Production Frontend
+  frontend-prod:
+    build:
+      context: ./frontEnd
+      dockerfile: Dockerfile.frontend
+      args:
+        - VITE_API_URL=https://yourdomain.com:3001
+        - VITE_PAYSTACK_PUBLIC_KEY=${PROD_PAYSTACK_PUBLIC_KEY}
+        - NODE_ENV=production
+    container_name: eduthrift-frontend-prod
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend-prod
+    networks:
+      - eduthrift-prod-network
+
+volumes:
+  mysql_prod_data:
+  backend_prod_uploads:
+
+networks:
+  eduthrift-prod-network:
+    driver: bridge

@@ -1,0 +1,42 @@
+.login-register-page .background-video {
+  position: fixed;
+  top: 0;
+  left: 50%; /* Center horizontally */
+  transform: translateX(-50%); /* Adjust for true centering */
+  width: 100vw; /* Take full viewport width */
+  height: 100vh; /* Take full viewport height */
+  object-fit: cover; /* Cover the entire area, cropping if necessary */
+  z-index: -1;
+}
+
+.login-register-page ion-content::part(scroll) {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.login-register-page ion-grid {
+  width: 100%;
+  height: 100%; /* Ensure grid takes full height for centering */
+  display: flex;
+  justify-content: center;
+  align-items: center; /* Center content vertically within the grid */
+}
+
+.login-register-page ion-card {
+  background: rgb(255, 255, 255); /* Changed to solid white */
+  border-radius: 15px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.login-register-page .login-logo {
+  display: block;
+  margin: 20px auto;
+  max-width: 150px;
+  height: auto;
+}
+
+.login-register-page ion-card-header {
+  text-align: center;
+}

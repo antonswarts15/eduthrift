@@ -1,0 +1,81 @@
+# QA/Dev Environment for App Store Testing
+version: '3.8'
+
+services:
+  # QA MySQL
+  mysql-qa:
+    image: mysql:8.0
+    container_name: eduthrift-mysql-qa
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: qa_root_password
+      MYSQL_DATABASE: eduthrift_qa
+      MYSQL_USER: eduthrift_qa_user
+      MYSQL_PASSWORD: qa_db_password
+    ports:
+      - "4306:3306"
+    volumes:
+      - mysql_qa_data:/var/lib/mysql
+      - ./backEnd/database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - eduthrift-qa-network
+
+  # QA Backend
+  backend-qa:
+    build:
+      context: ./backEnd
+      dockerfile: Dockerfile
+    container_name: eduthrift-backend-qa
+    restart: unless-stopped
+    environment:
+      NODE_ENV: development
+      DB_HOST: mysql-qa
+      DB_PORT: 3306
+      DB_USER: eduthrift_qa_user
+      DB_PASSWORD: qa_db_password
+      DB_NAME: eduthrift_qa
+      JWT_SECRET: qa-jwt-secret-key-for-testing
+      PORT: 3001
+      FRONTEND_URL: https://yourdomain.com:4000
+      # Sandbox PayFast (for app store testing)
+      PAYFAST_MERCHANT_ID: 10044439
+      PAYFAST_MERCHANT_KEY: 6tpe9qan0pkh7
+      PAYFAST_PASSPHRASE: Anton.Swarts101
+      PAYFAST_URL: https://sandbox.payfast.co.za/eng/process
+      # Sandbox Pudo
+      PUDO_API_KEY: 4037|1C5zJM89hrH8d2k8PKaHH6376G8KeA63sShJ5l0eb7ab1284
+      PUDO_API_URL: https://sandbox.pudo.co.za
+    ports:
+      - "4001:3001"
+    depends_on:
+      - mysql-qa
+    volumes:
+      - backend_qa_uploads:/app/uploads
+    networks:
+      - eduthrift-qa-network
+
+  # QA Frontend
+  frontend-qa:
+    build:
+      context: ./frontEnd
+      dockerfile: Dockerfile.frontend
+      args:
+        - VITE_API_URL=https://yourdomain.com:4001
+        - VITE_PAYSTACK_PUBLIC_KEY=pk_test_914bf113c29e4497f7fc3ef86827e3da808c019d
+        - NODE_ENV=development
+    container_name: eduthrift-frontend-qa
+    restart: unless-stopped
+    ports:
+      - "4000:80"
+    depends_on:
+      - backend-qa
+    networks:
+      - eduthrift-qa-network
+
+volumes:
+  mysql_qa_data:
+  backend_qa_uploads:
+
+networks:
+  eduthrift-qa-network:
+    driver: bridge

@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: eduthrift-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: eduthrift
+      MYSQL_USER: eduthrift_user
+      MYSQL_PASSWORD: eduthrift_pass
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - mysql_data:/var/lib/mysql
+    networks:
+      - eduthrift-network
+
+  backend:
+    build: .
+    container_name: eduthrift-backend
+    ports:
+      - "3001:3001"
+    depends_on:
+      - mysql
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USER: eduthrift_user
+      DB_PASSWORD: eduthrift_pass
+      DB_NAME: eduthrift
+      JWT_SECRET: docker-jwt-secret-key
+      PORT: 3001
+    networks:
+      - eduthrift-network
+
+volumes:
+  mysql_data:
+
+networks:
+  eduthrift-network:
+    driver: bridge

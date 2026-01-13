@@ -1,0 +1,15 @@
+# Node
+node_modules/
+**/node_modules/
+
+# Env files
+.env
+.env.*
+!.env.prod.template
+
+# OS / IDE
+.DS_Store
+.idea/
+.vscode/
+
+
