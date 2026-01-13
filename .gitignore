@@ -1,5 +1,24 @@
 # Node
 node_modules/
+<<<<<<< HEAD
+=======
+npm-debug.log
+.env
+.env.*
+
+# MacOS
+.DS_Store
+
+# Logs
+logs/
+*.log
+
+# IDE
+.idea/
+.vscode/
+# Node
+node_modules/
+>>>>>>> a55947f (Add frontend and admin projects)
 **/node_modules/
 
 # Env files
