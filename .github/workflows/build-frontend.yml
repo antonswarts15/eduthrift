@@ -2,7 +2,8 @@ name: Build Frontend Image
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - main
     paths:
       - "frontEnd/**"
 
@@ -27,5 +28,9 @@ jobs:
 
       - name: Build and push frontend image
         run: |
-          docker build -t ghcr.io/antonswarts15/eduthrift-frontend:latest ./frontEnd
+          docker build \
+            -f frontEnd/Dockerfile.frontend \
+            -t ghcr.io/antonswarts15/eduthrift-frontend:latest \
+            frontEnd
           docker push ghcr.io/antonswarts15/eduthrift-frontend:latest
+
