@@ -2,6 +2,8 @@ import React from 'react';
 import { PhotoProvider, PhotoView } from 'react-photo-view';
 import 'react-photo-view/dist/react-photo-view.css';
 
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080';
+
 const UserDetailsModal = ({ user, onClose }) => {
   if (!user) return null;
 
@@ -261,9 +263,9 @@ const UserDetailsModal = ({ user, onClose }) => {
                   <div>
                     <h4 style={{ marginBottom: '10px', color: '#34495e' }}>ID Document</h4>
                     {user.id_document_url ? (
-                      <PhotoView src={`http://localhost:3001${user.id_document_url}`}>
+                      <PhotoView src={`${API_URL}${user.id_document_url}`}>
                         <img
-                          src={`http://localhost:3001${user.id_document_url}`}
+                          src={`${API_URL}${user.id_document_url}`}
                           alt="ID Document"
                           style={{
                             width: '100%',
@@ -296,9 +298,9 @@ const UserDetailsModal = ({ user, onClose }) => {
                   <div>
                     <h4 style={{ marginBottom: '10px', color: '#34495e' }}>Proof of Address</h4>
                     {user.proof_of_address_url ? (
-                      <PhotoView src={`http://localhost:3001${user.proof_of_address_url}`}>
+                      <PhotoView src={`${API_URL}${user.proof_of_address_url}`}>
                         <img
-                          src={`http://localhost:3001${user.proof_of_address_url}`}
+                          src={`${API_URL}${user.proof_of_address_url}`}
                           alt="Proof of Address"
                           style={{
                             width: '100%',

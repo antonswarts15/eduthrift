@@ -3,7 +3,7 @@ FROM node:18-alpine as build
 WORKDIR /app
 
 # Accept build arguments
-ARG VITE_API_URL=http://localhost:8080
+ARG VITE_API_URL=http://154.65.107.50:8080
 ARG VITE_PAYSTACK_PUBLIC_KEY
 ARG NODE_ENV=production
 
