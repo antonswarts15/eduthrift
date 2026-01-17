@@ -14,7 +14,7 @@ RUN npm install
 # Create uploads directory
 RUN mkdir -p uploads
 
-EXPOSE 3001
+EXPOSE 8080
 
 # Use nodemon for hot reloading in development
 CMD ["nodemon", "--legacy-watch", "server.js"]
