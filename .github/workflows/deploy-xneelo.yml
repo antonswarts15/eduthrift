@@ -1,0 +1,51 @@
+name: Deploy to Xneelo
+
+on:
+  workflow_run:
+    workflows: ["Build Backend Image", "Build Frontend Image", "Build Admin Image"]
+    types:
+      - completed
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Deploy to Xneelo Server (AlmaLinux/Podman)
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: 154.65.107.50
+          username: almalinux
+          key: ${{ secrets.XNEELO_SSH_KEY }}
+          port: 22
+          script: |
+            # Navigate to deployment directory
+            cd ~/eduthrift || mkdir -p ~/eduthrift && cd ~/eduthrift
+
+            # Login to GitHub Container Registry with Podman
+            echo ${{ secrets.GITHUB_TOKEN }} | podman login ghcr.io -u antonswarts15 --password-stdin
+
+            # Pull latest images
+            podman pull ghcr.io/antonswarts15/eduthrift-backend:latest
+            podman pull ghcr.io/antonswarts15/eduthrift-frontend:latest
+            podman pull ghcr.io/antonswarts15/eduthrift-admin:latest
+
+            # Stop and remove old containers
+            podman-compose down || true
+
+            # Start new containers
+            podman-compose up -d
+
+            # Clean up old images
+            podman image prune -f
+
+            echo "✅ Deployment completed successfully!"
+            echo "Backend API: http://154.65.107.50:8080/health"
+            echo "Frontend: http://154.65.107.50:3000"
+            echo "Admin: http://154.65.107.50:3001"
