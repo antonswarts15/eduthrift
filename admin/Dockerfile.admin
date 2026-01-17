@@ -1,4 +1,24 @@
-docker build \
-  -t ghcr.io/${{ github.repository_owner }}/eduthrift-admin:latest \
-  -f admin/Dockerfile.admin \
-  admin
+FROM node:18-alpine as build
+
+WORKDIR /app
+
+# Accept build arguments
+ARG REACT_APP_API_URL=http://154.65.107.50:8080
+ARG NODE_ENV=production
+
+# Set environment variables
+ENV REACT_APP_API_URL=$REACT_APP_API_URL
+ENV NODE_ENV=$NODE_ENV
+
+COPY package*.json ./
+RUN npm install --legacy-peer-deps
+
+COPY . .
+RUN npm run build
+
+FROM nginx:alpine
+COPY --from=build /app/build /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/nginx.conf
+
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]

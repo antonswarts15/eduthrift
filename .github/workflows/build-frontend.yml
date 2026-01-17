@@ -8,6 +8,10 @@ on:
       - 'frontEnd/**'
       - '.github/workflows/build-frontend.yml'
 
+permissions:
+  contents: read
+  packages: write
+
 jobs:
   build-frontend:
     runs-on: ubuntu-latest
