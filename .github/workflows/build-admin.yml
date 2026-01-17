@@ -1,7 +1,9 @@
 name: Build Admin Image
+
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - main
     paths:
       - "admin/**"
 
@@ -19,4 +21,11 @@ jobs:
 
       - run: |
           docker build -t ghcr.io/antonswarts15/eduthrift-admin:latest ./admin -f ./admin/Dockerfile.admin
+      - name: Build and push admin image
+        run: |
+          docker build \
+            -f admin/Dockerfile.admin \
+            -t ghcr.io/antonswarts15/eduthrift-admin:latest \
+            admin
           docker push ghcr.io/antonswarts15/eduthrift-admin:latest
+

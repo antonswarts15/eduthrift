@@ -30,3 +30,9 @@ jobs:
             -f frontEnd/Dockerfile.frontend \
             frontEnd
           docker push ghcr.io/${{ github.repository_owner }}/eduthrift-frontend:latest
+          docker build \
+            -f frontEnd/Dockerfile.frontend \
+            -t ghcr.io/antonswarts15/eduthrift-frontend:latest \
+            frontEnd
+          docker push ghcr.io/antonswarts15/eduthrift-frontend:latest
+
