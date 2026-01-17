@@ -9,13 +9,13 @@ docker-compose up -d
 ```
 
 2. **Access services:**
-- Backend API: http://localhost:3001
+- Backend API: http://localhost:8080
 - MySQL: localhost:3306
 
 3. **Test API:**
 ```bash
-curl http://localhost:3001/api/health
-curl http://localhost:3001/api/categories
+curl http://localhost:8080/api/health
+curl http://localhost:8080/api/categories
 ```
 
 4. **Stop services:**

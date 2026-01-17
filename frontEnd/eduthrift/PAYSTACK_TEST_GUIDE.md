@@ -102,7 +102,7 @@ Your current .env has:
 ```
 VITE_PAYSTACK_PUBLIC_KEY=pk_test_914bf113c29e4497f7fc3ef86827e3da808c019d
 VITE_PAYSTACK_SECRET_KEY=sk_test_207dface7b060ba45aeb64ca6bf273ea8296fbae
-VITE_API_URL=http://localhost:3001
+VITE_API_URL=http://localhost:8080
 ```
 
 ## Escrow Integration

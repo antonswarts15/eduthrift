@@ -9,13 +9,13 @@ docker-compose up -d
 
 2. **Access the application:**
 - Frontend: http://localhost:3000
-- Backend API: http://localhost:3001
+- Backend API: http://localhost:8080
 - MySQL: localhost:3306
 
 ## Services
 
 - **Frontend**: Ionic React app with Nginx (Port 3000)
-- **Backend**: Node.js/Express API (Port 3001)
+- **Backend**: Node.js/Express API (Port 8080)
 - **Database**: MySQL 8.0 with sample data (Port 3306)
 
 ## Development Commands

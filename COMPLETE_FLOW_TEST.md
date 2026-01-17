@@ -14,7 +14,7 @@ All required tables exist and have correct schema:
 - ✅ categories, subcategories, sports
 
 ### Backend Endpoints ✅
-**Server**: http://localhost:3001
+**Server**: http://localhost:8080
 **Status**: Running and connected to MySQL
 
 #### Authentication Endpoints:
@@ -79,7 +79,7 @@ All required tables exist and have correct schema:
 
 **Backend Test**:
 ```bash
-curl -X POST http://localhost:3001/auth/register \
+curl -X POST http://localhost:8080/auth/register \
   -H "Content-Type: application/json" \
   -d '{"email":"seller@test.com","password":"test123","firstName":"Test","lastName":"Seller","phone":"0821234567","userType":"seller","schoolName":"Test High"}'
 ```
@@ -136,13 +136,13 @@ Expected: Returns JWT token and user object
 **Backend Test**:
 ```bash
 # First login to get token
-TOKEN=$(curl -s -X POST http://localhost:3001/auth/login \
+TOKEN=$(curl -s -X POST http://localhost:8080/auth/login \
   -H "Content-Type: application/json" \
   -d '{"email":"antons@eduthrift.com","password":"eduthrift123"}' | \
   grep -o '"token":"[^"]*' | cut -d'"' -f4)
 
 # Then create item
-curl -X POST http://localhost:3001/items \
+curl -X POST http://localhost:8080/items \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TOKEN" \
   -d '{
@@ -372,7 +372,7 @@ curl -X POST http://localhost:3001/items \
 ## Development URLs
 
 - **Frontend**: http://localhost:5173
-- **Backend**: http://localhost:3001
+- **Backend**: http://localhost:8080
 - **Database**: localhost:3306 (via Docker)
 - **Backend Container**: eduthrift-backend-dev
 - **MySQL Container**: eduthrift-mysql-dev

@@ -17,7 +17,7 @@ This guide explains how to set up Google and Facebook authentication for the Edu
    - Click "Create Credentials" > "OAuth 2.0 Client IDs"
    - Configure the consent screen if prompted
    - Choose "Web application" as the application type
-   - Add authorized origins: `http://localhost:3000`, `http://localhost:3001`
+   - Add authorized origins: `http://localhost:3000`, `http://localhost:8080`
    - Add authorized redirect URIs: `http://localhost:3000/auth/google/callback`
 
 4. **Update Environment Variables:**
@@ -42,7 +42,7 @@ This guide explains how to set up Google and Facebook authentication for the Edu
    - In your app dashboard, go to "Products" and add "Facebook Login"
    - In Facebook Login settings, add valid OAuth redirect URIs:
      - `http://localhost:3000/`
-     - `http://localhost:3001/auth/facebook/callback`
+     - `http://localhost:8080/auth/facebook/callback`
 
 3. **Get App Credentials:**
    - Go to "Settings" > "Basic"

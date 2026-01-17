@@ -57,7 +57,7 @@ npm run preview
 ### Backend Development
 - Make changes to your code in `backEnd/`
 - Nodemon automatically restarts the server
-- Backend runs at http://localhost:3001
+- Backend runs at http://localhost:8080
 
 ### Database Access
 - MySQL runs at localhost:3306
@@ -135,21 +135,21 @@ docker-compose logs -f
 - Check MySQL logs: `docker-compose -f docker-compose.dev.yml logs mysql`
 
 ### Port conflicts
-- If ports 3306 or 3001 are in use, stop conflicting services
+- If ports 3306 or 8080 are in use, stop conflicting services
 - Or modify ports in docker-compose.dev.yml
 
 ## Environment Variables
 
 ### Frontend (.env in frontEnd/eduthrift/)
 ```env
-VITE_API_URL=http://localhost:3001
+VITE_API_URL=http://localhost:8080
 ```
 
 ### Backend (configured in docker-compose.dev.yml)
 - DB_HOST=mysql
 - DB_PORT=3306
 - JWT_SECRET=docker-jwt-secret-key-change-in-production
-- PORT=3001
+- PORT=8080
 
 ## Benefits of This Setup
 

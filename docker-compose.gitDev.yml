@@ -30,10 +30,10 @@ services:
       DB_PASSWORD: eduthrift_pass
       DB_NAME: eduthrift
       JWT_SECRET: docker-jwt-secret-key-change-in-production
-      PORT: 3001
+      PORT: 8080
       FRONTEND_URL: https://app.eduthrift.co.za,https://admin.eduthrift.co.za
     ports:
-      - "8080:3001"
+      - "8080:8080"
     depends_on:
       mysql:
         condition: service_healthy
@@ -58,7 +58,7 @@ services:
     container_name: eduthrift-admin
     restart: unless-stopped
     ports:
-      - "3002:80"
+      - "3001:80"
     depends_on:
       - backend
     networks:

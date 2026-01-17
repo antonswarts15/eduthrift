@@ -133,12 +133,12 @@ npm start
 
 #### Get Pickup Points
 ```bash
-curl "http://localhost:3001/pudo/pickup-points?latitude=-26.1076&longitude=28.0567&radius=10"
+curl "http://localhost:8080/pudo/pickup-points?latitude=-26.1076&longitude=28.0567&radius=10"
 ```
 
 #### Get Shipping Rates
 ```bash
-curl -X POST http://localhost:3001/pudo/rates \
+curl -X POST http://localhost:8080/pudo/rates \
   -H "Content-Type: application/json" \
   -d '{
     "origin_suburb": "Sandton",
@@ -149,7 +149,7 @@ curl -X POST http://localhost:3001/pudo/rates \
 
 #### Track Shipment
 ```bash
-curl "http://localhost:3001/pudo/track/TRACKING123"
+curl "http://localhost:8080/pudo/track/TRACKING123"
 ```
 
 ### 3. Frontend Usage
@@ -172,7 +172,7 @@ const handleGetLockers = async () => {
 ## Troubleshooting
 
 ### If API calls fail:
-1. Check that the backend server is running on port 3001
+1. Check that the backend server is running on port 8080
 2. Verify the `PUDO_API_KEY` is correct in `.env`
 3. Confirm the `PUDO_API_URL` is the correct sandbox/production URL
 4. Check the browser console/network tab for detailed error messages

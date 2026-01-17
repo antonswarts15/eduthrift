@@ -6,7 +6,7 @@
 
 **Error Message:**
 ```
-Access to XMLHttpRequest at 'http://localhost:3001/auth/login' from origin 'http://localhost:5174'
+Access to XMLHttpRequest at 'http://localhost:8080/auth/login' from origin 'http://localhost:5174'
 has been blocked by CORS policy
 ```
 
@@ -132,21 +132,21 @@ OTP: 123456
 
 Test items endpoint:
 ```bash
-curl "http://localhost:3001/items"
+curl "http://localhost:8080/items"
 ```
 
 Should return all 45 items in JSON format.
 
 Filter by sport (Rugby = sport_id 1):
 ```bash
-curl "http://localhost:3001/items?sport_id=1"
+curl "http://localhost:8080/items?sport_id=1"
 ```
 
 ---
 
 ## Services Status
 
-✅ Backend: http://localhost:3001 (healthy)
+✅ Backend: http://localhost:8080 (healthy)
 ✅ MySQL: localhost:3306 (connected)
 ✅ Frontend: http://localhost:5174 (running)
 ✅ CORS: Configured for ports 5173 & 5174

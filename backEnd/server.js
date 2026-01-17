@@ -25,7 +25,7 @@ app.use(cors({
   origin: [
     process.env.FRONTEND_URL || 'http://localhost:3000',
     'http://localhost:3000',
-    'http://localhost:3002',  // Admin UI
+    'http://localhost:3001',  // Admin UI
     'http://localhost:5173',  // Vite dev server default
     'http://localhost:5174',  // Vite dev server alternate
     'http://localhost:4173',  // Vite preview server

@@ -35,7 +35,7 @@ services:
       DB_PASSWORD: qa_db_password
       DB_NAME: eduthrift_qa
       JWT_SECRET: qa-jwt-secret-key-for-testing
-      PORT: 3001
+      PORT: 8080
       FRONTEND_URL: https://yourdomain.com:4000
       # Sandbox PayFast (for app store testing)
       PAYFAST_MERCHANT_ID: 10044439
@@ -46,7 +46,7 @@ services:
       PUDO_API_KEY: 4037|1C5zJM89hrH8d2k8PKaHH6376G8KeA63sShJ5l0eb7ab1284
       PUDO_API_URL: https://sandbox.pudo.co.za
     ports:
-      - "4001:3001"
+      - "4001:8080"
     depends_on:
       - mysql-qa
     volumes:

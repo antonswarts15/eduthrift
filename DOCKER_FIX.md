@@ -56,7 +56,7 @@ With dev setup:
 - Can test `npm run build` anytime
 - Backend + MySQL run in Docker
 
-Access at: http://localhost:5173 (frontend dev) or http://localhost:3001 (backend)
+Access at: http://localhost:5173 (frontend dev) or http://localhost:8080 (backend)
 
 ## Verify the Fix
 
@@ -89,14 +89,14 @@ Now fixed:
 
 ### Backend is Running?
 ```bash
-curl http://localhost:3001/health
+curl http://localhost:8080/health
 # Should return: {"status":"OK","timestamp":"..."}
 ```
 
 ### Frontend Environment Variables?
 Check `frontEnd/eduthrift/.env`:
 ```env
-VITE_API_URL=http://localhost:3001
+VITE_API_URL=http://localhost:8080
 ```
 
 ### Database Connected?
@@ -134,13 +134,13 @@ Look for errors when making API requests.
 ### 5. Test Backend Directly
 ```bash
 # Login and get token
-curl -X POST http://localhost:3001/auth/login \
+curl -X POST http://localhost:8080/auth/login \
   -H "Content-Type: application/json" \
   -d '{"email":"test@example.com","password":"password123"}'
 
 # Use returned token to test profile
 curl -H "Authorization: Bearer YOUR_TOKEN_HERE" \
-  http://localhost:3001/auth/profile
+  http://localhost:8080/auth/profile
 ```
 
 ## Quick Reference

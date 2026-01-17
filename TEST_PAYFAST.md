@@ -18,7 +18,7 @@ PayFast requires you to configure allowed return/cancel URLs in your merchant da
 - Return URL: `http://localhost:4173/payment/success`
 - Cancel URL: `http://localhost:5173/payment/cancel`
 - Cancel URL: `http://localhost:4173/payment/cancel`
-- Notify URL: `http://localhost:3001/payments/payfast/notify`
+- Notify URL: `http://localhost:8080/payments/payfast/notify`
 
 ### 2. Signature Mismatch
 If your passphrase contains special characters, it might cause signature issues.
@@ -45,7 +45,7 @@ This is handled correctly in the code.
 
 ```bash
 # Test if backend creates payment URL
-curl -X POST http://localhost:3001/payments/payfast \
+curl -X POST http://localhost:8080/payments/payfast \
   -H "Content-Type: application/json" \
   -d '{
     "amount": 100,
@@ -151,7 +151,7 @@ If this works, your credentials might be wrong.
 In your browser console, run:
 ```javascript
 // See what payment service returns
-fetch('http://localhost:3001/payments/payfast', {
+fetch('http://localhost:8080/payments/payfast', {
   method: 'POST',
   headers: {'Content-Type': 'application/json'},
   body: JSON.stringify({

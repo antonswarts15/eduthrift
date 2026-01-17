@@ -14,7 +14,7 @@ mysql -u root -p < database/init.sql
 
 3. Configure environment variables in `.env`:
 ```
-PORT=3001
+PORT=8080
 DB_HOST=localhost
 DB_PORT=3306
 DB_USER=root

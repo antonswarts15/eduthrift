@@ -12,13 +12,13 @@ From the Eduthrift root directory, run:
 ```
 
 This script:
-- Starts Docker containers for backend (port 3001) and MySQL (port 3306)
+- Starts Docker containers for backend (port 8080) and MySQL (port 3306)
 - Waits for services to be ready
 - Shows service status
 
 **Expected output:**
 ```
-✓ Backend running at http://localhost:3001
+✓ Backend running at http://localhost:8080
 ✓ MySQL running at localhost:3306
 ```
 
@@ -52,7 +52,7 @@ Password: eduthrift123
 **Solution:**
 1. Check backend is running:
    ```bash
-   curl http://localhost:3001/health
+   curl http://localhost:8080/health
    ```
    Should return: `{"status":"OK","timestamp":"..."}`
 
@@ -61,7 +61,7 @@ Password: eduthrift123
    docker ps
    ```
    Should show:
-   - eduthrift-backend-dev (port 3001)
+   - eduthrift-backend-dev (port 8080)
    - eduthrift-mysql-dev (port 3306)
 
 3. If containers aren't running:
@@ -91,8 +91,8 @@ Password: eduthrift123
 **Solution:**
 1. Kill existing processes:
    ```bash
-   # For backend (port 3001)
-   lsof -ti:3001 | xargs kill -9
+   # For backend (port 8080)
+   lsof -ti:8080 | xargs kill -9
 
    # For frontend (port 5173)
    lsof -ti:5173 | xargs kill -9
@@ -116,13 +116,13 @@ Password: eduthrift123
 
 ### 1. Check Backend Health
 ```bash
-curl http://localhost:3001/health
+curl http://localhost:8080/health
 ```
 Expected: `{"status":"OK","timestamp":"..."}`
 
 ### 2. Test Login API
 ```bash
-curl -X POST http://localhost:3001/auth/login \
+curl -X POST http://localhost:8080/auth/login \
   -H "Content-Type: application/json" \
   -d '{"email":"antons@eduthrift.com","password":"eduthrift123"}'
 ```
@@ -136,7 +136,7 @@ Navigate to http://localhost:5173/
 ## Service Ports Reference
 
 - **Frontend (Vite):** http://localhost:5173
-- **Backend API:** http://localhost:3001
+- **Backend API:** http://localhost:8080
 - **MySQL Database:** localhost:3306
 - **Pudo API (Test):** https://sandbox.pudo.co.za
 

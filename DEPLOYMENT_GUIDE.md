@@ -158,13 +158,13 @@ GROUP BY category;
 ### Test API Endpoints:
 ```bash
 # Get all items
-curl http://localhost:3001/items
+curl http://localhost:8080/items
 
 # Get items by category
-curl "http://localhost:3001/items?category=School%20%26%20sport%20uniform"
+curl "http://localhost:8080/items?category=School%20%26%20sport%20uniform"
 
 # Test authenticated POST (need token)
-curl -X POST http://localhost:3001/items \
+curl -X POST http://localhost:8080/items \
   -H "Authorization: Bearer YOUR_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{

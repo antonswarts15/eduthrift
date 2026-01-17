@@ -51,7 +51,7 @@ router.post('/payfast', async (req, res) => {
       merchant_key: PAYFAST_MERCHANT_KEY,
       return_url: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/payment/success`,
       cancel_url: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/payment/cancel`,
-      notify_url: `${process.env.BACKEND_URL || 'http://localhost:3001'}/payments/payfast/notify`,
+      notify_url: `${process.env.BACKEND_URL || 'http://localhost:8080'}/payments/payfast/notify`,
 
       // Customer details
       name_first: customerName?.split(' ')[0] || 'Customer',
@@ -209,7 +209,7 @@ router.post('/ozow', async (req, res) => {
       cancelUrl: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/payment/cancel?orderId=${orderId}`,
       errorUrl: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/payment/error?orderId=${orderId}`,
       successUrl: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/payment/success?orderId=${orderId}`,
-      notifyUrl: `${process.env.BACKEND_URL || 'http://localhost:3001'}/payments/ozow/notify`
+      notifyUrl: `${process.env.BACKEND_URL || 'http://localhost:8080'}/payments/ozow/notify`
     });
 
     res.json({

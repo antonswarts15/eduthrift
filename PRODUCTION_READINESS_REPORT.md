@@ -35,7 +35,7 @@ Eduthrift has successfully passed comprehensive end-to-end production readiness 
 ## 🏗️ Architecture Validation
 
 ### Backend Services ✅ OPERATIONAL
-- **API Server**: Running on port 3001
+- **API Server**: Running on port 8080
 - **Database**: MySQL 8.0 with full schema
 - **Health Check**: `/health` endpoint responding
 - **Core APIs**: Items, Schools, Auth endpoints functional
