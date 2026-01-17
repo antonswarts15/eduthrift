@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../services/api';
 import './LoginPage.css';
 
 const LoginPage = () => {
@@ -12,14 +12,14 @@ const LoginPage = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      // Replace with your actual API endpoint
-      const response = await axios.post('http://localhost:3001/auth/login', { email, password });
-      
+      // Use the api service which respects REACT_APP_API_URL
+      const response = await api.post('/auth/login', { email, password });
+
       if (response.data.token) {
         // Check if the user is an admin
         // The backend should ideally return the user role in the response
         // For now, we'll fetch the profile to check the role
-        const profileResponse = await axios.get('http://localhost:3001/auth/profile', {
+        const profileResponse = await api.get('/auth/profile', {
           headers: { Authorization: `Bearer ${response.data.token}` }
         });
 

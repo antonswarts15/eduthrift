@@ -248,7 +248,7 @@ const CheckoutPage: React.FC = () => {
     if (paymentMethod === 'ozow') {
       try {
         // Initiate Ozow payment via backend
-        const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/payments/ozow`, {
+        const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/payments/ozow`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
