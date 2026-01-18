@@ -9,6 +9,7 @@ services:
       MYSQL_DATABASE: eduthrift
       MYSQL_USER: eduthrift_user
       MYSQL_PASSWORD: eduthrift_pass
+      MYSQL_ROOT_HOST: "%"
     ports:
       - "3306:3306"
     volumes:
