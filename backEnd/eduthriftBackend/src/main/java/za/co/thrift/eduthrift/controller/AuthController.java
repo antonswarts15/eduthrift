@@ -2,7 +2,7 @@ package za.co.thrift.eduthrift.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import za.co.thrift.eduthrift.entity.User; // assume you have a User entity
+import za.co.thrift.eduthrift.entity.User;
 import za.co.thrift.eduthrift.repository.UserRepository;
 
 import java.util.Optional;
@@ -20,33 +20,27 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
-        return userRepository.findByEmail(request.getEmail())
-                .map(user -> {
-                    if (!user.getPasswordHash().equals(request.getPassword())) {
-                        return ResponseEntity.status(401).body("Invalid credentials");
-                    }
-                    if (user.getUserType() != User.UserType.BOTH && user.getUserType() != User.UserType.SELLER) {
-                        // Adjust based on your "admin" definition
-                        return ResponseEntity.status(403).body("Access denied. Not an admin.");
-                    }
-                    return ResponseEntity.ok(new LoginResponse("fake-admin-token", user.getUserType().name()));
-                })
-                .orElse(ResponseEntity.status(401).body("Invalid credentials"));
+        Optional<User> userOpt = userRepository.findByEmail(request.getEmail());
+        if (userOpt.isPresent() && userOpt.get().getPasswordHash().equals(request.getPassword())) {
+            User user = userOpt.get();
+            if (!"BOTH".equals(user.getUserType().name()) && !"SELLER".equals(user.getUserType().name())) {
+                return ResponseEntity.status(403).body("Access denied. Not an admin.");
+            }
+            return ResponseEntity.ok(new LoginResponse("fake-admin-token", user.getUserType().name()));
+        }
+        return ResponseEntity.status(401).body("Invalid credentials");
     }
-
 
     @GetMapping("/profile")
     public ResponseEntity<?> profile() {
-        // For now, return a mock admin profile
         return ResponseEntity.ok(new LoginResponse("fake-admin-token", "admin"));
     }
 }
 
-// Helper classes
 class LoginRequest {
     private String email;
     private String password;
-    // getters & setters
+
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
     public String getPassword() { return password; }
@@ -56,11 +50,7 @@ class LoginRequest {
 class LoginResponse {
     private String token;
     private String userType;
-    public LoginResponse(String token, String userType) {
-        this.token = token;
-        this.userType = userType;
-    }
-    // getters
+    public LoginResponse(String token, String userType) { this.token = token; this.userType = userType; }
     public String getToken() { return token; }
     public String getUserType() { return userType; }
 }
