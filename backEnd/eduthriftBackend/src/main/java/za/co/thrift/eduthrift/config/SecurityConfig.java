@@ -18,9 +18,10 @@ public class SecurityConfig {
         http
                 .cors() // enable CORS
                 .and()
-                .csrf().disable() // disable CSRF for API calls
+                .csrf().disable() // disable CSRF for API requests
                 .authorizeRequests()
-                .anyRequest().permitAll(); // allow all requests (adjust for secured endpoints later)
+                .antMatchers("/auth/**").permitAll() // allow login/register
+                .anyRequest().authenticated();        // secure other endpoints
         return http.build();
     }
 
@@ -33,7 +34,8 @@ public class SecurityConfig {
         ));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
-        configuration.setAllowCredentials(true); // important if you use cookies or sessions
+        configuration.setAllowCredentials(true); // required for cookies/sessions
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
