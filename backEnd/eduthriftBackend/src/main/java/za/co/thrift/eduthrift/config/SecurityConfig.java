@@ -1,4 +1,4 @@
-package your.package.config;
+package za.co.thrift.eduthrift.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
