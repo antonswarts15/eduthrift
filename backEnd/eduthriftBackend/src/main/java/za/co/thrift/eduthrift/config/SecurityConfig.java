@@ -16,12 +16,11 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .cors()  // enable CORS
+                .cors() // enable CORS
                 .and()
-                .csrf().disable()  // disable CSRF for APIs
+                .csrf().disable() // disable CSRF for API calls
                 .authorizeRequests()
-                .anyRequest().permitAll(); // allow all requests for now
-
+                .anyRequest().permitAll(); // allow all requests (adjust for secured endpoints later)
         return http.build();
     }
 
@@ -32,9 +31,9 @@ public class SecurityConfig {
                 "http://154.65.107.50:3000", // frontend
                 "http://154.65.107.50:3001"  // admin
         ));
-        configuration.setAllowedMethods(List.of("GET","POST","PUT","DELETE","OPTIONS"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
-        configuration.setAllowCredentials(true); // needed for cookies
+        configuration.setAllowCredentials(true); // important if you use cookies or sessions
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;

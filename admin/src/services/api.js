@@ -1,11 +1,12 @@
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL: process.env.REACT_APP_API_URL,
+    baseURL: process.env.REACT_APP_API_URL || 'http://154.65.107.50:8080', // backend API
     timeout: 10000,
     headers: {
         'Content-Type': 'application/json',
     },
+    withCredentials: true, // needed for cookies/sessions and CORS
 });
 
 api.interceptors.request.use(
