@@ -5,16 +5,16 @@ services:
     image: mysql:8.0
     container_name: eduthrift-mysql
     environment:
-      MYSQL_ROOT_PASSWORD: StrongRootPass123
+      MYSQL_ROOT_PASSWORD: rootpass123
       MYSQL_DATABASE: eduthrift
-      MYSQL_USER: eduthrift_user
-      MYSQL_PASSWORD: eduthrift_pass
+      MYSQL_USER: antons
+      MYSQL_PASSWORD: "@Nt0n101!"
       MYSQL_ROOT_HOST: "%"
     ports:
       - "3306:3306"
     volumes:
-      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
-      - mysql_data:/var/lib/mysql
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql:Z
+      - mysql_data:/var/lib/mysql:Z
     networks:
       - eduthrift-network
 
