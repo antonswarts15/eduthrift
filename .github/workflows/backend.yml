@@ -23,5 +23,6 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - run: |
-          docker build -t ghcr.io/antonswarts15/eduthrift-backend:latest ./backEnd
-          docker push ghcr.io/antonswarts15/eduthrift-backend:latest
+       docker build -t ghcr.io/antonswarts15/eduthrift-backend:latest ./backEnd/eduthriftBackend
+       docker push ghcr.io/antonswarts15/eduthrift-backend:latest
+
