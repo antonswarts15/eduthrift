@@ -2,9 +2,10 @@ name: Build Backend Image
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - main
     paths:
-      - "backEnd/**"
+      - backEnd/**
 
 permissions:
   contents: read
@@ -13,15 +14,19 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
 
-      - uses: docker/login-action@v3
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - run: |
-          docker build -t ghcr.io/antonswarts15/eduthrift-backend:latest ./backEnd
+      - name: Build and Push Backend Image
+        run: |
+          docker build -t ghcr.io/antonswarts15/eduthrift-backend:latest ./backEnd/eduthriftBackend
           docker push ghcr.io/antonswarts15/eduthrift-backend:latest
