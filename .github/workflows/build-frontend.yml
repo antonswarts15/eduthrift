@@ -20,7 +20,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Log in to GitHub Container Registry
+      - name: Login to GHCR
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
@@ -29,14 +29,12 @@ jobs:
 
       - name: Build and Push Frontend Image
         run: |
-          docker build \
-            -t ghcr.io/${{ github.repository_owner }}/eduthrift-frontend:latest \
-            -f frontEnd/Dockerfile.frontend \
-            frontEnd
-          docker push ghcr.io/${{ github.repository_owner }}/eduthrift-frontend:latest
-          docker build \
-            -f frontEnd/Dockerfile.frontend \
-            -t ghcr.io/antonswarts15/eduthrift-frontend:latest \
-            frontEnd
-          docker push ghcr.io/antonswarts15/eduthrift-frontend:latest
+          IMAGE=ghcr.io/antonswarts15/eduthrift-frontend
+          TAG=${GITHUB_SHA}
 
+          # Build both latest and commit SHA tags
+          docker build -t $IMAGE:latest -t $IMAGE:$TAG -f frontEnd/Dockerfile.frontend frontEnd
+
+          # Push both tags
+          docker push $IMAGE:latest
+          docker push $IMAGE:$TAG

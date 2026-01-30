@@ -28,5 +28,12 @@ jobs:
 
       - name: Build and Push Backend Image
         run: |
-          docker build -t ghcr.io/antonswarts15/eduthrift-backend:latest ./backEnd/eduthriftBackend
-          docker push ghcr.io/antonswarts15/eduthrift-backend:latest
+          IMAGE=ghcr.io/antonswarts15/eduthrift-backend
+          TAG=${GITHUB_SHA}
+
+          # Build both latest and commit SHA tags
+          docker build -t $IMAGE:latest -t $IMAGE:$TAG ./backEnd/eduthriftBackend
+
+          # Push both tags
+          docker push $IMAGE:latest
+          docker push $IMAGE:$TAG
