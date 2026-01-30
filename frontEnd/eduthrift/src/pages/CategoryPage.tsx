@@ -1,3 +1,5 @@
+
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useHistory } from 'react-router-dom';
 import { 
@@ -15,7 +17,7 @@ import { useToast } from '../hooks/useToast';
 import { itemsApi } from '../services/api';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
-import 'swiper/css/pagination';
+import { Item } from '../types/models';
 
 const CategoryPage: React.FC = () => {
   const { category, subcategory, sport } = useParams<{
@@ -25,13 +27,13 @@ const CategoryPage: React.FC = () => {
   }>();
   const history = useHistory();
   const { isOpen, message, color, hideToast } = useToast();
-  const [categoryItems, setCategoryItems] = useState<any[]>([]);
+  const [categoryItems, setCategoryItems] = useState<Item[]>([]);
 
   useEffect(() => {
     const fetchCategoryItems = async () => {
       try {
         // Fetch items filtered by the current category/subcategory
-        const filters: any = {};
+        const filters: Record<string, string> = {};
         if (category) filters.category = category;
         if (subcategory) filters.subcategory = subcategory;
         if (sport) filters.sport = sport;

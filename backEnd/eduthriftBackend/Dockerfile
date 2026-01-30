@@ -1,18 +1,21 @@
-FROM openjdk:17-jdk-slim
-
+# ---------- BUILD ----------
+FROM eclipse-temurin:17-jdk AS builder
 WORKDIR /app
 
 COPY pom.xml .
 COPY .mvn .mvn
 COPY mvnw .
-
 RUN chmod +x mvnw
 RUN ./mvnw dependency:go-offline
 
-COPY src ./src
-
+COPY src src
 RUN ./mvnw clean package -DskipTests
 
-EXPOSE 8080
+# ---------- RUN ----------
+FROM eclipse-temurin:17-jre
+WORKDIR /app
 
-CMD ["java", "-jar", "target/eduthrift-0.0.1-SNAPSHOT.jar"]
+COPY --from=builder /app/target/*.jar app.jar
+
+EXPOSE 8080
+ENTRYPOINT ["java","-jar","/app/app.jar"]

@@ -19,6 +19,9 @@ export default defineConfig({
       }
     }
   },
+  optimizeDeps: {
+    include: ['swiper/react', 'swiper/css']
+  },
   test: {
     globals: true,
     environment: 'jsdom',

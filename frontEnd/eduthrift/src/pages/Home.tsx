@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
   IonContent,
-  IonButton,
   IonCard,
   IonCardContent,
   IonGrid,
@@ -29,31 +28,21 @@ import {
   libraryOutline,
   pencilOutline,
   shirtOutline,
-  footstepsOutline,
   roseOutline
 } from 'ionicons/icons';
 import { useHistory } from 'react-router-dom';
 import logo from '../assets/logo.png';
-import adBanner from '../assets/adbanner1.jpg';
 import homeVideo from '../assets/Homevid.mp4';
 import buyerIcon from '../assets/buyerIcon.jpg';
 import sellerIcon from '../assets/sellerIcon.jpg';
 import { itemsApi } from '../services/api';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
-import 'swiper/css/pagination';
+import { Item } from '../types/models';
 
 const Home: React.FC = () => {
   const history = useHistory();
-  const [topSlide, setTopSlide] = useState(0);
-  const [bottomSlide, setBottomSlide] = useState(0);
-  const [recentItems, setRecentItems] = useState<any[]>([]);
-
-  const bottomAds = [
-    { bg: '#f0f0f0', text: 'Promo Banner 1' },
-    { bg: '#e8e8e8', text: 'Promo Banner 2' },
-    { bg: '#e0e0e0', text: 'Promo Banner 3' }
-  ];
+  const [recentItems, setRecentItems] = useState<Item[]>([]);
 
   const categories = [
     { name: 'School Uniforms', icon: schoolOutline, slug: 'school-sport-uniform' },
@@ -65,10 +54,6 @@ const Home: React.FC = () => {
   ];
 
   useEffect(() => {
-    const bottomInterval = setInterval(() => {
-      setBottomSlide(prev => (prev + 1) % bottomAds.length);
-    }, 4000);
-
     // Fetch recent items
     const fetchItems = async () => {
       try {
@@ -82,10 +67,6 @@ const Home: React.FC = () => {
     };
 
     fetchItems();
-
-    return () => {
-      clearInterval(bottomInterval);
-    };
   }, []);
 
   const handleBuyClick = () => {

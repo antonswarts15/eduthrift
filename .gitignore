@@ -1,12 +1,14 @@
 # Node
 node_modules/
-<<<<<<< HEAD
-=======
+**/node_modules/
 npm-debug.log
+
+# Environment files (keep .env.example)
 .env
 .env.*
+!.env.example
 
-# MacOS
+# OS
 .DS_Store
 
 # Logs
@@ -14,20 +16,6 @@ logs/
 *.log
 
 # IDE
-.idea/
-.vscode/
-# Node
-node_modules/
->>>>>>> a55947f (Add frontend and admin projects)
-**/node_modules/
-
-# Env files
-.env
-.env.*
-!.env.prod.template
-
-# OS / IDE
-.DS_Store
 .idea/
 .vscode/
 

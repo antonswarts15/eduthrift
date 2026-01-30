@@ -4,46 +4,56 @@ services:
   # MySQL Database
   mysql:
     image: mysql:8.0
-    container_name: eduthrift-mysql
+    container_name: ${COMPOSE_PROJECT_NAME:-eduthrift}-mysql
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: password
-      MYSQL_DATABASE: eduthrift
-      MYSQL_USER: eduthrift_user
-      MYSQL_PASSWORD: eduthrift_pass
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      TZ: Africa/Johannesburg
     ports:
-      - "3306:3306"
+      - "${DB_PORT:-3306}:3306"
     volumes:
       - mysql_data:/var/lib/mysql
       - ./backEnd/database/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - eduthrift-network
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p${DB_ROOT_PASSWORD}"]
+      interval: 10s
       timeout: 20s
       retries: 10
 
-  # Node.js Backend API
+  # Spring Boot Backend API
   backend:
     build:
-      context: ./backEnd
+      context: ./backEnd/eduthriftBackend
       dockerfile: Dockerfile
-    container_name: eduthrift-backend
+    container_name: ${COMPOSE_PROJECT_NAME:-eduthrift}-backend
     restart: unless-stopped
     environment:
-      DB_HOST: mysql
-      DB_PORT: 3306
-      DB_USER: eduthrift_user
-      DB_PASSWORD: eduthrift_pass
-      DB_NAME: eduthrift
-      JWT_SECRET: docker-jwt-secret-key-change-in-production
-      PORT: 8080
-      # Add admin URL to allowed origins
-      FRONTEND_URL: http://localhost:3000,http://localhost:8100,http://localhost:5173,http://localhost:3001,http://154.65.107.50:3001,http://154.65.107.50:3000,http://154.65.107.50:8100,http://154.65.107.50:5173
-      SHIPLOGIC_API_KEY: your-shiplogic-api-key-here
-      PUDO_API_KEY: your-pudo-api-key-here
+      TZ: Africa/Johannesburg
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILE:-default}
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/${DB_NAME}
+      SPRING_DATASOURCE_USERNAME: ${DB_USER}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+
+      # PayFast
+      PAYFAST_MERCHANT_ID: ${PAYFAST_MERCHANT_ID}
+      PAYFAST_MERCHANT_KEY: ${PAYFAST_MERCHANT_KEY}
+      PAYFAST_PASSPHRASE: ${PAYFAST_PASSPHRASE}
+      PAYFAST_URL: ${PAYFAST_URL}
+
+      # PUDO
+      PUDO_API_KEY: ${PUDO_API_KEY}
+      PUDO_API_URL: ${PUDO_API_URL}
+
+      # ShipLogic
+      SHIPLOGIC_API_KEY: ${SHIPLOGIC_API_KEY}
     ports:
-      - "8080:8080"
+      - "${BACKEND_PORT:-8080}:8080"
     depends_on:
       mysql:
         condition: service_healthy
@@ -57,10 +67,14 @@ services:
     build:
       context: ./frontEnd
       dockerfile: Dockerfile.frontend
-    container_name: eduthrift-frontend
+      args:
+        VITE_API_URL: ${FRONTEND_API_URL}
+        VITE_PAYSTACK_PUBLIC_KEY: ${PAYSTACK_PUBLIC_KEY}
+        NODE_ENV: ${NODE_ENV:-production}
+    container_name: ${COMPOSE_PROJECT_NAME:-eduthrift}-frontend
     restart: unless-stopped
     ports:
-      - "3000:80"
+      - "${FRONTEND_PORT:-3000}:80"
     depends_on:
       - backend
     networks:
@@ -71,10 +85,13 @@ services:
     build:
       context: ./admin
       dockerfile: Dockerfile.admin
-    container_name: eduthrift-admin
+      args:
+        VITE_API_URL: ${ADMIN_API_URL}
+        NODE_ENV: ${NODE_ENV:-production}
+    container_name: ${COMPOSE_PROJECT_NAME:-eduthrift}-admin
     restart: unless-stopped
     ports:
-      - "3001:80"
+      - "${ADMIN_PORT:-3001}:80"
     depends_on:
       - backend
     networks:
