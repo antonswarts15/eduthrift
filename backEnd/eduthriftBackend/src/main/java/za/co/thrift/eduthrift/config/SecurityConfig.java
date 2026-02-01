@@ -1,18 +1,50 @@
-@Bean
-public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-    http
-            .csrf(csrf -> csrf.disable())
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+package za.co.thrift.eduthrift.config;
 
-            // ❌ Disable all browser-based auth
-            .httpBasic(basic -> basic.disable())
-            .formLogin(form -> form.disable())
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-            // ✅ Let frontend handle auth via API
-            .authorizeHttpRequests(auth -> auth
-                    .requestMatchers("/auth/**", "/health").permitAll()
-                    .anyRequest().permitAll()
-            );
+import java.util.List;
 
-    return http.build();
+@Configuration
+public class SecurityConfig {
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+                .csrf(csrf -> csrf.disable())
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+
+                // ❌ Disable browser auth popups
+                .httpBasic(basic -> basic.disable())
+                .formLogin(form -> form.disable())
+
+                // ✅ React handles auth
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/auth/**", "/health").permitAll()
+                        .anyRequest().permitAll()
+                );
+
+        return http.build();
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(List.of(
+                "http://154.65.107.50:3000",
+                "http://154.65.107.50:3001"
+        ));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
 }
