@@ -55,6 +55,6 @@ public class User {
     }
     
     public enum UserType {
-        SELLER, BUYER, BOTH
+        SELLER, BUYER, BOTH, ADMIN
     }
 }
