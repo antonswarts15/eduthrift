@@ -60,7 +60,8 @@ public class AuthController {
             }
 
             String typeName = user.getUserType().name();
-            if (!"BOTH".equals(typeName) && !"SELLER".equals(typeName)) {
+
+            if (!"BOTH".equals(typeName) && !"SELLER".equals(typeName) && !"ADMIN".equals(typeName)) {
                 return ResponseEntity.status(403).body("Access denied. Not an admin.");
             }
 
