@@ -86,8 +86,7 @@ services:
       context: ./admin
       dockerfile: Dockerfile.admin
       args:
-        VITE_API_URL: ${ADMIN_API_URL}
-        NODE_ENV: ${NODE_ENV:-production}
+        REACT_APP_API_URL: ${ADMIN_API_URL}
     container_name: ${COMPOSE_PROJECT_NAME:-eduthrift}-admin
     restart: unless-stopped
     ports:
