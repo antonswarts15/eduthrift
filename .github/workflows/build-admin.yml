@@ -32,7 +32,7 @@ jobs:
           TAG=${GITHUB_SHA}
 
           # Build both latest and commit SHA tags
-          docker build -t $IMAGE:latest -t $IMAGE:$TAG -f ./admin/Dockerfile.admin ./admin
+          docker build --build-arg REACT_APP_API_URL=http://154.65.107.50:8080 -t $IMAGE:latest -t $IMAGE:$TAG -f ./admin/Dockerfile.admin ./admin
 
           # Push both tags
           docker push $IMAGE:latest
