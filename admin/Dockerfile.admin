@@ -3,7 +3,7 @@ FROM node:18-alpine AS build
 WORKDIR /app
 
 # Build-time API URL
-ARG REACT_APP_API_URL
+ARG REACT_APP_API_URL=http://154.65.107.50:8080
 ENV REACT_APP_API_URL=$REACT_APP_API_URL
 
 COPY package*.json ./
