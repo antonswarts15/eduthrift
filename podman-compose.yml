@@ -1,14 +1,40 @@
 version: "3.9"
 
 services:
+  mysql:
+    image: mysql:8.0
+    container_name: eduthrift-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass123
+      MYSQL_DATABASE: eduthrift
+      MYSQL_USER: antons
+      MYSQL_PASSWORD: "@Nt0n101!"
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - eduthrift-net
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-prootpass123"]
+      interval: 10s
+      timeout: 20s
+      retries: 10
+
   backend:
     image: ghcr.io/antonswarts15/eduthrift-backend:latest
     container_name: eduthrift-backend
     ports:
-      - "8080:8080"  # Adjust if your backend uses another port
+      - "8080:8080"
     restart: always
     environment:
-      - ENV=production
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/eduthrift
+      - SPRING_DATASOURCE_USERNAME=antons
+      - SPRING_DATASOURCE_PASSWORD=@Nt0n101!
+    depends_on:
+      mysql:
+        condition: service_healthy
     networks:
       - eduthrift-net
 
@@ -16,7 +42,7 @@ services:
     image: ghcr.io/antonswarts15/eduthrift-frontend:latest
     container_name: eduthrift-frontend
     ports:
-      - "3000:3000"  # Adjust if your frontend uses another port
+      - "3000:80"
     restart: always
     networks:
       - eduthrift-net
@@ -25,10 +51,13 @@ services:
     image: ghcr.io/antonswarts15/eduthrift-admin:latest
     container_name: eduthrift-admin
     ports:
-      - "4000:4000"  # Adjust if your admin panel uses another port
+      - "3001:80"
     restart: always
     networks:
       - eduthrift-net
+
+volumes:
+  mysql_data:
 
 networks:
   eduthrift-net:
