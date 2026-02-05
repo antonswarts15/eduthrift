@@ -23,7 +23,7 @@ const LoginPage = () => {
           headers: { Authorization: `Bearer ${response.data.token}` }
         });
 
-        if (profileResponse.data.userType === 'admin') {
+        if (profileResponse.data.userType?.toUpperCase() === 'ADMIN') {
           localStorage.setItem('adminToken', response.data.token);
           navigate('/dashboard');
         } else {
