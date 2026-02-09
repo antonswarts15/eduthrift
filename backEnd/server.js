@@ -418,6 +418,34 @@ app.post('/auth/upload-documents', authenticateToken, upload.fields([
   }
 });
 
+// Individual document upload routes
+app.post('/auth/upload-id-document', authenticateToken, upload.single('idDocument'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No ID document file provided' });
+    }
+    const idDocumentUrl = `/uploads/${req.file.filename}`;
+    await pool.execute('UPDATE users SET id_document_url = ? WHERE id = ?', [idDocumentUrl, req.user.userId]);
+    res.json({ message: 'ID document uploaded successfully', url: idDocumentUrl });
+  } catch (error) {
+    console.error('ID document upload error:', error.message);
+    res.status(500).json({ error: 'Failed to upload ID document' });
+  }
+});
+
+app.post('/auth/upload-proof-of-residence', authenticateToken, upload.single('proofOfResidence'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No proof of residence file provided' });
+    }
+    const proofUrl = `/uploads/${req.file.filename}`;
+    await pool.execute('UPDATE users SET proof_of_address_url = ? WHERE id = ?', [proofUrl, req.user.userId]);
+    res.json({ message: 'Proof of residence uploaded successfully', url: proofUrl });
+  } catch (error) {
+    console.error('Proof of residence upload error:', error.message);
+    res.status(500).json({ error: 'Failed to upload proof of residence' });
+  }
+});
 
 // Items routes with location-based search
 app.get('/items', async (req, res) => {
