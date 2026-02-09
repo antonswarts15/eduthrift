@@ -39,7 +39,40 @@ public class User {
     private String suburb;
 
     private String province;
-    
+
+    @Column(name = "status")
+    private String status = "active";
+
+    @Column(name = "seller_verified")
+    private Boolean sellerVerified = false;
+
+    @Column(name = "verification_status")
+    private String verificationStatus = "pending";
+
+    @Column(name = "id_document_url")
+    private String idDocumentUrl;
+
+    @Column(name = "proof_of_address_url")
+    private String proofOfAddressUrl;
+
+    @Column(name = "id_number")
+    private String idNumber;
+
+    @Column(name = "street_address")
+    private String streetAddress;
+
+    @Column(name = "bank_name")
+    private String bankName;
+
+    @Column(name = "bank_account_number")
+    private String bankAccountNumber;
+
+    @Column(name = "bank_account_type")
+    private String bankAccountType;
+
+    @Column(name = "bank_branch_code")
+    private String bankBranchCode;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
     

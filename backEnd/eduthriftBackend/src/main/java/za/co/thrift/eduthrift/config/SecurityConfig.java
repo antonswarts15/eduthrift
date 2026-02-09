@@ -50,8 +50,12 @@ public class SecurityConfig {
         configuration.setAllowedOrigins(Arrays.asList(
                 "http://154.65.107.50:3000",
                 "http://154.65.107.50:3001",
+                "http://154.65.107.50:5173",
+                "http://154.65.107.50:5174",
                 "http://localhost:3000",
-                "http://localhost:3001"
+                "http://localhost:3001",
+                "http://localhost:5173",
+                "http://localhost:5174"
         ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
@@ -71,6 +75,7 @@ public class SecurityConfig {
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/health/**").permitAll()
                         .requestMatchers("/categories/**").permitAll()
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
