@@ -2,6 +2,7 @@ version: '3.8'
 
 services:
   # MySQL Database
+
   mysql:
     image: mysql:8.0
     container_name: ${COMPOSE_PROJECT_NAME:-eduthrift}-mysql
