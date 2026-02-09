@@ -60,7 +60,7 @@ public class AuthController {
 
             String typeName = user.getUserType().name();
 
-            if (!"BOTH".equals(typeName) && !"SELLER".equals(typeName) && !"ADMIN".equals(typeName)) {
+            if (!"BOTH".equals(typeName) && !"SELLER".equals(typeName) && !"ADMIN".equals(typeName) && !"BUYER".equals(typeName)) {
                 return ResponseEntity.status(403).body("Access denied. Not authorized.");
             }
 
@@ -73,6 +73,52 @@ public class AuthController {
         } catch (Exception e) {
             System.out.println("Authentication failed: " + e.getMessage());
             return ResponseEntity.status(401).body("Invalid credentials");
+        }
+    }
+
+    @PostMapping("/register")
+    public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
+        try {
+            // Check if email already exists
+            if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+                return ResponseEntity.status(400).body(new ErrorResponse("Email already registered"));
+            }
+
+            // Create new user
+            User user = new User();
+            user.setEmail(request.getEmail());
+            user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
+            user.setFirstName(request.getFirstName());
+            user.setLastName(request.getLastName());
+            user.setPhone(request.getPhone());
+            user.setSuburb(request.getSuburb());
+            user.setTown(request.getTown());
+            user.setProvince(request.getProvince());
+
+            // Set user type, default to BOTH
+            String requestedType = request.getUserType();
+            if (requestedType != null) {
+                try {
+                    user.setUserType(User.UserType.valueOf(requestedType.toUpperCase()));
+                } catch (IllegalArgumentException e) {
+                    user.setUserType(User.UserType.BOTH);
+                }
+            } else {
+                user.setUserType(User.UserType.BOTH);
+            }
+
+            userRepository.save(user);
+
+            // Generate token so user is logged in immediately after registration
+            String typeName = user.getUserType().name();
+            String token = jwtUtil.generateToken(user.getEmail(), typeName);
+
+            System.out.println("Registration successful for: " + user.getEmail());
+            return ResponseEntity.ok(new LoginResponse(token, typeName));
+
+        } catch (Exception e) {
+            System.out.println("Registration failed: " + e.getMessage());
+            return ResponseEntity.status(500).body(new ErrorResponse("Registration failed. Please try again."));
         }
     }
 
@@ -102,6 +148,43 @@ public class AuthController {
     }
 
     // ---------------- Nested classes ----------------
+
+    public static class RegisterRequest {
+        private String firstName;
+        private String lastName;
+        private String email;
+        private String password;
+        private String phone;
+        private String suburb;
+        private String town;
+        private String province;
+        private String userType;
+
+        public String getFirstName() { return firstName; }
+        public void setFirstName(String firstName) { this.firstName = firstName; }
+        public String getLastName() { return lastName; }
+        public void setLastName(String lastName) { this.lastName = lastName; }
+        public String getEmail() { return email; }
+        public void setEmail(String email) { this.email = email; }
+        public String getPassword() { return password; }
+        public void setPassword(String password) { this.password = password; }
+        public String getPhone() { return phone; }
+        public void setPhone(String phone) { this.phone = phone; }
+        public String getSuburb() { return suburb; }
+        public void setSuburb(String suburb) { this.suburb = suburb; }
+        public String getTown() { return town; }
+        public void setTown(String town) { this.town = town; }
+        public String getProvince() { return province; }
+        public void setProvince(String province) { this.province = province; }
+        public String getUserType() { return userType; }
+        public void setUserType(String userType) { this.userType = userType; }
+    }
+
+    public static class ErrorResponse {
+        private String error;
+        public ErrorResponse(String error) { this.error = error; }
+        public String getError() { return error; }
+    }
 
     public static class LoginRequest {
         private String email;

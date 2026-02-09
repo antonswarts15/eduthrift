@@ -33,6 +33,12 @@ public class User {
     
     @Column(name = "school_name")
     private String schoolName;
+
+    private String town;
+
+    private String suburb;
+
+    private String province;
     
     @Column(name = "created_at")
     private LocalDateTime createdAt;
