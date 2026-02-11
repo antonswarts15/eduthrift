@@ -48,10 +48,12 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(Arrays.asList(
+                "https://www.eduthrift.co.za",
+                "https://eduthrift.co.za",
+                "https://admin.eduthrift.co.za",
+                "https://www.admin.eduthrift.co.za",
                 "http://154.65.107.50:3000",
                 "http://154.65.107.50:3001",
-                "http://154.65.107.50:5173",
-                "http://154.65.107.50:5174",
                 "http://localhost:3000",
                 "http://localhost:3001",
                 "http://localhost:5173",
