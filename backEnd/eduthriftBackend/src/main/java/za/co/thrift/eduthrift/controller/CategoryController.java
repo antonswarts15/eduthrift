@@ -7,7 +7,7 @@ import za.co.thrift.eduthrift.repository.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping
 @CrossOrigin(origins = {"https://www.eduthrift.co.za", "https://eduthrift.co.za", "https://admin.eduthrift.co.za", "http://localhost:3000", "http://localhost:3001"}, allowCredentials = "true")
 public class CategoryController {
 

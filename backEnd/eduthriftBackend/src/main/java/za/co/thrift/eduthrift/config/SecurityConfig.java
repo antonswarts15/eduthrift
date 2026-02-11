@@ -77,6 +77,8 @@ public class SecurityConfig {
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/health/**").permitAll()
                         .requestMatchers("/categories/**").permitAll()
+                        .requestMatchers("/items/**").permitAll()
+                        .requestMatchers("/item-types/**").permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
