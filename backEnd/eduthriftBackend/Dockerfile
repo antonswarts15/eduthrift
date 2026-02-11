@@ -17,5 +17,7 @@ WORKDIR /app
 
 COPY --from=builder /app/target/*.jar app.jar
 
+RUN mkdir -p /app/uploads/id-documents /app/uploads/proof-of-residence
+
 EXPOSE 8080
 ENTRYPOINT ["java","-jar","/app/app.jar"]

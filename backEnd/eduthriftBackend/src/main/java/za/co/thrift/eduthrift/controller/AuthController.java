@@ -1,5 +1,6 @@
 package za.co.thrift.eduthrift.controller;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -7,11 +8,19 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import za.co.thrift.eduthrift.entity.User;
 import za.co.thrift.eduthrift.repository.UserRepository;
 import za.co.thrift.eduthrift.security.JwtUtil;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/auth")
@@ -22,6 +31,9 @@ public class AuthController {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
+
+    @Value("${file.upload.dir:/app/uploads}")
+    private String uploadDir;
 
     public AuthController(UserRepository userRepository,
                           PasswordEncoder passwordEncoder,
@@ -136,15 +148,90 @@ public class AuthController {
         }
 
         User user = userOpt.get();
-        return ResponseEntity.ok(new ProfileResponse(
-                user.getId(),
-                user.getEmail(),
-                user.getFirstName(),
-                user.getLastName(),
-                user.getUserType() != null ? user.getUserType().name() : null,
-                user.getPhone(),
-                user.getSchoolName()
-        ));
+        return ResponseEntity.ok(new ProfileResponse(user));
+    }
+
+    @PostMapping("/upload-id-document")
+    public ResponseEntity<?> uploadIdDocument(
+            @RequestParam("idDocument") MultipartFile file,
+            Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(401).body(new ErrorResponse("Not authenticated"));
+        }
+
+        String email = authentication.getName();
+        Optional<User> userOpt = userRepository.findByEmail(email);
+        if (!userOpt.isPresent()) {
+            return ResponseEntity.status(404).body(new ErrorResponse("User not found"));
+        }
+
+        try {
+            String savedPath = saveFile(file, "id-documents");
+            User user = userOpt.get();
+            user.setIdDocumentUrl(savedPath);
+            user.setVerificationStatus("pending");
+            userRepository.save(user);
+
+            return ResponseEntity.ok(Map.of(
+                    "message", "ID document uploaded successfully",
+                    "path", savedPath
+            ));
+        } catch (IOException e) {
+            System.out.println("File upload failed: " + e.getMessage());
+            return ResponseEntity.status(500).body(new ErrorResponse("Failed to upload file"));
+        }
+    }
+
+    @PostMapping("/upload-proof-of-residence")
+    public ResponseEntity<?> uploadProofOfResidence(
+            @RequestParam("proofOfResidence") MultipartFile file,
+            Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(401).body(new ErrorResponse("Not authenticated"));
+        }
+
+        String email = authentication.getName();
+        Optional<User> userOpt = userRepository.findByEmail(email);
+        if (!userOpt.isPresent()) {
+            return ResponseEntity.status(404).body(new ErrorResponse("User not found"));
+        }
+
+        try {
+            String savedPath = saveFile(file, "proof-of-residence");
+            User user = userOpt.get();
+            user.setProofOfAddressUrl(savedPath);
+            user.setVerificationStatus("pending");
+            userRepository.save(user);
+
+            return ResponseEntity.ok(Map.of(
+                    "message", "Proof of residence uploaded successfully",
+                    "path", savedPath
+            ));
+        } catch (IOException e) {
+            System.out.println("File upload failed: " + e.getMessage());
+            return ResponseEntity.status(500).body(new ErrorResponse("Failed to upload file"));
+        }
+    }
+
+    private String saveFile(MultipartFile file, String subdirectory) throws IOException {
+        // Create upload directory if it doesn't exist
+        Path uploadPath = Paths.get(uploadDir, subdirectory);
+        Files.createDirectories(uploadPath);
+
+        // Generate unique filename
+        String originalFilename = file.getOriginalFilename();
+        String extension = "";
+        if (originalFilename != null && originalFilename.contains(".")) {
+            extension = originalFilename.substring(originalFilename.lastIndexOf("."));
+        }
+        String uniqueFilename = UUID.randomUUID().toString() + extension;
+
+        // Save file
+        Path filePath = uploadPath.resolve(uniqueFilename);
+        Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+
+        // Return the URL path that will be used to serve the file
+        return "/uploads/" + subdirectory + "/" + uniqueFilename;
     }
 
     // ---------------- Nested classes ----------------
@@ -218,16 +305,29 @@ public class AuthController {
         private String userType;
         private String phone;
         private String schoolName;
+        private String town;
+        private String suburb;
+        private String province;
+        private String idDocumentPath;
+        private String proofOfResidencePath;
+        private String verificationStatus;
+        private Boolean sellerVerified;
 
-        public ProfileResponse(Long id, String email, String firstName, String lastName,
-                               String userType, String phone, String schoolName) {
-            this.id = id;
-            this.email = email;
-            this.firstName = firstName;
-            this.lastName = lastName;
-            this.userType = userType;
-            this.phone = phone;
-            this.schoolName = schoolName;
+        public ProfileResponse(User user) {
+            this.id = user.getId();
+            this.email = user.getEmail();
+            this.firstName = user.getFirstName();
+            this.lastName = user.getLastName();
+            this.userType = user.getUserType() != null ? user.getUserType().name() : null;
+            this.phone = user.getPhone();
+            this.schoolName = user.getSchoolName();
+            this.town = user.getTown();
+            this.suburb = user.getSuburb();
+            this.province = user.getProvince();
+            this.idDocumentPath = user.getIdDocumentUrl();
+            this.proofOfResidencePath = user.getProofOfAddressUrl();
+            this.verificationStatus = user.getVerificationStatus();
+            this.sellerVerified = user.getSellerVerified();
         }
 
         public Long getId() { return id; }
@@ -237,5 +337,12 @@ public class AuthController {
         public String getUserType() { return userType; }
         public String getPhone() { return phone; }
         public String getSchoolName() { return schoolName; }
+        public String getTown() { return town; }
+        public String getSuburb() { return suburb; }
+        public String getProvince() { return province; }
+        public String getIdDocumentPath() { return idDocumentPath; }
+        public String getProofOfResidencePath() { return proofOfResidencePath; }
+        public String getVerificationStatus() { return verificationStatus; }
+        public Boolean getSellerVerified() { return sellerVerified; }
     }
 }

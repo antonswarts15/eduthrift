@@ -34,6 +34,10 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/eduthrift
       - SPRING_DATASOURCE_USERNAME=antons
       - SPRING_DATASOURCE_PASSWORD=@Nt0n101!
+      - JWT_SECRET=dev-jwt-secret-key-change-in-production
+      - FILE_UPLOAD_DIR=/app/uploads
+    volumes:
+      - backend_uploads:/app/uploads
     depends_on:
       mysql:
         condition: service_healthy
@@ -60,6 +64,7 @@ services:
 
 volumes:
   mysql_data:
+  backend_uploads:
 
 networks:
   eduthrift-net:
