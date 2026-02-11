@@ -22,8 +22,11 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 403 || error.response?.status === 401) {
+    const requestUrl = error.config?.url || '';
+    const isLoginOrRegister = requestUrl === '/auth/login' || requestUrl === '/auth/register';
+    if (!isLoginOrRegister && (error.response?.status === 403 || error.response?.status === 401)) {
       localStorage.removeItem('authToken');
+      localStorage.setItem('isLoggedIn', 'false');
       window.location.href = '/login';
     }
     return Promise.reject(error);

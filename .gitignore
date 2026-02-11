@@ -3,10 +3,24 @@ node_modules/
 **/node_modules/
 npm-debug.log
 
-# Environment files (keep .env.example)
+# Environment files (secrets - never commit)
 .env
-.env.*
+.env.qa
+.env.prod
+.env.dev
+frontEnd/eduthrift/.env
+frontEnd/eduthrift/.env.qa
+frontEnd/eduthrift/.env.prod
+admin/.env
+admin/.env.qa
+admin/.env.prod
+backEnd/.env
+backEnd/.env.qa
+backEnd/.env.prod
+
+# Keep templates tracked
 !.env.example
+!.env.prod.template
 
 # OS
 .DS_Store
@@ -18,5 +32,3 @@ logs/
 # IDE
 .idea/
 .vscode/
-
-

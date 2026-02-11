@@ -160,19 +160,25 @@ const App: React.FC = () => {
             </ProtectedRoute>
           </Route>
           <Route exact path="/profile/personal-details">
-            <MainLayout>
-              <PersonalDetailsPage />
-            </MainLayout>
+            <ProtectedRoute>
+              <MainLayout>
+                <PersonalDetailsPage />
+              </MainLayout>
+            </ProtectedRoute>
           </Route>
           <Route exact path="/profile/orders">
-            <MainLayout>
-              <OrdersPage />
-            </MainLayout>
+            <ProtectedRoute>
+              <MainLayout>
+                <OrdersPage />
+              </MainLayout>
+            </ProtectedRoute>
           </Route>
           <Route exact path="/profile/listings">
-            <MainLayout>
-              <ListingsPage />
-            </MainLayout>
+            <ProtectedRoute>
+              <MainLayout>
+                <ListingsPage />
+              </MainLayout>
+            </ProtectedRoute>
           </Route>
           <Route exact path="/wishlist">
             <ProtectedRoute>

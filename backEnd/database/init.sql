@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS users (
     first_name VARCHAR(100) NOT NULL,
     last_name VARCHAR(100) NOT NULL,
     phone VARCHAR(20),
-    user_type ENUM('seller', 'buyer', 'both', 'admin') DEFAULT 'both',
+    user_type ENUM('SELLER', 'BUYER', 'BOTH', 'ADMIN') DEFAULT 'BOTH',
     school_name VARCHAR(255),
     town VARCHAR(100),
     suburb VARCHAR(100),
@@ -275,9 +275,9 @@ FLUSH PRIVILEGES;
 
 -- Insert sample users (password hash for '@Nt0n101!')
 INSERT IGNORE INTO users (email, password_hash, first_name, last_name, phone, user_type, school_name, status, verification_status) VALUES
-('antons@eduthrift.co.za', '$2a$10$N94Wn2xngRGr9dY10vNr0OqFxVggK7mYQC0iR78FC6EkxGP3pj9I2', 'Antons', 'Swarts', '0123456789', 'admin', 'Hoërskool Waterkloof', 'active', 'verified'),
-('seller@example.com', '$2a$10$example.hash.here', 'John', 'Seller', '0123456789', 'seller', 'Hoërskool Waterkloof', 'active', 'pending'),
-('buyer@example.com', '$2a$10$example.hash.here', 'Jane', 'Buyer', '0987654321', 'buyer', 'Pretoria Boys High School', 'active', 'verified');
+('antons@eduthrift.co.za', '$2a$10$N94Wn2xngRGr9dY10vNr0OqFxVggK7mYQC0iR78FC6EkxGP3pj9I2', 'Antons', 'Swarts', '0123456789', 'ADMIN', 'Hoërskool Waterkloof', 'active', 'verified'),
+('seller@example.com', '$2a$10$N94Wn2xngRGr9dY10vNr0OqFxVggK7mYQC0iR78FC6EkxGP3pj9I2', 'John', 'Seller', '0123456789', 'SELLER', 'Hoërskool Waterkloof', 'active', 'pending'),
+('buyer@example.com', '$2a$10$N94Wn2xngRGr9dY10vNr0OqFxVggK7mYQC0iR78FC6EkxGP3pj9I2', 'Jane', 'Buyer', '0987654321', 'BUYER', 'Pretoria Boys High School', 'active', 'verified');
 
 -- Insert sample items
 INSERT IGNORE INTO items (user_id, item_type_id, school_name, size, gender, condition_grade, price, description, status) VALUES
