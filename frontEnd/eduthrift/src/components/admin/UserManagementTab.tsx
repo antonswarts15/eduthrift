@@ -123,8 +123,13 @@ const UserManagementTab: React.FC = () => {
           text: 'Reset',
           handler: async () => {
             try {
-              await adminApi.resetPassword(user.id);
-              setToastMessage(`Password reset email sent to ${user.email}`);
+              const response = await adminApi.resetPassword(user.id);
+              const tempPassword = response.data?.tempPassword;
+              if (tempPassword) {
+                setToastMessage(`Temporary password for ${user.name}: ${tempPassword}`);
+              } else {
+                setToastMessage(`Password reset for ${user.email}`);
+              }
             } catch (err: any) {
               setToastMessage(err.response?.data?.message || 'Failed to reset password');
             }

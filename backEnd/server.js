@@ -405,14 +405,26 @@ app.post('/auth/upload-documents', authenticateToken, upload.fields([
     if (Object.keys(updates).length > 0) {
       const setClause = Object.keys(updates).map(key => `${key} = ?`).join(', ');
       const values = [...Object.values(updates), req.user.userId];
-      
+
       await pool.execute(
         `UPDATE users SET ${setClause} WHERE id = ?`,
         values
       );
+
+      // Auto-set verification_status to 'pending' if both documents are now uploaded
+      const [user] = await pool.execute(
+        'SELECT id_document_url, proof_of_address_url, verification_status FROM users WHERE id = ?',
+        [req.user.userId]
+      );
+      if (user[0]?.id_document_url && user[0]?.proof_of_address_url && user[0].verification_status !== 'verified') {
+        await pool.execute(
+          'UPDATE users SET verification_status = ? WHERE id = ?',
+          ['pending', req.user.userId]
+        );
+      }
     }
-    
-    res.json({ 
+
+    res.json({
       message: 'Documents uploaded successfully',
       uploaded: updates
     });
@@ -430,6 +442,19 @@ app.post('/auth/upload-id-document', authenticateToken, upload.single('idDocumen
     }
     const idDocumentUrl = `/uploads/${req.file.filename}`;
     await pool.execute('UPDATE users SET id_document_url = ? WHERE id = ?', [idDocumentUrl, req.user.userId]);
+
+    // Auto-set verification_status to 'pending' if both documents are now uploaded
+    const [user] = await pool.execute(
+      'SELECT proof_of_address_url, verification_status FROM users WHERE id = ?',
+      [req.user.userId]
+    );
+    if (user[0]?.proof_of_address_url && user[0].verification_status !== 'verified') {
+      await pool.execute(
+        'UPDATE users SET verification_status = ? WHERE id = ?',
+        ['pending', req.user.userId]
+      );
+    }
+
     res.json({ message: 'ID document uploaded successfully', url: idDocumentUrl });
   } catch (error) {
     console.error('ID document upload error:', error.message);
@@ -444,6 +469,19 @@ app.post('/auth/upload-proof-of-residence', authenticateToken, upload.single('pr
     }
     const proofUrl = `/uploads/${req.file.filename}`;
     await pool.execute('UPDATE users SET proof_of_address_url = ? WHERE id = ?', [proofUrl, req.user.userId]);
+
+    // Auto-set verification_status to 'pending' if both documents are now uploaded
+    const [user] = await pool.execute(
+      'SELECT id_document_url, verification_status FROM users WHERE id = ?',
+      [req.user.userId]
+    );
+    if (user[0]?.id_document_url && user[0].verification_status !== 'verified') {
+      await pool.execute(
+        'UPDATE users SET verification_status = ? WHERE id = ?',
+        ['pending', req.user.userId]
+      );
+    }
+
     res.json({ message: 'Proof of residence uploaded successfully', url: proofUrl });
   } catch (error) {
     console.error('Proof of residence upload error:', error.message);
@@ -1179,7 +1217,9 @@ app.get('/admin/sellers/pending', authenticateToken, requireAdmin, async (req, r
              bank_name, bank_account_number, bank_branch_code, bank_account_type,
              verification_status, created_at
       FROM users
-      WHERE user_type IN ('seller', 'both') AND verification_status = 'pending'
+      WHERE user_type IN ('seller', 'both')
+        AND (verification_status = 'pending'
+             OR (verification_status IS NULL AND id_document_url IS NOT NULL AND proof_of_address_url IS NOT NULL))
       ORDER BY created_at DESC
     `);
     res.json(rows);
@@ -1356,7 +1396,8 @@ app.get('/admin/dashboard/stats', authenticateToken, requireAdmin, async (req, r
     const [pendingVerificationsResult] = await pool.execute(
       `SELECT COUNT(*) as pending FROM users
        WHERE user_type IN ('seller', 'both')
-       AND verification_status = 'pending'`
+       AND (verification_status = 'pending'
+            OR (verification_status IS NULL AND id_document_url IS NOT NULL AND proof_of_address_url IS NOT NULL))`
     );
 
     // Get sales statistics (using 'delivered' status as completed orders)
