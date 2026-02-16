@@ -40,7 +40,8 @@ import {
   helpCircleOutline,
   closeOutline,
   searchOutline,
-  heartOutline
+  heartOutline,
+  shieldOutline
 } from 'ionicons/icons';
 
 interface MainLayoutProps {
@@ -169,6 +170,13 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
               <IonIcon icon={helpCircleOutline} slot="start" />
               <IonLabel>How does eduthrift work?</IonLabel>
             </IonItem>
+
+            {userProfile?.userType === 'admin' && (
+              <IonItem button onClick={() => history.push('/admin')}>
+                <IonIcon icon={shieldOutline} slot="start" />
+                <IonLabel>Admin Console</IonLabel>
+              </IonItem>
+            )}
           </IonList>
         </IonContent>
       </IonMenu>

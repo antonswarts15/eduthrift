@@ -25,6 +25,8 @@ import CheckoutPage from './pages/CheckoutPage';
 import WishlistPage from './pages/WishlistPage';
 import HowItWorksPage from './pages/HowItWorksPage';
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
+import AdminConsolePage from './pages/AdminConsolePage';
+import { useUserStore } from './stores/userStore';
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/react/css/core.css';
@@ -61,6 +63,13 @@ setupIonicReact();
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return isLoggedIn() ? <>{children}</> : <Redirect to="/login" />;
+};
+
+const AdminRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { userProfile } = useUserStore();
+  if (!isLoggedIn()) return <Redirect to="/login" />;
+  if (userProfile && userProfile.userType !== 'admin') return <Redirect to="/home" />;
+  return <>{children}</>;
 };
 
 const App: React.FC = () => {
@@ -218,6 +227,13 @@ const App: React.FC = () => {
             <MainLayout>
               <ItemPage />
             </MainLayout>
+          </Route>
+          <Route exact path="/admin">
+            <AdminRoute>
+              <MainLayout>
+                <AdminConsolePage />
+              </MainLayout>
+            </AdminRoute>
           </Route>
         </IonRouterOutlet>
       </IonReactRouter>

@@ -91,4 +91,17 @@ export const ordersApi = {
   updateOrderStatus: (id: string, status: string) => api.put(`/orders/${id}/status`, { status }),
 };
 
+// Admin API
+export const adminApi = {
+  getPendingSellers: () => api.get('/admin/sellers/pending'),
+  verifySeller: (id: string) => api.put(`/admin/sellers/${id}/verify`),
+  rejectSeller: (id: string) => api.put(`/admin/sellers/${id}/reject`),
+  getUsers: (params?: Record<string, string>) => api.get('/admin/users', { params }),
+  updateUserRole: (id: string, role: string) => api.put(`/admin/users/${id}/role`, { role }),
+  resetPassword: (id: string) => api.put(`/admin/users/${id}/reset-password`),
+  suspendUser: (id: string) => api.put(`/admin/users/${id}/suspend`),
+  reactivateUser: (id: string) => api.put(`/admin/users/${id}/reactivate`),
+  deleteUser: (id: string) => api.delete(`/admin/users/${id}`),
+};
+
 export default api;

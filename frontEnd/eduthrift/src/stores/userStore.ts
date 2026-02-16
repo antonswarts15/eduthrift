@@ -12,7 +12,7 @@ export interface UserProfile {
   suburb?: string;
   province?: string;
   schoolName?: string;
-  userType?: 'buyer' | 'seller' | 'both';
+  userType?: 'buyer' | 'seller' | 'both' | 'admin';
   sellerVerification?: {
     status: 'pending' | 'verified' | 'rejected';
     submittedAt?: string;

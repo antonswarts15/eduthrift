@@ -15,9 +15,11 @@ import {
   IonItem,
   IonLabel,
   IonToast,
-  IonImg
+  IonImg,
+  IonSpinner
 } from '@ionic/react';
 import { checkmarkCircleOutline, closeCircleOutline, documentOutline, homeOutline, closeOutline } from 'ionicons/icons';
+import { adminApi } from '../../services/api';
 
 interface PendingSeller {
   id: string;
@@ -37,100 +39,68 @@ const SellerVerificationTab: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     loadPendingSellers();
   }, []);
 
   const loadPendingSellers = async () => {
+    setLoading(true);
+    setError(null);
     try {
-      const response = await fetch('/admin/sellers/pending', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      const data = await response.json();
-      
-      if (response.ok) {
-        setPendingSellers(data.map((seller: any) => ({
-          id: seller.id,
-          name: `${seller.first_name} ${seller.last_name}`,
-          email: seller.email,
-          phone: seller.phone,
-          school: seller.school_name,
-          idDocument: seller.id_document_url || 'https://via.placeholder.com/400x300/cccccc/666666?text=ID+Document',
-          proofOfAddress: seller.proof_of_address_url || 'https://via.placeholder.com/400x300/cccccc/666666?text=Proof+of+Address',
-          submittedAt: seller.created_at,
-          status: seller.verification_status
-        })));
-      }
-    } catch (error) {
-      console.error('Error loading sellers:', error);
-      // Fallback to mock data
-      setPendingSellers([
-        {
-          id: '1',
-          name: 'John Smith',
-          email: 'john.smith@email.com',
-          phone: '+27 82 123 4567',
-          school: 'Johannesburg High School',
-          idDocument: 'https://via.placeholder.com/400x300/cccccc/666666?text=ID+Document',
-          proofOfAddress: 'https://via.placeholder.com/400x300/cccccc/666666?text=Proof+of+Address',
-          submittedAt: '2024-01-15T10:30:00Z',
-          status: 'pending'
-        }
-      ]);
+      const response = await adminApi.getPendingSellers();
+      const data = response.data;
+      setPendingSellers(data.map((seller: any) => ({
+        id: seller.id,
+        name: `${seller.first_name} ${seller.last_name}`,
+        email: seller.email,
+        phone: seller.phone,
+        school: seller.school_name,
+        idDocument: seller.id_document_url || '',
+        proofOfAddress: seller.proof_of_address_url || '',
+        submittedAt: seller.created_at,
+        status: seller.verification_status || 'pending'
+      })));
+    } catch (err: any) {
+      console.error('Error loading sellers:', err);
+      setError(err.response?.data?.message || 'Failed to load pending sellers');
+    } finally {
+      setLoading(false);
     }
   };
 
   const verifySeller = async (sellerId: string) => {
     try {
-      const response = await fetch(`/admin/sellers/${sellerId}/verify`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      
-      if (response.ok) {
-        setPendingSellers(prev => prev.map(seller => 
-          seller.id === sellerId 
-            ? { ...seller, status: 'verified' as const }
-            : seller
-        ));
-        
-        setToastMessage('Seller verified successfully! They can now upload products.');
-        setShowToast(true);
-        setShowModal(false);
-      }
-    } catch (error) {
-      setToastMessage('Failed to verify seller');
+      await adminApi.verifySeller(sellerId);
+      setPendingSellers(prev => prev.map(seller =>
+        seller.id === sellerId
+          ? { ...seller, status: 'verified' as const }
+          : seller
+      ));
+      setToastMessage('Seller verified successfully! They can now upload products.');
+      setShowToast(true);
+      setShowModal(false);
+    } catch (err: any) {
+      setToastMessage(err.response?.data?.message || 'Failed to verify seller');
       setShowToast(true);
     }
   };
 
   const rejectSeller = async (sellerId: string) => {
     try {
-      const response = await fetch(`/admin/sellers/${sellerId}/reject`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      
-      if (response.ok) {
-        setPendingSellers(prev => prev.map(seller => 
-          seller.id === sellerId 
-            ? { ...seller, status: 'rejected' as const }
-            : seller
-        ));
-        
-        setToastMessage('Seller rejected. They will be notified to submit valid documents.');
-        setShowToast(true);
-        setShowModal(false);
-      }
-    } catch (error) {
-      setToastMessage('Failed to reject seller');
+      await adminApi.rejectSeller(sellerId);
+      setPendingSellers(prev => prev.map(seller =>
+        seller.id === sellerId
+          ? { ...seller, status: 'rejected' as const }
+          : seller
+      ));
+      setToastMessage('Seller rejected. They will be notified to submit valid documents.');
+      setShowToast(true);
+      setShowModal(false);
+    } catch (err: any) {
+      setToastMessage(err.response?.data?.message || 'Failed to reject seller');
       setShowToast(true);
     }
   };
@@ -159,10 +129,30 @@ const SellerVerificationTab: React.FC = () => {
     }
   };
 
+  if (loading) {
+    return (
+      <div style={{ textAlign: 'center', padding: '40px' }}>
+        <IonSpinner />
+        <p>Loading pending sellers...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <IonCard>
+        <IonCardContent style={{ textAlign: 'center', padding: '40px' }}>
+          <p style={{ color: 'var(--ion-color-danger)' }}>{error}</p>
+          <IonButton fill="outline" onClick={loadPendingSellers}>Retry</IonButton>
+        </IonCardContent>
+      </IonCard>
+    );
+  }
+
   return (
     <>
       <h3>Seller Verification ({pendingSellers.filter(s => s.status === 'pending').length} pending)</h3>
-      
+
       {pendingSellers.map(seller => (
         <IonCard key={seller.id}>
           <IonCardHeader>
@@ -182,11 +172,11 @@ const SellerVerificationTab: React.FC = () => {
                 <p><strong>Submitted:</strong> {formatDate(seller.submittedAt)}</p>
               </IonLabel>
             </IonItem>
-            
+
             {seller.status === 'pending' && (
               <div style={{ marginTop: '12px' }}>
-                <IonButton 
-                  expand="block" 
+                <IonButton
+                  expand="block"
                   fill="outline"
                   onClick={() => openSellerDetails(seller)}
                 >
@@ -197,6 +187,14 @@ const SellerVerificationTab: React.FC = () => {
           </IonCardContent>
         </IonCard>
       ))}
+
+      {pendingSellers.length === 0 && (
+        <IonCard>
+          <IonCardContent style={{ textAlign: 'center', padding: '40px' }}>
+            <p>No pending seller verifications</p>
+          </IonCardContent>
+        </IonCard>
+      )}
 
       <IonModal isOpen={showModal} onDidDismiss={() => setShowModal(false)}>
         <IonHeader>
@@ -218,8 +216,8 @@ const SellerVerificationTab: React.FC = () => {
                   </IonCardTitle>
                 </IonCardHeader>
                 <IonCardContent>
-                  <IonImg 
-                    src={selectedSeller.idDocument} 
+                  <IonImg
+                    src={selectedSeller.idDocument}
                     alt="ID Document"
                     style={{ width: '100%', maxHeight: '300px', objectFit: 'contain' }}
                   />
@@ -234,8 +232,8 @@ const SellerVerificationTab: React.FC = () => {
                   </IonCardTitle>
                 </IonCardHeader>
                 <IonCardContent>
-                  <IonImg 
-                    src={selectedSeller.proofOfAddress} 
+                  <IonImg
+                    src={selectedSeller.proofOfAddress}
                     alt="Proof of Address"
                     style={{ width: '100%', maxHeight: '300px', objectFit: 'contain' }}
                   />
@@ -243,16 +241,16 @@ const SellerVerificationTab: React.FC = () => {
               </IonCard>
 
               <div style={{ marginTop: '20px', display: 'flex', gap: '12px' }}>
-                <IonButton 
-                  expand="block" 
+                <IonButton
+                  expand="block"
                   color="success"
                   onClick={() => verifySeller(selectedSeller.id)}
                 >
                   <IonIcon icon={checkmarkCircleOutline} slot="start" />
                   Verify Seller
                 </IonButton>
-                <IonButton 
-                  expand="block" 
+                <IonButton
+                  expand="block"
                   color="danger"
                   fill="outline"
                   onClick={() => rejectSeller(selectedSeller.id)}

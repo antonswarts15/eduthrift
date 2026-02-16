@@ -13,16 +13,18 @@ import {
   IonToast,
   IonAlert,
   IonSelect,
-  IonSelectOption
+  IonSelectOption,
+  IonSpinner
 } from '@ionic/react';
-import { lockClosedOutline, banOutline, trashOutline, searchOutline } from 'ionicons/icons';
+import { lockClosedOutline, banOutline, trashOutline, swapHorizontalOutline } from 'ionicons/icons';
+import { adminApi } from '../../services/api';
 
 interface User {
   id: string;
   name: string;
   email: string;
   phone: string;
-  role: 'buyer' | 'seller' | 'admin';
+  role: 'buyer' | 'seller' | 'both' | 'admin';
   status: 'active' | 'suspended' | 'deleted';
   joinedAt: string;
   lastLogin: string;
@@ -37,6 +39,9 @@ const UserManagementTab: React.FC = () => {
   const [toastMessage, setToastMessage] = useState('');
   const [showAlert, setShowAlert] = useState(false);
   const [alertConfig, setAlertConfig] = useState<any>({});
+  const [loading, setLoading] = useState(true);
+  const [showRoleAlert, setShowRoleAlert] = useState(false);
+  const [roleChangeUser, setRoleChangeUser] = useState<User | null>(null);
 
   useEffect(() => {
     loadUsers();
@@ -46,46 +51,35 @@ const UserManagementTab: React.FC = () => {
     filterUsers();
   }, [users, searchText, filterRole]);
 
-  const loadUsers = () => {
-    setUsers([
-      {
-        id: '1',
-        name: 'John Smith',
-        email: 'john.smith@email.com',
-        phone: '+27 82 123 4567',
-        role: 'seller',
-        status: 'active',
-        joinedAt: '2024-01-15T10:30:00Z',
-        lastLogin: '2024-01-20T14:20:00Z'
-      },
-      {
-        id: '2',
-        name: 'Sarah Johnson',
-        email: 'sarah.j@email.com',
-        phone: '+27 83 987 6543',
-        role: 'buyer',
-        status: 'active',
-        joinedAt: '2024-01-10T09:15:00Z',
-        lastLogin: '2024-01-19T16:45:00Z'
-      },
-      {
-        id: '3',
-        name: 'Mike Wilson',
-        email: 'mike.w@email.com',
-        phone: '+27 84 555 1234',
-        role: 'seller',
-        status: 'suspended',
-        joinedAt: '2024-01-05T11:00:00Z',
-        lastLogin: '2024-01-18T10:30:00Z'
-      }
-    ]);
+  const loadUsers = async () => {
+    setLoading(true);
+    try {
+      const response = await adminApi.getUsers();
+      const data = response.data;
+      setUsers((Array.isArray(data) ? data : data.users || []).map((u: any) => ({
+        id: u.id,
+        name: `${u.first_name || ''} ${u.last_name || ''}`.trim() || u.email,
+        email: u.email,
+        phone: u.phone || '',
+        role: (u.user_type || u.role || 'buyer').toLowerCase() as User['role'],
+        status: (u.status || 'active').toLowerCase() as User['status'],
+        joinedAt: u.created_at || '',
+        lastLogin: u.last_login || ''
+      })));
+    } catch (err: any) {
+      console.error('Error loading users:', err);
+      setToastMessage(err.response?.data?.message || 'Failed to load users');
+      setShowToast(true);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const filterUsers = () => {
     let filtered = users;
 
     if (searchText) {
-      filtered = filtered.filter(user => 
+      filtered = filtered.filter(user =>
         user.name.toLowerCase().includes(searchText.toLowerCase()) ||
         user.email.toLowerCase().includes(searchText.toLowerCase())
       );
@@ -98,6 +92,27 @@ const UserManagementTab: React.FC = () => {
     setFilteredUsers(filtered);
   };
 
+  const handleChangeRole = (user: User) => {
+    setRoleChangeUser(user);
+    setShowRoleAlert(true);
+  };
+
+  const confirmRoleChange = async (newRole: string) => {
+    if (!roleChangeUser || !newRole) return;
+    try {
+      await adminApi.updateUserRole(roleChangeUser.id, newRole);
+      setUsers(prev => prev.map(u =>
+        u.id === roleChangeUser.id ? { ...u, role: newRole as User['role'] } : u
+      ));
+      setToastMessage(`${roleChangeUser.name}'s role changed to ${newRole}`);
+      setShowToast(true);
+    } catch (err: any) {
+      setToastMessage(err.response?.data?.message || 'Failed to change role');
+      setShowToast(true);
+    }
+    setRoleChangeUser(null);
+  };
+
   const resetPassword = (user: User) => {
     setAlertConfig({
       header: 'Reset Password',
@@ -106,8 +121,13 @@ const UserManagementTab: React.FC = () => {
         { text: 'Cancel', role: 'cancel' },
         {
           text: 'Reset',
-          handler: () => {
-            setToastMessage(`Password reset email sent to ${user.email}`);
+          handler: async () => {
+            try {
+              await adminApi.resetPassword(user.id);
+              setToastMessage(`Password reset email sent to ${user.email}`);
+            } catch (err: any) {
+              setToastMessage(err.response?.data?.message || 'Failed to reset password');
+            }
             setShowToast(true);
           }
         }
@@ -124,11 +144,16 @@ const UserManagementTab: React.FC = () => {
         { text: 'Cancel', role: 'cancel' },
         {
           text: 'Suspend',
-          handler: () => {
-            setUsers(prev => prev.map(u => 
-              u.id === user.id ? { ...u, status: 'suspended' as const } : u
-            ));
-            setToastMessage(`${user.name} has been suspended`);
+          handler: async () => {
+            try {
+              await adminApi.suspendUser(user.id);
+              setUsers(prev => prev.map(u =>
+                u.id === user.id ? { ...u, status: 'suspended' as const } : u
+              ));
+              setToastMessage(`${user.name} has been suspended`);
+            } catch (err: any) {
+              setToastMessage(err.response?.data?.message || 'Failed to suspend user');
+            }
             setShowToast(true);
           }
         }
@@ -137,11 +162,16 @@ const UserManagementTab: React.FC = () => {
     setShowAlert(true);
   };
 
-  const reactivateUser = (user: User) => {
-    setUsers(prev => prev.map(u => 
-      u.id === user.id ? { ...u, status: 'active' as const } : u
-    ));
-    setToastMessage(`${user.name} has been reactivated`);
+  const reactivateUser = async (user: User) => {
+    try {
+      await adminApi.reactivateUser(user.id);
+      setUsers(prev => prev.map(u =>
+        u.id === user.id ? { ...u, status: 'active' as const } : u
+      ));
+      setToastMessage(`${user.name} has been reactivated`);
+    } catch (err: any) {
+      setToastMessage(err.response?.data?.message || 'Failed to reactivate user');
+    }
     setShowToast(true);
   };
 
@@ -153,9 +183,14 @@ const UserManagementTab: React.FC = () => {
         { text: 'Cancel', role: 'cancel' },
         {
           text: 'Delete',
-          handler: () => {
-            setUsers(prev => prev.filter(u => u.id !== user.id));
-            setToastMessage(`${user.name} has been deleted`);
+          handler: async () => {
+            try {
+              await adminApi.deleteUser(user.id);
+              setUsers(prev => prev.filter(u => u.id !== user.id));
+              setToastMessage(`${user.name} has been deleted`);
+            } catch (err: any) {
+              setToastMessage(err.response?.data?.message || 'Failed to delete user');
+            }
             setShowToast(true);
           }
         }
@@ -165,6 +200,7 @@ const UserManagementTab: React.FC = () => {
   };
 
   const formatDate = (dateString: string) => {
+    if (!dateString) return 'N/A';
     return new Date(dateString).toLocaleDateString('en-ZA', {
       year: 'numeric',
       month: 'short',
@@ -186,27 +222,38 @@ const UserManagementTab: React.FC = () => {
       case 'admin': return 'primary';
       case 'seller': return 'secondary';
       case 'buyer': return 'tertiary';
+      case 'both': return 'success';
       default: return 'medium';
     }
   };
 
+  if (loading) {
+    return (
+      <div style={{ textAlign: 'center', padding: '40px' }}>
+        <IonSpinner />
+        <p>Loading users...</p>
+      </div>
+    );
+  }
+
   return (
     <>
       <h3>User Management ({filteredUsers.length} users)</h3>
-      
+
       <div style={{ marginBottom: '16px' }}>
         <IonSearchbar
           value={searchText}
           onIonInput={e => setSearchText(e.detail.value!)}
           placeholder="Search users by name or email"
         />
-        
+
         <IonItem>
           <IonLabel>Filter by Role:</IonLabel>
           <IonSelect value={filterRole} onIonChange={e => setFilterRole(e.detail.value)}>
             <IonSelectOption value="all">All Roles</IonSelectOption>
             <IonSelectOption value="buyer">Buyers</IonSelectOption>
             <IonSelectOption value="seller">Sellers</IonSelectOption>
+            <IonSelectOption value="both">Both</IonSelectOption>
             <IonSelectOption value="admin">Admins</IonSelectOption>
           </IonSelect>
         </IonItem>
@@ -236,20 +283,30 @@ const UserManagementTab: React.FC = () => {
                 <p><strong>Last Login:</strong> {formatDate(user.lastLogin)}</p>
               </IonLabel>
             </IonItem>
-            
+
             <div style={{ marginTop: '12px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-              <IonButton 
-                size="small" 
+              <IonButton
+                size="small"
+                fill="outline"
+                color="primary"
+                onClick={() => handleChangeRole(user)}
+              >
+                <IonIcon icon={swapHorizontalOutline} slot="start" />
+                Change Role
+              </IonButton>
+
+              <IonButton
+                size="small"
                 fill="outline"
                 onClick={() => resetPassword(user)}
               >
                 <IonIcon icon={lockClosedOutline} slot="start" />
                 Reset Password
               </IonButton>
-              
+
               {user.status === 'active' ? (
-                <IonButton 
-                  size="small" 
+                <IonButton
+                  size="small"
                   color="warning"
                   fill="outline"
                   onClick={() => suspendUser(user)}
@@ -258,8 +315,8 @@ const UserManagementTab: React.FC = () => {
                   Suspend
                 </IonButton>
               ) : user.status === 'suspended' ? (
-                <IonButton 
-                  size="small" 
+                <IonButton
+                  size="small"
                   color="success"
                   fill="outline"
                   onClick={() => reactivateUser(user)}
@@ -267,9 +324,9 @@ const UserManagementTab: React.FC = () => {
                   Reactivate
                 </IonButton>
               ) : null}
-              
-              <IonButton 
-                size="small" 
+
+              <IonButton
+                size="small"
                 color="danger"
                 fill="outline"
                 onClick={() => deleteUser(user)}
@@ -289,6 +346,23 @@ const UserManagementTab: React.FC = () => {
           </IonCardContent>
         </IonCard>
       )}
+
+      <IonAlert
+        isOpen={showRoleAlert}
+        onDidDismiss={() => setShowRoleAlert(false)}
+        header="Change Role"
+        message={`Select a new role for ${roleChangeUser?.name}`}
+        inputs={[
+          { label: 'Buyer', type: 'radio', value: 'buyer', checked: roleChangeUser?.role === 'buyer' },
+          { label: 'Seller', type: 'radio', value: 'seller', checked: roleChangeUser?.role === 'seller' },
+          { label: 'Both', type: 'radio', value: 'both', checked: roleChangeUser?.role === 'both' },
+          { label: 'Admin', type: 'radio', value: 'admin', checked: roleChangeUser?.role === 'admin' },
+        ]}
+        buttons={[
+          { text: 'Cancel', role: 'cancel' },
+          { text: 'Update', handler: (value: string) => confirmRoleChange(value) }
+        ]}
+      />
 
       <IonAlert
         isOpen={showAlert}
