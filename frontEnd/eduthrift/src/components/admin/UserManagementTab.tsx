@@ -38,7 +38,7 @@ const UserManagementTab: React.FC = () => {
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [showAlert, setShowAlert] = useState(false);
-  const [alertConfig, setAlertConfig] = useState<any>({});
+  const [alertConfig, setAlertConfig] = useState<any>({ header: '', message: '', buttons: [] });
   const [loading, setLoading] = useState(true);
   const [showRoleAlert, setShowRoleAlert] = useState(false);
   const [roleChangeUser, setRoleChangeUser] = useState<User | null>(null);
