@@ -24,6 +24,10 @@ app.use(helmet());
 app.use(cors({
   origin: [
     process.env.FRONTEND_URL || 'http://localhost:3000',
+    process.env.ADMIN_URL || 'https://admin.eduthrift.co.za',
+    'https://admin.eduthrift.co.za',
+    'https://eduthrift.co.za',
+    'https://www.eduthrift.co.za',
     'http://localhost:3000',
     'http://localhost:3001',  // Admin UI
     'http://localhost:5173',  // Vite dev server default
