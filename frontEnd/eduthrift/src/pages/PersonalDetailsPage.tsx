@@ -29,6 +29,10 @@ const PersonalDetailsPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [changingPassword, setChangingPassword] = useState(false);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -68,6 +72,39 @@ const PersonalDetailsPage: React.FC = () => {
       setShowToast(true);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleChangePassword = async () => {
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      setToastMessage('Please fill in all password fields.');
+      setShowToast(true);
+      return;
+    }
+    if (newPassword.length < 6) {
+      setToastMessage('New password must be at least 6 characters.');
+      setShowToast(true);
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setToastMessage('New passwords do not match.');
+      setShowToast(true);
+      return;
+    }
+    setChangingPassword(true);
+    try {
+      await userApi.changePassword(currentPassword, newPassword);
+      setToastMessage('Password changed successfully!');
+      setShowToast(true);
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+    } catch (error: any) {
+      const msg = error.response?.data?.error || 'Failed to change password.';
+      setToastMessage(msg);
+      setShowToast(true);
+    } finally {
+      setChangingPassword(false);
     }
   };
 
@@ -120,6 +157,46 @@ const PersonalDetailsPage: React.FC = () => {
         <IonButton expand="full" onClick={handleUpdate} style={{ margin: '20px' }}>
           Update Profile
         </IonButton>
+
+        <div style={{ margin: '20px', borderTop: '1px solid #e0e0e0', paddingTop: '20px' }}>
+          <h3 style={{ marginLeft: '16px', marginBottom: '8px' }}>Change Password</h3>
+          <IonList>
+            <IonItem>
+              <IonLabel position="stacked">Current Password</IonLabel>
+              <IonInput
+                type="password"
+                value={currentPassword}
+                onIonChange={e => setCurrentPassword(e.detail.value!)}
+              />
+            </IonItem>
+            <IonItem>
+              <IonLabel position="stacked">New Password</IonLabel>
+              <IonInput
+                type="password"
+                value={newPassword}
+                onIonChange={e => setNewPassword(e.detail.value!)}
+              />
+            </IonItem>
+            <IonItem>
+              <IonLabel position="stacked">Confirm New Password</IonLabel>
+              <IonInput
+                type="password"
+                value={confirmPassword}
+                onIonChange={e => setConfirmPassword(e.detail.value!)}
+              />
+            </IonItem>
+          </IonList>
+          <IonButton
+            expand="full"
+            color="warning"
+            onClick={handleChangePassword}
+            disabled={changingPassword}
+            style={{ margin: '16px 0' }}
+          >
+            {changingPassword ? 'Changing...' : 'Change Password'}
+          </IonButton>
+        </div>
+
         <IonToast
           isOpen={showToast}
           onDidDismiss={() => setShowToast(false)}

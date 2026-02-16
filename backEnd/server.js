@@ -358,6 +358,39 @@ app.put('/auth/profile', authenticateToken, async (req, res) => {
   }
 });
 
+// Change password (authenticated user)
+app.put('/auth/change-password', authenticateToken, async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ error: 'Current password and new password are required' });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({ error: 'New password must be at least 6 characters' });
+    }
+
+    const [users] = await pool.execute('SELECT password_hash FROM users WHERE id = ?', [req.user.userId]);
+    if (users.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const validPassword = await bcrypt.compare(currentPassword, users[0].password_hash);
+    if (!validPassword) {
+      return res.status(401).json({ error: 'Current password is incorrect' });
+    }
+
+    const newHash = await bcrypt.hash(newPassword, 10);
+    await pool.execute('UPDATE users SET password_hash = ? WHERE id = ?', [newHash, req.user.userId]);
+
+    res.json({ message: 'Password changed successfully' });
+  } catch (error) {
+    console.error('Change password error:', sanitizeInput(error.message));
+    res.status(500).json({ error: 'Failed to change password' });
+  }
+});
+
 // Banking details endpoint (for sellers only)
 app.put('/auth/banking-details', authenticateToken, async (req, res) => {
   try {

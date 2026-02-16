@@ -401,8 +401,8 @@ export const useListingsStore = create<ListingsStore>((set, get) => ({
         category: item.category || '',
         subcategory: item.subcategory || undefined,
         sport: item.sport || undefined,
-        frontPhoto: item.front_photo || '',
-        backPhoto: item.back_photo || '',
+        frontPhoto: item.front_photo ? (item.front_photo.startsWith('http') || item.front_photo.startsWith('data:') ? item.front_photo : `${API_BASE_URL}${item.front_photo}`) : '',
+        backPhoto: item.back_photo ? (item.back_photo.startsWith('http') || item.back_photo.startsWith('data:') ? item.back_photo : `${API_BASE_URL}${item.back_photo}`) : '',
         dateCreated: item.created_at ? new Date(item.created_at).toLocaleDateString() : new Date().toLocaleDateString(),
         quantity: item.quantity || 1,
         soldOut: item.sold_out || item.quantity === 0 || item.status === 'sold',
@@ -422,6 +422,40 @@ export const useListingsStore = create<ListingsStore>((set, get) => ({
 
   addListing: async (listing: Omit<Listing, 'expiryDate'>, checkWishlist?: (listing: Listing) => void) => {
     try {
+      // Upload images first if they are base64 data URLs
+      let frontPhotoUrl = listing.frontPhoto;
+      let backPhotoUrl = listing.backPhoto;
+
+      if (listing.frontPhoto?.startsWith('data:') || listing.backPhoto?.startsWith('data:')) {
+        const formData = new FormData();
+
+        if (listing.frontPhoto?.startsWith('data:')) {
+          const frontResp = await fetch(listing.frontPhoto);
+          const frontBlob = await frontResp.blob();
+          formData.append('images', new File([frontBlob], 'front.jpg', { type: 'image/jpeg' }));
+        }
+        if (listing.backPhoto?.startsWith('data:')) {
+          const backResp = await fetch(listing.backPhoto);
+          const backBlob = await backResp.blob();
+          formData.append('images', new File([backBlob], 'back.jpg', { type: 'image/jpeg' }));
+        }
+
+        const uploadResponse = await api.post('/upload/images', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+
+        const uploadedFiles = uploadResponse.data.files || [];
+        if (listing.frontPhoto?.startsWith('data:') && uploadedFiles[0]) {
+          frontPhotoUrl = uploadedFiles[0].url;
+        }
+        if (listing.backPhoto?.startsWith('data:')) {
+          const backIndex = listing.frontPhoto?.startsWith('data:') ? 1 : 0;
+          if (uploadedFiles[backIndex]) {
+            backPhotoUrl = uploadedFiles[backIndex].url;
+          }
+        }
+      }
+
       // Prepare data for backend
       const itemData = {
         item_name: listing.name,
@@ -435,8 +469,8 @@ export const useListingsStore = create<ListingsStore>((set, get) => ({
         gender: listing.gender,
         condition_grade: listing.condition,
         price: listing.price,
-        front_photo: listing.frontPhoto,
-        back_photo: listing.backPhoto,
+        front_photo: frontPhotoUrl,
+        back_photo: backPhotoUrl,
         description: listing.description,
         quantity: listing.quantity || 1
       };
@@ -452,6 +486,8 @@ export const useListingsStore = create<ListingsStore>((set, get) => ({
         const listingWithExpiry: Listing = {
           ...listing,
           id: response.data.id.toString(),
+          frontPhoto: frontPhotoUrl,
+          backPhoto: backPhotoUrl,
           expiryDate: expiryDate.toISOString().split('T')[0]
         };
 
@@ -462,26 +498,11 @@ export const useListingsStore = create<ListingsStore>((set, get) => ({
         if (checkWishlist) {
           checkWishlist(listingWithExpiry);
         }
-
-        console.log('Item successfully added to backend:', response.data);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error adding listing to backend:', error);
-
-      // Fallback: add to local state even if backend fails
-      const expiryDate = new Date();
-      expiryDate.setMonth(expiryDate.getMonth() + 1);
-
-      const listingWithExpiry: Listing = {
-        ...listing,
-        expiryDate: expiryDate.toISOString().split('T')[0]
-      };
-
-      set((state) => ({ listings: [listingWithExpiry, ...state.listings] }));
-
-      if (checkWishlist) {
-        checkWishlist(listingWithExpiry);
-      }
+      const message = error.response?.data?.error || 'Failed to list item';
+      throw new Error(message);
     }
   },
 

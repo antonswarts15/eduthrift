@@ -742,7 +742,7 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!isLoggedIn()) {
       history.push('/login');
       return;
@@ -820,8 +820,8 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
         category: selectedCategory,
         subcategory: selectedSubcategory,
         sport: selectedSport,
-        frontPhoto: frontPhotoPreview || 'Front Photo',
-        backPhoto: backPhotoPreview || 'Back Photo',
+        frontPhoto: frontPhotoPreview || '',
+        backPhoto: backPhotoPreview || '',
         dateCreated: new Date().toLocaleDateString(),
         quantity: 1,
         // Anti-theft verification documents
@@ -833,16 +833,39 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
         school_name: schoolName,
         club_name: clubName
       };
-      
-      addListing(listing, (newListing) => checkForMatches(newListing, addNotification));
-      
-      // Show toast message
-      displayToast(`${selectedItem} listed successfully!`, 'success');
-      
-      // Add notification
-      addNotification('Item Listed', `${selectedItem} has been listed for sale`);
-      
-      console.log('Listing item:', sanitizeForLog({ selectedCategory, selectedSubcategory, selectedSport, selectedItem, gender, size, condition, sellingPrice, schoolName, clubName }));
+
+      try {
+        await addListing(listing, (newListing) => checkForMatches(newListing, addNotification));
+
+        displayToast(`${selectedItem} listed successfully!`, 'success');
+        addNotification('Item Listed', `${selectedItem} has been listed for sale`);
+
+        // Reset form after successful listing
+        setShowItemDetails(false);
+        setSelectedItem('');
+        setGender('');
+        setSize('');
+        setCondition(undefined);
+        setSellingPrice('');
+        setFrontPhoto(null);
+        setBackPhoto(null);
+        setFrontPhotoPreview(null);
+        setBackPhotoPreview(null);
+        setIdDocument(null);
+        setIdDocumentPreview(null);
+        setProofOfAddress(null);
+        setProofOfAddressPreview(null);
+        setCurrentLevel('main');
+        setSelectedCategory('');
+        setSelectedSubcategory('');
+        setSelectedSport('');
+        setSchoolName('');
+        setClubName('');
+      } catch (error: any) {
+        displayToast(error.message || 'Failed to list item. Please try again.', 'danger');
+      }
+
+      return;
     } else {
       // Add to cart for buyers
       const cartItem = {

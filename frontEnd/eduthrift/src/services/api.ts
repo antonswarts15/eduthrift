@@ -39,6 +39,8 @@ export const userApi = {
   register: (userData: any) => api.post('/auth/register', userData),
   getProfile: () => api.get('/auth/profile'),
   updateProfile: (profileData: any) => api.put('/auth/profile', profileData),
+  changePassword: (currentPassword: string, newPassword: string) =>
+    api.put('/auth/change-password', { currentPassword, newPassword }),
   
   uploadIdDocument: (file: File) => {
     const formData = new FormData();
