@@ -123,11 +123,11 @@ const PersonalDetailsPage: React.FC = () => {
         <IonList>
           <IonItem>
             <IonLabel position="stacked">First Name</IonLabel>
-            <IonInput value={firstName} onIonChange={e => setFirstName(e.detail.value!)} />
+            <IonInput value={firstName} onIonInput={e => setFirstName((e.target as HTMLIonInputElement).value as string || '')} />
           </IonItem>
           <IonItem>
             <IonLabel position="stacked">Last Name</IonLabel>
-            <IonInput value={lastName} onIonChange={e => setLastName(e.detail.value!)} />
+            <IonInput value={lastName} onIonInput={e => setLastName((e.target as HTMLIonInputElement).value as string || '')} />
           </IonItem>
           <IonItem>
             <IonLabel position="stacked">Email</IonLabel>
@@ -135,23 +135,23 @@ const PersonalDetailsPage: React.FC = () => {
           </IonItem>
           <IonItem>
             <IonLabel position="stacked">Phone</IonLabel>
-            <IonInput type="tel" value={phone} onIonChange={e => setPhone(e.detail.value!)} />
+            <IonInput type="tel" value={phone} onIonInput={e => setPhone((e.target as HTMLIonInputElement).value as string || '')} />
           </IonItem>
           <IonItem>
             <IonLabel position="stacked">School Name</IonLabel>
-            <IonInput value={schoolName} onIonChange={e => setSchoolName(e.detail.value!)} />
+            <IonInput value={schoolName} onIonInput={e => setSchoolName((e.target as HTMLIonInputElement).value as string || '')} />
           </IonItem>
           <IonItem>
             <IonLabel position="stacked">Suburb</IonLabel>
-            <IonInput value={suburb} onIonChange={e => setSuburb(e.detail.value!)} />
+            <IonInput value={suburb} onIonInput={e => setSuburb((e.target as HTMLIonInputElement).value as string || '')} />
           </IonItem>
           <IonItem>
             <IonLabel position="stacked">Town/City</IonLabel>
-            <IonInput value={town} onIonChange={e => setTown(e.detail.value!)} />
+            <IonInput value={town} onIonInput={e => setTown((e.target as HTMLIonInputElement).value as string || '')} />
           </IonItem>
           <IonItem>
             <IonLabel position="stacked">Province</IonLabel>
-            <IonInput value={province} onIonChange={e => setProvince(e.detail.value!)} />
+            <IonInput value={province} onIonInput={e => setProvince((e.target as HTMLIonInputElement).value as string || '')} />
           </IonItem>
         </IonList>
         <IonButton expand="full" onClick={handleUpdate} style={{ margin: '20px' }}>
@@ -166,7 +166,7 @@ const PersonalDetailsPage: React.FC = () => {
               <IonInput
                 type="password"
                 value={currentPassword}
-                onIonChange={e => setCurrentPassword(e.detail.value!)}
+                onIonInput={e => setCurrentPassword((e.target as HTMLIonInputElement).value as string || '')}
               />
             </IonItem>
             <IonItem>
@@ -174,7 +174,7 @@ const PersonalDetailsPage: React.FC = () => {
               <IonInput
                 type="password"
                 value={newPassword}
-                onIonChange={e => setNewPassword(e.detail.value!)}
+                onIonInput={e => setNewPassword((e.target as HTMLIonInputElement).value as string || '')}
               />
             </IonItem>
             <IonItem>
@@ -182,7 +182,7 @@ const PersonalDetailsPage: React.FC = () => {
               <IonInput
                 type="password"
                 value={confirmPassword}
-                onIonChange={e => setConfirmPassword(e.detail.value!)}
+                onIonInput={e => setConfirmPassword((e.target as HTMLIonInputElement).value as string || '')}
               />
             </IonItem>
           </IonList>

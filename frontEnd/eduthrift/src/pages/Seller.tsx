@@ -1,4 +1,5 @@
-import { IonContent, IonCard, IonCardContent, IonButton, IonIcon } from '@ionic/react';
+import { useEffect, useState } from 'react';
+import { IonContent, IonCard, IonCardContent, IonButton, IonIcon, IonLoading } from '@ionic/react';
 import { checkmarkCircleOutline, timeOutline } from 'ionicons/icons';
 import { useHistory } from 'react-router-dom';
 import Categories from '../components/Categories';
@@ -7,8 +8,17 @@ import { useUserStore } from '../stores/userStore';
 import adBanner from '../assets/adbanner1.jpg';
 
 const Seller: React.FC = () => {
-  const { userProfile, isSellerVerified, updateProfile } = useUserStore();
+  const { userProfile, isSellerVerified, updateProfile, fetchUserProfile } = useUserStore();
   const history = useHistory();
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const refreshProfile = async () => {
+      await fetchUserProfile();
+      setLoading(false);
+    };
+    refreshProfile();
+  }, [fetchUserProfile]);
 
   const handleCategorySelect = (category: string, subcategory?: string, sport?: string, item?: string, schoolName?: string, clubName?: string) => {
     console.log('Seller selected:', { category, subcategory, sport, item, schoolName, clubName });
@@ -25,6 +35,14 @@ const Seller: React.FC = () => {
   };
 
   const verificationStatus = userProfile?.sellerVerification?.status;
+
+  if (loading) {
+    return (
+      <IonContent>
+        <IonLoading isOpen={true} message={'Checking verification status...'} />
+      </IonContent>
+    );
+  }
 
   // Show pending state after documents submitted
   if (verificationStatus === 'pending') {

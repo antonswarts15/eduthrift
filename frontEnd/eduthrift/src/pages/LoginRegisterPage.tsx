@@ -180,7 +180,7 @@ const LoginRegisterPage: React.FC = () => {
                             <IonInput
                                 type="email"
                                 value={loginEmail}
-                                onIonChange={e => setLoginEmail(e.detail.value ?? '')}
+                                onIonInput={e => setLoginEmail((e.target as HTMLIonInputElement).value as string || '')}
                             />
                           </IonItem>
                           <IonItem>
@@ -188,7 +188,7 @@ const LoginRegisterPage: React.FC = () => {
                             <IonInput
                                 type={showLoginPassword ? 'text' : 'password'}
                                 value={loginPassword}
-                                onIonChange={e => setLoginPassword(e.detail.value ?? '')}
+                                onIonInput={e => setLoginPassword((e.target as HTMLIonInputElement).value as string || '')}
                             />
                             <IonButton fill="clear" slot="end" onClick={() => setShowLoginPassword(!showLoginPassword)}>
                               <IonIcon icon={showLoginPassword ? eyeOffOutline : eyeOutline} />
@@ -204,7 +204,7 @@ const LoginRegisterPage: React.FC = () => {
                             <IonLabel position="floating">Full Name *</IonLabel>
                             <IonInput
                                 value={registerName}
-                                onIonChange={e => setRegisterName(e.detail.value ?? '')}
+                                onIonInput={e => setRegisterName((e.target as HTMLIonInputElement).value as string || '')}
                                 placeholder="John Smith"
                             />
                           </IonItem>
@@ -213,7 +213,7 @@ const LoginRegisterPage: React.FC = () => {
                             <IonInput
                                 type="email"
                                 value={registerEmail}
-                                onIonChange={e => setRegisterEmail(e.detail.value ?? '')}
+                                onIonInput={e => setRegisterEmail((e.target as HTMLIonInputElement).value as string || '')}
                                 placeholder="john@example.com"
                             />
                           </IonItem>
@@ -222,7 +222,7 @@ const LoginRegisterPage: React.FC = () => {
                             <IonInput
                                 type="tel"
                                 value={registerPhone}
-                                onIonChange={e => setRegisterPhone(e.detail.value ?? '')}
+                                onIonInput={e => setRegisterPhone((e.target as HTMLIonInputElement).value as string || '')}
                                 placeholder="082 123 4567"
                             />
                           </IonItem>
@@ -253,16 +253,16 @@ const LoginRegisterPage: React.FC = () => {
                               <IonLabel position="floating">Town/City *</IonLabel>
                               <IonInput
                                   value={registerTown}
-                                  onIonChange={e => setRegisterTown(e.detail.value ?? '')}
+                                  onIonInput={e => setRegisterTown((e.target as HTMLIonInputElement).value as string || '')}
                                   placeholder="Johannesburg"
                               />
                             </IonItem>
-                            
+
                             <IonItem>
                               <IonLabel position="floating">Suburb *</IonLabel>
                               <IonInput
                                   value={registerSuburb}
-                                  onIonChange={e => setRegisterSuburb(e.detail.value ?? '')}
+                                  onIonInput={e => setRegisterSuburb((e.target as HTMLIonInputElement).value as string || '')}
                                   placeholder="Sandton"
                               />
                             </IonItem>
@@ -273,7 +273,7 @@ const LoginRegisterPage: React.FC = () => {
                             <IonInput
                                 type={showRegisterPassword ? 'text' : 'password'}
                                 value={registerPassword}
-                                onIonChange={e => setRegisterPassword(e.detail.value ?? '')}
+                                onIonInput={e => setRegisterPassword((e.target as HTMLIonInputElement).value as string || '')}
                             />
                             <IonButton fill="clear" slot="end" onClick={() => setShowRegisterPassword(!showRegisterPassword)}>
                               <IonIcon icon={showRegisterPassword ? eyeOffOutline : eyeOutline} />
@@ -284,7 +284,7 @@ const LoginRegisterPage: React.FC = () => {
                             <IonInput
                                 type={showConfirmPassword ? 'text' : 'password'}
                                 value={registerConfirmPassword}
-                                onIonChange={e => setRegisterConfirmPassword(e.detail.value ?? '')}
+                                onIonInput={e => setRegisterConfirmPassword((e.target as HTMLIonInputElement).value as string || '')}
                             />
                             <IonButton fill="clear" slot="end" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
                               <IonIcon icon={showConfirmPassword ? eyeOffOutline : eyeOutline} />
