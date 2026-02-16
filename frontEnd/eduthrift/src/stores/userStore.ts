@@ -69,17 +69,23 @@ export const useUserStore = create<UserStore>((set, get) => ({
     try {
       const response = await (await import('../services/api')).userApi.getProfile();
       const profileData = response.data;
-      // Compute full name from firstName and lastName
-      const profile = {
+      const profile: UserProfile = {
         ...profileData,
         name: profileData.firstName && profileData.lastName
           ? `${profileData.firstName} ${profileData.lastName}`
-          : profileData.firstName || profileData.lastName || 'User'
+          : profileData.firstName || profileData.lastName || 'User',
+        userType: profileData.userType?.toLowerCase(),
+        sellerVerification: {
+          status: profileData.sellerVerified ? 'verified'
+                 : profileData.verificationStatus === 'rejected' ? 'rejected'
+                 : profileData.verificationStatus === 'pending' ? 'pending'
+                 : undefined,
+        }
       };
       set({ userProfile: profile });
     } catch (error) {
       console.error('Failed to fetch user profile:', error);
-      set({ userProfile: null }); // Clear profile on error
+      // Don't clear the profile on error — keep existing state to avoid logout
     }
   }
 }));

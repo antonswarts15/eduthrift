@@ -2,13 +2,8 @@ import React, { useState, useEffect } from 'react';
 import {
   IonCard,
   IonCardContent,
-  IonButton,
   IonIcon,
-  IonItem,
-  IonLabel,
-  IonToast,
-  IonProgressBar,
-  IonBadge
+  IonToast
 } from '@ionic/react';
 import { checkmarkCircleOutline, warningOutline } from 'ionicons/icons';
 import { useUserStore } from '../stores/userStore'; // Import useUserStore
@@ -32,18 +27,12 @@ const SellerVerification: React.FC<SellerVerificationProps> = ({ onVerificationC
   // Check if both documents are uploaded
   const isDocumentsUploaded = userProfile?.idDocumentPath && userProfile?.proofOfResidencePath;
 
-  // Call onVerificationComplete if documents are uploaded
-  useEffect(() => {
-    if (isDocumentsUploaded) {
-      onVerificationComplete();
-    }
-  }, [isDocumentsUploaded, onVerificationComplete]);
-
   const handleUploadSuccess = async () => {
     setToastMessage('Documents uploaded successfully. Refreshing profile...');
     setToastColor('success');
     setShowToast(true);
     await fetchUserProfile(); // Re-fetch profile to update state
+    onVerificationComplete(); // Notify parent to set status to pending
   };
 
   return (
@@ -66,10 +55,7 @@ const SellerVerification: React.FC<SellerVerificationProps> = ({ onVerificationC
               <IonIcon icon={checkmarkCircleOutline} color="success" style={{ fontSize: '64px' }} />
               <h3>Verification Documents Submitted!</h3>
               <p>Your documents are under review. Verification typically takes 24-48 hours.</p>
-              <p>You can now proceed to list your items.</p>
-              <IonButton expand="block" onClick={onVerificationComplete} style={{ marginTop: '20px' }}>
-                Continue to Seller Dashboard
-              </IonButton>
+              <p>You'll be able to list items once an admin approves your account.</p>
             </div>
           )}
 

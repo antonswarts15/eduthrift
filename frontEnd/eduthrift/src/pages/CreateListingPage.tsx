@@ -63,7 +63,7 @@ const CreateListingPage: React.FC = () => {
       setAlertMessage('Only sellers can create listings.');
       setShowAlert(true);
     }
-    if (userProfile && (userProfile as any).verificationStatus !== 'verified') {
+    if (userProfile && userProfile.sellerVerification?.status !== 'verified') {
       setAlertMessage('Your seller account needs verification before listing items.');
       setShowAlert(true);
     }
