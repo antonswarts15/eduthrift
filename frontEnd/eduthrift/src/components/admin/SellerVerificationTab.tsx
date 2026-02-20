@@ -15,11 +15,12 @@ import {
   IonItem,
   IonLabel,
   IonToast,
-  IonImg,
   IonSpinner
 } from '@ionic/react';
-import { checkmarkCircleOutline, closeCircleOutline, documentOutline, homeOutline, closeOutline } from 'ionicons/icons';
-import { adminApi } from '../../services/api';
+import { checkmarkCircleOutline, closeCircleOutline, documentOutline, homeOutline, closeOutline, imageOutline } from 'ionicons/icons';
+import api, { adminApi } from '../../services/api';
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
 interface PendingSeller {
   id: string;
@@ -41,6 +42,8 @@ const SellerVerificationTab: React.FC = () => {
   const [toastMessage, setToastMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [docImages, setDocImages] = useState<{ id: string | null; proof: string | null }>({ id: null, proof: null });
+  const [loadingDocs, setLoadingDocs] = useState(false);
 
   useEffect(() => {
     loadPendingSellers();
@@ -52,17 +55,24 @@ const SellerVerificationTab: React.FC = () => {
     try {
       const response = await adminApi.getPendingSellers();
       const data = response.data;
-      setPendingSellers(data.map((seller: any) => ({
-        id: seller.id,
-        name: `${seller.first_name} ${seller.last_name}`,
-        email: seller.email,
-        phone: seller.phone,
-        school: seller.school_name,
-        idDocument: seller.id_document_url || '',
-        proofOfAddress: seller.proof_of_address_url || '',
-        submittedAt: seller.created_at,
-        status: seller.verification_status || 'pending'
-      })));
+      setPendingSellers(data.map((seller: any) => {
+        const buildUrl = (path: string | null) => {
+          if (!path) return '';
+          if (path.startsWith('http')) return path;
+          return `${API_BASE_URL}${path}`;
+        };
+        return {
+          id: seller.id,
+          name: `${seller.first_name} ${seller.last_name}`,
+          email: seller.email,
+          phone: seller.phone,
+          school: seller.school_name,
+          idDocument: buildUrl(seller.id_document_url),
+          proofOfAddress: buildUrl(seller.proof_of_address_url),
+          submittedAt: seller.created_at,
+          status: seller.verification_status || 'pending'
+        };
+      }));
     } catch (err: any) {
       console.error('Error loading sellers:', err);
       setError(err.response?.data?.message || 'Failed to load pending sellers');
@@ -105,9 +115,27 @@ const SellerVerificationTab: React.FC = () => {
     }
   };
 
-  const openSellerDetails = (seller: PendingSeller) => {
+  const openSellerDetails = async (seller: PendingSeller) => {
     setSelectedSeller(seller);
     setShowModal(true);
+    setDocImages({ id: null, proof: null });
+    setLoadingDocs(true);
+
+    try {
+      const [idResp, proofResp] = await Promise.allSettled([
+        api.get(`/auth/document/${seller.id}/id`, { responseType: 'blob' }),
+        api.get(`/auth/document/${seller.id}/proof`, { responseType: 'blob' })
+      ]);
+
+      setDocImages({
+        id: idResp.status === 'fulfilled' ? URL.createObjectURL(idResp.value.data) : null,
+        proof: proofResp.status === 'fulfilled' ? URL.createObjectURL(proofResp.value.data) : null
+      });
+    } catch (err) {
+      console.error('Error loading documents:', err);
+    } finally {
+      setLoadingDocs(false);
+    }
   };
 
   const formatDate = (dateString: string) => {
@@ -216,11 +244,20 @@ const SellerVerificationTab: React.FC = () => {
                   </IonCardTitle>
                 </IonCardHeader>
                 <IonCardContent>
-                  <IonImg
-                    src={selectedSeller.idDocument}
-                    alt="ID Document"
-                    style={{ width: '100%', maxHeight: '300px', objectFit: 'contain' }}
-                  />
+                  {loadingDocs ? (
+                    <div style={{ padding: '40px', textAlign: 'center' }}><IonSpinner /></div>
+                  ) : docImages.id ? (
+                    <img
+                      src={docImages.id}
+                      alt="ID Document"
+                      style={{ width: '100%', maxHeight: '300px', objectFit: 'contain' }}
+                    />
+                  ) : (
+                    <div style={{ padding: '40px', textAlign: 'center', backgroundColor: '#f0f0f0', borderRadius: '8px' }}>
+                      <IonIcon icon={imageOutline} style={{ fontSize: '48px', color: '#999' }} />
+                      <p style={{ color: '#999' }}>No ID document uploaded</p>
+                    </div>
+                  )}
                 </IonCardContent>
               </IonCard>
 
@@ -232,11 +269,20 @@ const SellerVerificationTab: React.FC = () => {
                   </IonCardTitle>
                 </IonCardHeader>
                 <IonCardContent>
-                  <IonImg
-                    src={selectedSeller.proofOfAddress}
-                    alt="Proof of Address"
-                    style={{ width: '100%', maxHeight: '300px', objectFit: 'contain' }}
-                  />
+                  {loadingDocs ? (
+                    <div style={{ padding: '40px', textAlign: 'center' }}><IonSpinner /></div>
+                  ) : docImages.proof ? (
+                    <img
+                      src={docImages.proof}
+                      alt="Proof of Address"
+                      style={{ width: '100%', maxHeight: '300px', objectFit: 'contain' }}
+                    />
+                  ) : (
+                    <div style={{ padding: '40px', textAlign: 'center', backgroundColor: '#f0f0f0', borderRadius: '8px' }}>
+                      <IonIcon icon={imageOutline} style={{ fontSize: '48px', color: '#999' }} />
+                      <p style={{ color: '#999' }}>No proof of address uploaded</p>
+                    </div>
+                  )}
                 </IonCardContent>
               </IonCard>
 

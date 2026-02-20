@@ -80,7 +80,9 @@ export const useUserStore = create<UserStore>((set, get) => ({
                  : profileData.verificationStatus === 'rejected' ? 'rejected'
                  : profileData.verificationStatus === 'pending' ? 'pending'
                  : undefined,
-        }
+        },
+        idDocumentPath: profileData.idDocumentUrl || undefined,
+        proofOfResidencePath: profileData.proofOfAddressUrl || undefined,
       };
       set({ userProfile: profile });
     } catch (error) {

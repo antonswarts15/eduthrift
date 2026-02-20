@@ -1,21 +1,22 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useParams, useHistory } from 'react-router-dom';
-import { 
-  IonContent, 
-  IonPage, 
-  IonHeader, 
-  IonToolbar, 
-  IonTitle, 
-  IonButtons, 
+import {
+  IonContent,
+  IonPage,
+  IonHeader,
+  IonToolbar,
+  IonTitle,
+  IonButtons,
   IonBackButton,
   IonButton,
   IonIcon,
   IonCard,
   IonCardContent,
   IonBadge,
-  IonToast
+  IonToast,
+  IonModal
 } from '@ionic/react';
-import { cartOutline, checkmarkCircleOutline, closeCircleOutline } from 'ionicons/icons';
+import { cartOutline, checkmarkCircleOutline, closeCircleOutline, closeOutline, imageOutline } from 'ionicons/icons';
 import { useListingsStore } from '../stores/listingsStore';
 import { useCartStore } from '../stores/cartStore';
 import { useToast } from '../hooks/useToast';
@@ -26,6 +27,9 @@ const ItemPage: React.FC = () => {
   const { getListingById, decreaseQuantity } = useListingsStore();
   const { addToCart } = useCartStore();
   const { isOpen, message, color, showToast, hideToast } = useToast();
+
+  const [zoomPhoto, setZoomPhoto] = useState<string | null>(null);
+  const [zoomLabel, setZoomLabel] = useState('');
 
   const listing = getListingById(id);
 
@@ -119,27 +123,54 @@ const ItemPage: React.FC = () => {
               
               {/* Photo display */}
               <div style={{ display: 'flex', gap: '12px', marginBottom: '16px', justifyContent: 'center' }}>
-                <div style={{ textAlign: 'center' }}>
-                  <div style={{
-                    width: '120px', height: '150px', backgroundColor: '#f0f0f0', border: '2px solid #ddd',
-                    borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: '12px', color: '#666', marginBottom: '8px'
-                  }}>
-                    Front Photo
-                  </div>
-                  <p style={{ margin: '0', fontSize: '10px', color: '#999' }}>Front</p>
+                <div style={{ textAlign: 'center', cursor: 'pointer' }} onClick={() => { if (listing.frontPhoto) { setZoomPhoto(listing.frontPhoto); setZoomLabel('Front'); } }}>
+                  {listing.frontPhoto && listing.frontPhoto !== 'Front Photo' ? (
+                    <img
+                      src={listing.frontPhoto}
+                      alt="Front"
+                      style={{
+                        width: '140px', height: '170px', objectFit: 'cover',
+                        borderRadius: '8px', border: '2px solid #ddd'
+                      }}
+                      onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                    />
+                  ) : (
+                    <div style={{
+                      width: '140px', height: '170px', backgroundColor: '#f0f0f0', border: '2px solid #ddd',
+                      borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      flexDirection: 'column', gap: '4px'
+                    }}>
+                      <IonIcon icon={imageOutline} style={{ fontSize: '32px', color: '#999' }} />
+                      <span style={{ fontSize: '12px', color: '#999' }}>No photo</span>
+                    </div>
+                  )}
+                  <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#666' }}>Front</p>
                 </div>
-                <div style={{ textAlign: 'center' }}>
-                  <div style={{
-                    width: '120px', height: '150px', backgroundColor: '#f0f0f0', border: '2px solid #ddd',
-                    borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: '12px', color: '#666', marginBottom: '8px'
-                  }}>
-                    Back Photo
-                  </div>
-                  <p style={{ margin: '0', fontSize: '10px', color: '#999' }}>Back</p>
+                <div style={{ textAlign: 'center', cursor: 'pointer' }} onClick={() => { if (listing.backPhoto) { setZoomPhoto(listing.backPhoto); setZoomLabel('Back'); } }}>
+                  {listing.backPhoto && listing.backPhoto !== 'Back Photo' ? (
+                    <img
+                      src={listing.backPhoto}
+                      alt="Back"
+                      style={{
+                        width: '140px', height: '170px', objectFit: 'cover',
+                        borderRadius: '8px', border: '2px solid #ddd'
+                      }}
+                      onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                    />
+                  ) : (
+                    <div style={{
+                      width: '140px', height: '170px', backgroundColor: '#f0f0f0', border: '2px solid #ddd',
+                      borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      flexDirection: 'column', gap: '4px'
+                    }}>
+                      <IonIcon icon={imageOutline} style={{ fontSize: '32px', color: '#999' }} />
+                      <span style={{ fontSize: '12px', color: '#999' }}>No photo</span>
+                    </div>
+                  )}
+                  <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#666' }}>Back</p>
                 </div>
               </div>
+              <p style={{ textAlign: 'center', fontSize: '11px', color: '#aaa', margin: '0 0 8px' }}>Tap photo to enlarge</p>
               
               <div style={{ marginBottom: '16px' }}>
                 <h2 style={{ fontSize: '28px', color: '#3880ff', margin: '0' }}>R{listing.price}</h2>
@@ -199,6 +230,34 @@ const ItemPage: React.FC = () => {
           position="bottom"
           color={color}
         />
+
+        {/* Photo zoom modal */}
+        <IonModal isOpen={!!zoomPhoto} onDidDismiss={() => setZoomPhoto(null)}>
+          <IonHeader>
+            <IonToolbar>
+              <IonTitle>{zoomLabel} Photo</IonTitle>
+              <IonButtons slot="end">
+                <IonButton onClick={() => setZoomPhoto(null)}>
+                  <IonIcon icon={closeOutline} />
+                </IonButton>
+              </IonButtons>
+            </IonToolbar>
+          </IonHeader>
+          <IonContent>
+            <div style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              height: '100%', padding: '16px', backgroundColor: '#000'
+            }}>
+              {zoomPhoto && (
+                <img
+                  src={zoomPhoto}
+                  alt={`${zoomLabel} photo`}
+                  style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
+                />
+              )}
+            </div>
+          </IonContent>
+        </IonModal>
       </IonContent>
     </IonPage>
   );

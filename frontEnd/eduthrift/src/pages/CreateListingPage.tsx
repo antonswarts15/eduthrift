@@ -28,6 +28,7 @@ import { useHistory } from 'react-router-dom';
 import PhotoCapture from '../components/PhotoCapture';
 import { useUserStore } from '../stores/userStore';
 import { useListingsStore } from '../stores/listingsStore';
+import api from '../services/api';
 
 const CreateListingPage: React.FC = () => {
   const history = useHistory();
@@ -105,7 +106,24 @@ const CreateListingPage: React.FC = () => {
 
     try {
       setLoading(true);
-      
+
+      // Upload photos to the server first
+      const formData = new FormData();
+      formData.append('images', frontPhoto!);
+      formData.append('images', backPhoto!);
+
+      const uploadResponse = await api.post('/upload/images', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+
+      const uploadedFiles = uploadResponse.data.files || [];
+      if (uploadedFiles.length < 2) {
+        throw new Error('Failed to upload both photos');
+      }
+
+      const frontPhotoUrl = uploadedFiles[0].url;
+      const backPhotoUrl = uploadedFiles[1].url;
+
       const listingData = {
         id: Date.now().toString(),
         name: itemName,
@@ -117,21 +135,21 @@ const CreateListingPage: React.FC = () => {
         gender,
         category,
         sport,
-        frontPhoto: URL.createObjectURL(frontPhoto!),
-        backPhoto: URL.createObjectURL(backPhoto!),
+        frontPhoto: frontPhotoUrl,
+        backPhoto: backPhotoUrl,
         dateCreated: new Date().toLocaleDateString(),
         quantity: 1
       };
 
       await addListing(listingData);
-      
+
       setToastMessage('Listing created successfully!');
       setShowToast(true);
-      
+
       setTimeout(() => history.push('/seller'), 2000);
-      
-    } catch (error) {
-      setToastMessage('Failed to create listing');
+
+    } catch (error: any) {
+      setToastMessage(error.message || 'Failed to create listing');
       setShowToast(true);
     } finally {
       setLoading(false);

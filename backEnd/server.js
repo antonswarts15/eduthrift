@@ -88,7 +88,7 @@ testConnection();
 // JWT Secret
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
-// File upload configuration
+// File upload configuration - item photos (public)
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const uploadDir = 'uploads/';
@@ -102,16 +102,38 @@ const storage = multer.diskStorage({
   }
 });
 
-const upload = multer({ 
-  storage,
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit (before compression)
-  fileFilter: (req, file, cb) => {
-    if (file.mimetype.startsWith('image/')) {
-      cb(null, true);
-    } else {
-      cb(new Error('Only image files allowed'));
+// Document upload storage - seller documents (protected)
+const documentStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadDir = 'uploads/documents/';
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
     }
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + '-' + Math.round(Math.random() * 1E9) + path.extname(file.originalname));
   }
+});
+
+const imageFilter = (req, file, cb) => {
+  if (file.mimetype.startsWith('image/')) {
+    cb(null, true);
+  } else {
+    cb(new Error('Only image files allowed'));
+  }
+};
+
+const upload = multer({
+  storage,
+  limits: { fileSize: 10 * 1024 * 1024 },
+  fileFilter: imageFilter
+});
+
+const documentUpload = multer({
+  storage: documentStorage,
+  limits: { fileSize: 10 * 1024 * 1024 },
+  fileFilter: imageFilter
 });
 
 // Auth middleware
@@ -136,7 +158,46 @@ const sanitizeInput = (input) => {
   return input.replace(/[\r\n\t]/g, '').trim();
 };
 
-// Serve uploaded files
+// Serve uploaded files - item photos are public, documents require auth
+app.use('/uploads/documents', (req, res, next) => {
+  // Require valid JWT to access seller documents
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (!token) {
+    return res.status(401).json({ error: 'Authentication required to view documents' });
+  }
+
+  jwt.verify(token, JWT_SECRET, async (err, user) => {
+    if (err) return res.status(403).json({ error: 'Invalid token' });
+
+    try {
+      // Allow admins, or the document owner
+      const [users] = await pool.execute('SELECT user_type FROM users WHERE id = ?', [user.userId]);
+      if (users.length === 0) return res.status(403).json({ error: 'User not found' });
+
+      const userType = users[0].user_type;
+      if (userType === 'admin') {
+        return next(); // Admins can view all documents
+      }
+
+      // Non-admins can only access their own documents
+      const [ownerCheck] = await pool.execute(
+        'SELECT id FROM users WHERE id = ? AND (id_document_url LIKE ? OR proof_of_address_url LIKE ?)',
+        [user.userId, `%${req.path}%`, `%${req.path}%`]
+      );
+      if (ownerCheck.length > 0) {
+        return next();
+      }
+
+      return res.status(403).json({ error: 'Access denied' });
+    } catch (dbErr) {
+      return res.status(500).json({ error: 'Authorization check failed' });
+    }
+  });
+}, express.static('uploads/documents'));
+
+// Item photos remain publicly accessible
 app.use('/uploads', express.static('uploads'));
 
 // Payment routes
@@ -321,6 +382,7 @@ app.get('/auth/profile', authenticateToken, async (req, res) => {
       province: user.province,
       status: user.status,
       verificationStatus: user.verification_status,
+      sellerVerified: user.verification_status === 'verified',
       idDocumentUrl: user.id_document_url,
       proofOfAddressUrl: user.proof_of_address_url
     });
@@ -420,19 +482,19 @@ app.put('/auth/banking-details', authenticateToken, async (req, res) => {
 
 // Document upload with proper validation
 // Document upload with compression
-app.post('/auth/upload-documents', authenticateToken, upload.fields([
+app.post('/auth/upload-documents', authenticateToken, documentUpload.fields([
   { name: 'idDocument', maxCount: 1 },
   { name: 'proofOfAddress', maxCount: 1 }
 ]), async (req, res) => {
   try {
     const updates = {};
-    
+
     if (req.files.idDocument) {
-      updates.id_document_url = `/uploads/${req.files.idDocument[0].filename}`;
+      updates.id_document_url = `/uploads/documents/${req.files.idDocument[0].filename}`;
     }
-    
+
     if (req.files.proofOfAddress) {
-      updates.proof_of_address_url = `/uploads/${req.files.proofOfAddress[0].filename}`;
+      updates.proof_of_address_url = `/uploads/documents/${req.files.proofOfAddress[0].filename}`;
     }
     
     if (Object.keys(updates).length > 0) {
@@ -468,12 +530,12 @@ app.post('/auth/upload-documents', authenticateToken, upload.fields([
 });
 
 // Individual document upload routes
-app.post('/auth/upload-id-document', authenticateToken, upload.single('idDocument'), async (req, res) => {
+app.post('/auth/upload-id-document', authenticateToken, documentUpload.single('idDocument'), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: 'No ID document file provided' });
     }
-    const idDocumentUrl = `/uploads/${req.file.filename}`;
+    const idDocumentUrl = `/uploads/documents/${req.file.filename}`;
     await pool.execute('UPDATE users SET id_document_url = ? WHERE id = ?', [idDocumentUrl, req.user.userId]);
 
     // Auto-set verification_status to 'pending' if both documents are now uploaded
@@ -495,12 +557,12 @@ app.post('/auth/upload-id-document', authenticateToken, upload.single('idDocumen
   }
 });
 
-app.post('/auth/upload-proof-of-residence', authenticateToken, upload.single('proofOfResidence'), async (req, res) => {
+app.post('/auth/upload-proof-of-residence', authenticateToken, documentUpload.single('proofOfResidence'), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: 'No proof of residence file provided' });
     }
-    const proofUrl = `/uploads/${req.file.filename}`;
+    const proofUrl = `/uploads/documents/${req.file.filename}`;
     await pool.execute('UPDATE users SET proof_of_address_url = ? WHERE id = ?', [proofUrl, req.user.userId]);
 
     // Auto-set verification_status to 'pending' if both documents are now uploaded
@@ -519,6 +581,37 @@ app.post('/auth/upload-proof-of-residence', authenticateToken, upload.single('pr
   } catch (error) {
     console.error('Proof of residence upload error:', error.message);
     res.status(500).json({ error: 'Failed to upload proof of residence' });
+  }
+});
+
+// Serve a protected document via authenticated API (for use in <img> tags via blob URLs)
+app.get('/auth/document/:userId/:type', authenticateToken, async (req, res) => {
+  try {
+    const { userId, type } = req.params;
+
+    // Only admins or the document owner can access
+    const [users] = await pool.execute('SELECT user_type FROM users WHERE id = ?', [req.user.userId]);
+    if (users.length === 0) return res.status(403).json({ error: 'Access denied' });
+
+    const isAdmin = users[0].user_type === 'admin';
+    const isOwner = String(req.user.userId) === String(userId);
+    if (!isAdmin && !isOwner) return res.status(403).json({ error: 'Access denied' });
+
+    const column = type === 'id' ? 'id_document_url' : 'proof_of_address_url';
+    const [docResult] = await pool.execute(`SELECT ${column} as doc_url FROM users WHERE id = ?`, [userId]);
+    if (docResult.length === 0 || !docResult[0].doc_url) {
+      return res.status(404).json({ error: 'Document not found' });
+    }
+
+    const filePath = path.join(__dirname, docResult[0].doc_url);
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({ error: 'Document file not found' });
+    }
+
+    res.sendFile(filePath);
+  } catch (error) {
+    console.error('Document serve error:', error.message);
+    res.status(500).json({ error: 'Failed to serve document' });
   }
 });
 
