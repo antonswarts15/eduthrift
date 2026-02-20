@@ -690,6 +690,28 @@ app.get('/items', async (req, res) => {
   }
 });
 
+// Get current user's own items
+app.get('/items/mine', authenticateToken, async (req, res) => {
+  try {
+    const { status } = req.query;
+    let query = 'SELECT * FROM items WHERE user_id = ?';
+    const params = [req.user.userId];
+
+    if (status) {
+      query += ' AND status = ?';
+      params.push(status);
+    }
+
+    query += ' ORDER BY created_at DESC';
+
+    const [rows] = await pool.execute(query, params);
+    res.json(rows);
+  } catch (error) {
+    console.error('Error fetching user items:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 app.post('/items', authenticateToken, async (req, res) => {
   try {
     // Check if seller is verified
@@ -790,20 +812,45 @@ app.post('/items', authenticateToken, async (req, res) => {
 app.put('/items/:id', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
-    const {
-      school_name, club_name, team, size, gender,
-      condition_grade, price, description
-    } = req.body;
-    
+
+    const allowedFields = {
+      item_name: req.body.item_name,
+      school_name: req.body.school_name,
+      club_name: req.body.club_name,
+      team: req.body.team,
+      size: req.body.size,
+      gender: req.body.gender,
+      condition_grade: req.body.condition_grade,
+      price: req.body.price,
+      description: req.body.description,
+      quantity: req.body.quantity
+    };
+
+    const setClauses = [];
+    const params = [];
+
+    for (const [key, value] of Object.entries(allowedFields)) {
+      if (value !== undefined) {
+        setClauses.push(`${key} = ?`);
+        params.push(value);
+      }
+    }
+
+    if (setClauses.length === 0) {
+      return res.status(400).json({ error: 'No fields to update' });
+    }
+
+    params.push(id, req.user.userId);
+
     const [result] = await pool.execute(
-      'UPDATE items SET school_name = ?, club_name = ?, team = ?, size = ?, gender = ?, condition_grade = ?, price = ?, description = ? WHERE id = ? AND user_id = ?',
-      [school_name, club_name, team, size, gender, condition_grade, price, description, id, req.user.userId]
+      `UPDATE items SET ${setClauses.join(', ')} WHERE id = ? AND user_id = ?`,
+      params
     );
-    
+
     if (result.affectedRows === 0) {
       return res.status(404).json({ error: 'Item not found or unauthorized' });
     }
-    
+
     res.json({ message: 'Item updated successfully' });
   } catch (error) {
     console.error('Error updating item:', sanitizeInput(error.message));

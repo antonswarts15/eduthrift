@@ -84,7 +84,10 @@ import {
   shieldCheckmarkOutline,
   documentOutline,
   checkmarkCircle,
-  trashOutline
+  trashOutline,
+  eyeOutline,
+  checkmarkOutline,
+  listOutline
 } from 'ionicons/icons';
 import SchoolSelector from './SchoolSelector';
 import ClubSelector from './ClubSelector';
@@ -330,16 +333,52 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
   const [customBrand, setCustomBrand] = useState('');
   const [showCustomInputs, setShowCustomInputs] = useState(false);
 
-  // Clear all state when component unmounts or user navigates back
+  // Preview & submission state
+  const [showPreview, setShowPreview] = useState(false);
+  const [previewListing, setPreviewListing] = useState<any>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSuccessConfirmation, setShowSuccessConfirmation] = useState(false);
+  const [submittedListing, setSubmittedListing] = useState<any>(null);
+
+  const resetForm = () => {
+    setShowItemDetails(false);
+    setSelectedItem('');
+    setGender('');
+    setSize('');
+    setCondition(undefined);
+    setSellingPrice('');
+    setFrontPhoto(null);
+    setBackPhoto(null);
+    setFrontPhotoPreview(null);
+    setBackPhotoPreview(null);
+    setIdDocument(null);
+    setIdDocumentPreview(null);
+    setProofOfAddress(null);
+    setProofOfAddressPreview(null);
+    setCurrentLevel('main');
+    setSelectedCategory('');
+    setSelectedSubcategory('');
+    setSelectedSport('');
+    setSchoolName('');
+    setClubName('');
+    setSelectedProvince('');
+    setSelectedTown('');
+    setCustomCategory('');
+    setCustomItemType('');
+    setCustomBrand('');
+    setShowCustomInputs(false);
+    setUseNearbyLocation(false);
+    setShowPreview(false);
+    setPreviewListing(null);
+    setIsSubmitting(false);
+    setShowSuccessConfirmation(false);
+    setSubmittedListing(null);
+  };
+
+  // Clear all state when component unmounts
   useEffect(() => {
     return () => {
-      // Reset all navigation state
-      setCurrentLevel('main');
-      setSelectedCategory('');
-      setSelectedSubcategory('');
-      setSelectedSport('');
-      setSelectedItem('');
-      setShowItemDetails(false);
+      resetForm();
       setShowSportEquipment(false);
       setShowSchoolSelection(false);
       setShowClubClothing(false);
@@ -349,29 +388,6 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
       setShowTrainingWear(false);
       setShowMatricDance(false);
       setShowLocationSearch(false);
-      
-      // Reset form state
-      setGender('');
-      setSize('');
-      setCondition(undefined);
-      setSellingPrice('');
-      setFrontPhoto(null);
-      setBackPhoto(null);
-      setFrontPhotoPreview(null);
-      setBackPhotoPreview(null);
-      setIdDocument(null);
-      setIdDocumentPreview(null);
-      setProofOfAddress(null);
-      setProofOfAddressPreview(null);
-      setSchoolName('');
-      setClubName('');
-      setSelectedProvince('');
-      setSelectedTown('');
-      setCustomCategory('');
-      setCustomItemType('');
-      setCustomBrand('');
-      setShowCustomInputs(false);
-      setUseNearbyLocation(false);
     };
   }, []);
 
@@ -674,6 +690,15 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
   };
 
   const goBack = () => {
+    // Handle preview/success states first
+    if (showSuccessConfirmation) {
+      resetForm();
+      return;
+    }
+    if (showPreview) {
+      setShowPreview(false);
+      return;
+    }
     // Clear relevant state when going back
     if (showSportEquipment) {
       setShowSportEquipment(false);
@@ -742,35 +767,35 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
     }
   };
 
-  const handleSubmit = async () => {
+  const handleShowPreview = () => {
     if (!isLoggedIn()) {
       history.push('/login');
       return;
     }
-    
+
     // Validation: Check if school/club is selected when required
     if (selectedCategory === 'School & sport uniform' && !schoolName) {
       alert('Please select a school first');
       return;
     }
-    
+
     if (selectedCategory === 'Club clothing' && !clubName) {
       alert('Please enter a club name first');
       return;
     }
-    
+
     // Validation: Check required fields
     const missingFields = [];
     if (!gender) missingFields.push('Gender');
     if (!size) missingFields.push('Size');
     if (!condition) missingFields.push('Condition');
     if (userType === 'seller' && !sellingPrice) missingFields.push('Selling Price');
-    
+
     if (missingFields.length > 0) {
       alert(`Please fill in the following required fields: ${missingFields.join(', ')}`);
       return;
     }
-    
+
     // Validation: Check photos for sellers
     if (userType === 'seller') {
       if (!frontPhoto && !frontPhotoPreview) {
@@ -781,7 +806,6 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
         alert('Please upload a back photo of the item (JPEG or PNG format)');
         return;
       }
-      // Validation: Anti-theft verification documents
       if (!idDocument && !idDocumentPreview) {
         alert('Please upload a copy of your ID document to verify this item is not stolen');
         return;
@@ -791,23 +815,9 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
         return;
       }
     }
-    
-    const sanitizeForLog = (obj: any): any => {
-      if (typeof obj === 'string') {
-        return obj.replace(/[\r\n\t]/g, '').substring(0, 100);
-      }
-      if (typeof obj === 'object' && obj !== null) {
-        const sanitized: any = {};
-        Object.keys(obj).forEach(key => {
-          sanitized[key] = sanitizeForLog(obj[key]);
-        });
-        return sanitized;
-      }
-      return obj;
-    };
-    
+
     if (userType === 'seller') {
-      // Create listing for sellers
+      // Build preview listing
       const listing = {
         id: Date.now().toString(),
         name: selectedItem,
@@ -824,55 +834,22 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
         backPhoto: backPhotoPreview || '',
         dateCreated: new Date().toLocaleDateString(),
         quantity: 1,
-        // Anti-theft verification documents
         sellerIdDocument: idDocumentPreview || undefined,
         sellerProofOfAddress: proofOfAddressPreview || undefined,
         verificationStatus: 'pending' as const,
-        // Additional data for backend API
         item_name: selectedItem,
         school_name: schoolName,
         club_name: clubName
       };
-
-      try {
-        await addListing(listing, (newListing) => checkForMatches(newListing, addNotification));
-
-        displayToast(`${selectedItem} listed successfully!`, 'success');
-        addNotification('Item Listed', `${selectedItem} has been listed for sale`);
-
-        // Reset form after successful listing
-        setShowItemDetails(false);
-        setSelectedItem('');
-        setGender('');
-        setSize('');
-        setCondition(undefined);
-        setSellingPrice('');
-        setFrontPhoto(null);
-        setBackPhoto(null);
-        setFrontPhotoPreview(null);
-        setBackPhotoPreview(null);
-        setIdDocument(null);
-        setIdDocumentPreview(null);
-        setProofOfAddress(null);
-        setProofOfAddressPreview(null);
-        setCurrentLevel('main');
-        setSelectedCategory('');
-        setSelectedSubcategory('');
-        setSelectedSport('');
-        setSchoolName('');
-        setClubName('');
-      } catch (error: any) {
-        displayToast(error.message || 'Failed to list item. Please try again.', 'danger');
-      }
-
-      return;
+      setPreviewListing(listing);
+      setShowPreview(true);
     } else {
-      // Add to cart for buyers
+      // Buyer flow — add to cart directly
       const cartItem = {
         id: Date.now().toString(),
         name: selectedItem,
         description: `${selectedItem} from ${schoolName || clubName || 'Unknown'}`,
-        price: Math.floor(Math.random() * 200) + 50, // Mock price
+        price: Math.floor(Math.random() * 200) + 50,
         condition: condition!,
         school: schoolName || clubName || 'Unknown',
         size: size,
@@ -883,13 +860,26 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
         frontPhoto: 'Front Photo',
         backPhoto: 'Back Photo'
       };
-      
+
       addToCart(cartItem, displayToast);
-      
-      // Add notification
       addNotification('Item Added to Cart', `${selectedItem} has been added to your cart`);
-      
-      console.log('Adding to cart:', sanitizeForLog({ selectedCategory, selectedSubcategory, selectedSport, selectedItem, schoolName, clubName }));
+    }
+  };
+
+  const handleConfirmListing = async () => {
+    if (!previewListing) return;
+    setIsSubmitting(true);
+
+    try {
+      await addListing(previewListing, (newListing) => checkForMatches(newListing, addNotification));
+      addNotification('Item Listed', `${previewListing.name} has been listed for sale`);
+      setSubmittedListing(previewListing);
+      setShowPreview(false);
+      setShowSuccessConfirmation(true);
+    } catch (error: any) {
+      displayToast(error.message || 'Failed to list item. Please try again.', 'danger');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -990,13 +980,17 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
 
   return (
     <div>
-      {(currentLevel !== 'main' || showItemDetails || showSportEquipment || showSchoolSelection || showClubClothing || showBeltsBagsShoes || showTrainingWear || showMatricDance || showStationery || showSchoolGrades || showLocationSearch) && (
+      {(currentLevel !== 'main' || showItemDetails || showSportEquipment || showSchoolSelection || showClubClothing || showBeltsBagsShoes || showTrainingWear || showMatricDance || showStationery || showSchoolGrades || showLocationSearch || showPreview || showSuccessConfirmation) && (
         <div style={{ marginBottom: '16px' }}>
-          <IonButton fill="clear" onClick={goBack}>
-            ← Back
-          </IonButton>
+          {!showSuccessConfirmation && (
+            <IonButton fill="clear" onClick={goBack}>
+              ← Back
+            </IonButton>
+          )}
           <h2 style={{ margin: '8px 0' }}>
-            {showItemDetails && 'Item Details'}
+            {showSuccessConfirmation && 'Listing Confirmed!'}
+            {showPreview && !showSuccessConfirmation && 'Preview Your Listing'}
+            {showItemDetails && !showPreview && !showSuccessConfirmation && 'Item Details'}
             {showSchoolSelection && 'Select School'}
             {showClubClothing && 'Club Clothing'}
             {showBeltsBagsShoes && 'Belts, Bags & Shoes'}
@@ -1005,14 +999,148 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
             {showStationery && 'Stationery'}
             {showSchoolGrades && 'School Textbooks'}
             {showLocationSearch && `${selectedCategory} - Location & Details`}
-            {currentLevel === 'uniform' && 'Select Uniform Type'}
-            {currentLevel === 'sport' && 'Select Sport Type'}
-            {currentLevel === 'schoolItems' && 'Select School Item'}
+            {currentLevel === 'uniform' && !showPreview && !showSuccessConfirmation && 'Select Uniform Type'}
+            {currentLevel === 'sport' && !showPreview && !showSuccessConfirmation && 'Select Sport Type'}
+            {currentLevel === 'schoolItems' && !showPreview && !showSuccessConfirmation && 'Select School Item'}
           </h2>
         </div>
       )}
 
-      {showItemDetails ? (
+      {/* Success Confirmation Screen */}
+      {showSuccessConfirmation && submittedListing ? (
+        <div style={{ padding: '16px', textAlign: 'center' }}>
+          <div style={{
+            backgroundColor: '#d4edda',
+            border: '1px solid #c3e6cb',
+            borderRadius: '12px',
+            padding: '24px',
+            marginBottom: '24px'
+          }}>
+            <IonIcon icon={checkmarkCircle} style={{ fontSize: '64px', color: '#28a745' }} />
+            <h3 style={{ color: '#155724', margin: '12px 0 8px' }}>Item Listed Successfully!</h3>
+            <p style={{ color: '#155724', margin: 0 }}>
+              Your <strong>{submittedListing.name}</strong> has been listed for <strong>R{submittedListing.price}</strong>.
+            </p>
+          </div>
+
+          {/* Quick summary */}
+          <IonCard>
+            <IonCardContent>
+              <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', marginBottom: '12px' }}>
+                {submittedListing.frontPhoto && (
+                  <img src={submittedListing.frontPhoto} alt="Front" style={{ width: '80px', height: '100px', objectFit: 'cover', borderRadius: '8px', border: '1px solid #ddd' }} />
+                )}
+                {submittedListing.backPhoto && (
+                  <img src={submittedListing.backPhoto} alt="Back" style={{ width: '80px', height: '100px', objectFit: 'cover', borderRadius: '8px', border: '1px solid #ddd' }} />
+                )}
+              </div>
+              <p style={{ margin: '4px 0', fontSize: '14px' }}><strong>{submittedListing.name}</strong></p>
+              <p style={{ margin: '4px 0', fontSize: '14px', color: '#666' }}>{submittedListing.school}</p>
+              <p style={{ margin: '4px 0', fontSize: '14px' }}>R{submittedListing.price} | Size: {submittedListing.size} | {submittedListing.gender}</p>
+            </IonCardContent>
+          </IonCard>
+
+          <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', marginTop: '20px' }}>
+            <IonButton fill="outline" onClick={() => resetForm()}>
+              List Another Item
+            </IonButton>
+            <IonButton onClick={() => history.push('/profile/listings')}>
+              <IonIcon icon={listOutline} slot="start" />
+              View My Listings
+            </IonButton>
+          </div>
+        </div>
+
+      ) : showPreview && previewListing ? (
+        /* Preview Screen */
+        <div style={{ padding: '16px' }}>
+          <IonCard>
+            <IonCardContent>
+              {/* Photo display */}
+              <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', marginBottom: '16px' }}>
+                {previewListing.frontPhoto && (
+                  <div style={{ textAlign: 'center' }}>
+                    <p style={{ margin: '0 0 4px', fontSize: '12px', color: '#666' }}>Front</p>
+                    <img src={previewListing.frontPhoto} alt="Front" style={{ width: '120px', height: '150px', objectFit: 'cover', borderRadius: '8px', border: '1px solid #ddd' }} />
+                  </div>
+                )}
+                {previewListing.backPhoto && (
+                  <div style={{ textAlign: 'center' }}>
+                    <p style={{ margin: '0 0 4px', fontSize: '12px', color: '#666' }}>Back</p>
+                    <img src={previewListing.backPhoto} alt="Back" style={{ width: '120px', height: '150px', objectFit: 'cover', borderRadius: '8px', border: '1px solid #ddd' }} />
+                  </div>
+                )}
+              </div>
+
+              {/* Details */}
+              <h3 style={{ margin: '0 0 8px', textAlign: 'center' }}>{previewListing.name}</h3>
+
+              <div style={{ borderTop: '1px solid #eee', paddingTop: '12px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                  <span style={{ color: '#666' }}>Category</span>
+                  <span style={{ fontWeight: 'bold' }}>
+                    {previewListing.category}
+                    {previewListing.subcategory ? ` > ${previewListing.subcategory}` : ''}
+                    {previewListing.sport ? ` > ${previewListing.sport}` : ''}
+                  </span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                  <span style={{ color: '#666' }}>School / Club</span>
+                  <span style={{ fontWeight: 'bold' }}>{previewListing.school}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                  <span style={{ color: '#666' }}>Gender</span>
+                  <span>{previewListing.gender}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                  <span style={{ color: '#666' }}>Size</span>
+                  <span>{previewListing.size}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                  <span style={{ color: '#666' }}>Condition</span>
+                  <span>Grade {previewListing.condition} — {
+                    previewListing.condition === 1 ? 'Brand new' :
+                    previewListing.condition === 2 ? 'Like new' :
+                    previewListing.condition === 3 ? 'Frequently used' :
+                    'Used and worn'
+                  }</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                  <span style={{ color: '#666' }}>Price</span>
+                  <span style={{ fontWeight: 'bold', color: '#27AE60', fontSize: '18px' }}>R{previewListing.price}</span>
+                </div>
+              </div>
+
+              {/* Anti-theft docs indicator */}
+              {(previewListing.sellerIdDocument || previewListing.sellerProofOfAddress) && (
+                <div style={{
+                  marginTop: '12px',
+                  padding: '8px 12px',
+                  backgroundColor: '#d4edda',
+                  borderRadius: '8px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}>
+                  <IonIcon icon={shieldCheckmarkOutline} style={{ color: '#155724' }} />
+                  <span style={{ fontSize: '13px', color: '#155724' }}>Anti-theft verification documents attached</span>
+                </div>
+              )}
+            </IonCardContent>
+          </IonCard>
+
+          <div style={{ display: 'flex', gap: '12px', marginTop: '20px' }}>
+            <IonButton fill="outline" expand="block" style={{ flex: 1 }} onClick={() => setShowPreview(false)}>
+              Edit
+            </IonButton>
+            <IonButton expand="block" style={{ flex: 1 }} onClick={handleConfirmListing} disabled={isSubmitting}>
+              <IonIcon icon={checkmarkOutline} slot="start" />
+              {isSubmitting ? 'Submitting...' : 'Confirm Listing'}
+            </IonButton>
+          </div>
+        </div>
+
+      ) : showItemDetails ? (
         <div style={{ padding: '16px' }}>
           {userType === 'buyer' && (
             <ItemsList 
@@ -1428,11 +1556,16 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
 
           <IonButton
             expand="full"
-            onClick={handleSubmit}
+            onClick={handleShowPreview}
             disabled={!gender || !size || !condition || (userType === 'seller' && !sellingPrice) || (selectedCategory === 'School & sport uniform' && !schoolName) || (selectedCategory === 'Club clothing' && !clubName)}
             style={{ marginTop: '16px' }}
           >
-            {userType === 'seller' ? 'List Item' : 'Add to Cart'}
+            {userType === 'seller' ? (
+              <>
+                <IonIcon icon={eyeOutline} slot="start" />
+                Preview Listing
+              </>
+            ) : 'Add to Cart'}
           </IonButton>
           
           <CropModal 
