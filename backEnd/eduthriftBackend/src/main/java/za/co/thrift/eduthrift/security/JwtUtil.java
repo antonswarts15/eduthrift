@@ -18,7 +18,7 @@ public class JwtUtil {
     @Value("${jwt.secret:eduthrift-secret-key-that-is-at-least-256-bits-long-for-hs256}")
     private String secret;
 
-    @Value("${jwt.expiration:86400000}") // 24 hours in milliseconds
+    @Value("${jwt.expiration:86400000}")
     private long expiration;
 
     private SecretKey getSigningKey() {

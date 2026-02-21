@@ -39,6 +39,7 @@ interface ListingsStore {
   addListing: (listing: Omit<Listing, 'expiryDate'>, checkWishlist?: (listing: Listing) => void) => Promise<void>;
   fetchListings: (userLocation?: string) => Promise<void>;
   fetchMyListings: () => Promise<void>;
+  fetchListingById: (id: string) => Promise<Listing | null>;
   updateListing: (id: string, listing: Partial<Listing>) => Promise<void>;
   deleteListing: (id: string) => Promise<void>;
   decreaseQuantity: (id: string) => void;
@@ -114,6 +115,23 @@ export const useListingsStore = create<ListingsStore>((set, get) => ({
     } catch (error) {
       console.error('Error fetching my listings:', error);
       set({ error: error instanceof Error ? error.message : 'Failed to fetch my listings', isLoading: false });
+    }
+  },
+
+  // Fetch a single listing from the backend by ID
+  fetchListingById: async (id: string) => {
+    try {
+      const response = await itemsApi.getItem(id);
+      const listing = mapBackendItem(response.data);
+      // Add to listings array if not already there
+      set((state) => {
+        const exists = state.listings.some(l => l.id === listing.id);
+        return exists ? state : { listings: [...state.listings, listing] };
+      });
+      return listing;
+    } catch (error) {
+      console.error('Error fetching listing by ID:', error);
+      return null;
     }
   },
 
