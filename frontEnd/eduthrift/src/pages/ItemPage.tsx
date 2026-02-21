@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useHistory } from 'react-router-dom';
 import {
   IonContent,
@@ -14,7 +14,8 @@ import {
   IonCardContent,
   IonBadge,
   IonToast,
-  IonModal
+  IonModal,
+  IonSpinner
 } from '@ionic/react';
 import { cartOutline, checkmarkCircleOutline, closeCircleOutline, closeOutline, imageOutline } from 'ionicons/icons';
 import { useListingsStore } from '../stores/listingsStore';
@@ -24,14 +25,48 @@ import { useToast } from '../hooks/useToast';
 const ItemPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const history = useHistory();
-  const { getListingById, decreaseQuantity } = useListingsStore();
+  const { getListingById, fetchListingById, decreaseQuantity } = useListingsStore();
   const { addToCart } = useCartStore();
   const { isOpen, message, color, showToast, hideToast } = useToast();
 
   const [zoomPhoto, setZoomPhoto] = useState<string | null>(null);
   const [zoomLabel, setZoomLabel] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [fetchedListing, setFetchedListing] = useState<any>(null);
 
-  const listing = getListingById(id);
+  const storeListing = getListingById(id);
+  const listing = storeListing || fetchedListing;
+
+  // Fetch from API if not in store
+  useEffect(() => {
+    if (!storeListing && id) {
+      setLoading(true);
+      fetchListingById(id).then((result) => {
+        setFetchedListing(result);
+        setLoading(false);
+      });
+    }
+  }, [id, storeListing]);
+
+  if (loading) {
+    return (
+      <IonPage>
+        <IonHeader>
+          <IonToolbar>
+            <IonButtons slot="start">
+              <IonBackButton defaultHref="/buyer" />
+            </IonButtons>
+            <IonTitle>Loading...</IonTitle>
+          </IonToolbar>
+        </IonHeader>
+        <IonContent>
+          <div style={{ padding: '16px', textAlign: 'center' }}>
+            <IonSpinner />
+          </div>
+        </IonContent>
+      </IonPage>
+    );
+  }
 
   if (!listing) {
     return (

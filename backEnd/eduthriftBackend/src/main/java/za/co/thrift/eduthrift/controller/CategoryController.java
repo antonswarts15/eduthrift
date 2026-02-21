@@ -35,12 +35,4 @@ public class CategoryController {
         return itemRepository.findByItemTypeId(itemTypeId);
     }
     
-    @GetMapping("/items")
-    public List<Item> getItems(
-            @RequestParam(required = false) Long itemTypeId,
-            @RequestParam(required = false) String schoolName,
-            @RequestParam(required = false) String status) {
-        Item.ItemStatus itemStatus = status != null ? Item.ItemStatus.valueOf(status.toUpperCase()) : null;
-        return itemRepository.findByFilters(itemTypeId, schoolName, itemStatus);
-    }
 }

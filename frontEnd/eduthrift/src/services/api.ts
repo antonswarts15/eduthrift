@@ -82,6 +82,7 @@ export const itemsApi = {
   createItem: (item: any) => api.post('/items', item),
   updateItem: (id: string, item: any) => api.put(`/items/${id}`, item),
   deleteItem: (id: string) => api.delete(`/items/${id}`),
+  getItem: (id: string) => api.get(`/items/${id}`),
   getItems: (filters: any) => api.get('/items', { params: filters }),
   getMyItems: (params?: Record<string, string>) => api.get('/items/mine', { params }),
 };

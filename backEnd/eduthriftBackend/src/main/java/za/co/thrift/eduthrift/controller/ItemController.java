@@ -79,6 +79,34 @@ public class ItemController {
         }
     }
 
+    @GetMapping
+    public ResponseEntity<?> getAllItems(
+            @RequestParam(required = false) Long itemTypeId,
+            @RequestParam(required = false) String schoolName,
+            @RequestParam(required = false) String status) {
+        try {
+            Item.ItemStatus itemStatus = status != null ? Item.ItemStatus.valueOf(status.toUpperCase()) : null;
+            List<Item> items = itemRepository.findByFilters(itemTypeId, schoolName, itemStatus);
+            List<Map<String, Object>> response = new ArrayList<>();
+            for (Item item : items) {
+                response.add(toResponse(item, item.getUser()));
+            }
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("error", "Failed to fetch items: " + e.getMessage()));
+        }
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getItemById(@PathVariable Long id) {
+        Optional<Item> itemOpt = itemRepository.findById(id);
+        if (itemOpt.isEmpty()) {
+            return ResponseEntity.status(404).body(Map.of("error", "Item not found"));
+        }
+        Item item = itemOpt.get();
+        return ResponseEntity.ok(toResponse(item, item.getUser()));
+    }
+
     @GetMapping("/mine")
     public ResponseEntity<?> getMyItems(Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated()) {
