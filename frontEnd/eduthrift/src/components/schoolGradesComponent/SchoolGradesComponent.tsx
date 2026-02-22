@@ -42,9 +42,8 @@ import {
   checkmarkCircle,
   listOutline
 } from 'ionicons/icons';
-import { generatePlaceholder } from '../../utils/imagePlaceholder';
 import { useCartStore } from '../../stores/cartStore';
-import { useListingsStore } from '../../stores/listingsStore';
+import { useListingsStore, Listing } from '../../stores/listingsStore';
 import { useNotificationStore } from '../../stores/notificationStore';
 import { useWishlistStore } from '../../stores/wishlistStore';
 import { useHistory } from 'react-router-dom';
@@ -70,22 +69,18 @@ const SchoolGradesComponent: React.FC<SchoolGradesComponentProps> = ({
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [toastColor, setToastColor] = useState<string>('danger');
-  const [addedToCartId, setAddedToCartId] = useState<number | null>(null);
+  const [addedToCartId, setAddedToCartId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccessConfirmation, setShowSuccessConfirmation] = useState(false);
   const [submittedBook, setSubmittedBook] = useState<any>(null);
   const { addToCart } = useCartStore();
-  const { addListing } = useListingsStore();
+  const { addListing, listings, fetchListings } = useListingsStore();
   const { addNotification } = useNotificationStore();
   const { checkForMatches } = useWishlistStore();
-  // Mock functions to replace context dependency
-  const getItemQuantity = (id: string, category: string) => {
-    return Math.floor(Math.random() * 5) + 1;
-  };
-  
-  const decreaseInventory = (id: string, category: string) => {
-    // Mock function
-  };
+
+  useEffect(() => {
+    fetchListings();
+  }, [fetchListings]);
   
   // Form fields
   const [title, setTitle] = useState('');
@@ -118,49 +113,37 @@ const SchoolGradesComponent: React.FC<SchoolGradesComponentProps> = ({
     'Grade 12': ['Mathematics', 'Mathematical Literacy', 'English Home Language', 'English First Additional Language', 'Afrikaans Home Language', 'Afrikaans First Additional Language', 'Physical Sciences', 'Life Sciences', 'Geography', 'History', 'Life Orientation', 'Accounting', 'Business Studies', 'Economics', 'Information Technology', 'Consumer Studies', 'Tourism', 'Agricultural Sciences']
   };
 
-
-
   const getLanguagesForSubject = (subject: string) => {
-    const multiLanguageSubjects = ['Mathematics', 'Physical Sciences', 'Life Sciences', 'Geography', 'History', 'Accounting', 'Business Studies', 'Economics'];
+    const multiLanguageSubjects = ['Mathematics', 'Physical Sciences', 'Life Sciences', 'Geography', 'History', 'Accounting', 'Business Studies', 'Economics', 'Language & Literacy'];
     if (multiLanguageSubjects.includes(subject)) {
       return ['English', 'Afrikaans'];
     }
     return [];
   };
 
-  const mockBooks = [
-    {
-      id: 1, title: 'Mathematics Grade 10', author: 'Smith & Jones', publisher: 'Oxford', isbn: '978-0-19-123456-7', 
-      grade: 'Grade 10', subject: 'Mathematics', language: 'English', condition: 2, price: 250, quantity: 2,
-      frontPhoto: generatePlaceholder('#3498DB', 'Math Front', 120, 150),
-      backPhoto: generatePlaceholder('#3498DB', 'Math Back', 120, 150)
-    },
-    {
-      id: 2, title: 'Physical Sciences Grade 11', author: 'Johnson', publisher: 'Pearson', isbn: '978-0-13-987654-3',
-      grade: 'Grade 11', subject: 'Physical Sciences', language: 'English', condition: 1, price: 300, quantity: 1,
-      frontPhoto: generatePlaceholder('#27AE60', 'Physics Front', 120, 150),
-      backPhoto: generatePlaceholder('#27AE60', 'Physics Back', 120, 150)
-    },
-    {
-      id: 3, title: 'English Home Language Grade 12', author: 'Williams', publisher: 'Cambridge', isbn: '978-1-10-765432-1',
-      grade: 'Grade 12', subject: 'English Home Language', language: 'English', condition: 3, price: 180, quantity: 0,
-      frontPhoto: generatePlaceholder('#8E44AD', 'English Front', 120, 150),
-      backPhoto: generatePlaceholder('#8E44AD', 'English Back', 120, 150)
-    }
-  ];
-
   const getFilteredBooks = (grade: string, subject: string, language?: string) => {
-    return mockBooks.filter(book => {
-      if (book.grade !== grade) return false;
-      if (book.subject !== subject) return false;
-      if (language && book.language !== language) return false;
+    return listings.filter(listing => {
+      if (listing.category !== 'Textbooks') return false;
+      if (listing.subcategory !== grade) return false;
+      // We use 'sport' field to store the Subject for textbooks
+      if (listing.sport !== subject) return false;
+      // We use 'size' field to store the Language for textbooks (if applicable)
+      if (language && listing.size !== language) return false;
       return true;
-    });
+    }).map(listing => ({
+      ...listing,
+      title: listing.name,
+      // Extract author/publisher from description if possible, or just use description
+      author: 'Unknown', // Placeholder as we don't store author separately yet
+      publisher: 'Unknown',
+      grade: listing.subcategory,
+      subject: listing.sport,
+      language: listing.size
+    }));
   };
 
   const handleAddToCart = (book: any) => {
-    const currentQuantity = getItemQuantity(book.id.toString(), 'textbooks');
-    if (currentQuantity === 0) {
+    if (book.quantity === 0) {
       setToastMessage(`${book.title} is sold out!`);
       setShowToast(true);
       return;
@@ -169,23 +152,21 @@ const SchoolGradesComponent: React.FC<SchoolGradesComponentProps> = ({
     const cartItem = {
       id: book.id,
       name: book.title,
-      description: `${book.title} by ${book.author}`,
+      description: book.description,
       price: book.price,
       condition: book.condition,
       school: '',
-      size: '',
-      gender: '',
+      size: book.size,
+      gender: book.gender,
       frontPhoto: book.frontPhoto,
       backPhoto: book.backPhoto,
       category: 'Textbooks',
+      subcategory: book.grade,
+      sport: book.subject,
       quantity: 1
     };
 
     addToCart(cartItem);
-    
-    // Update inventory
-    decreaseInventory(book.id.toString(), 'textbooks');
-
     setAddedToCartId(book.id);
     setTimeout(() => setAddedToCartId(null), 2000);
   };
@@ -244,11 +225,13 @@ const SchoolGradesComponent: React.FC<SchoolGradesComponentProps> = ({
           price: parseInt(price),
           condition: condition!,
           school: '',
-          size: selectedContext.grade,
+          // Store Language in 'size' field
+          size: selectedContext.language || 'Standard',
           gender: 'Unisex',
           category: 'Textbooks',
           subcategory: selectedContext.grade,
-          sport: undefined,
+          // Store Subject in 'sport' field
+          sport: selectedContext.subject,
           frontPhoto: frontPhoto || '',
           backPhoto: backPhoto || '',
           dateCreated: new Date().toLocaleDateString(),
@@ -611,14 +594,14 @@ const SchoolGradesComponent: React.FC<SchoolGradesComponentProps> = ({
         <IonButton 
           expand="full" 
           onClick={() => handleAddToCart(viewingBook)}
-          disabled={getItemQuantity(viewingBook.id.toString(), 'textbooks') === 0}
+          disabled={viewingBook.quantity === 0}
           style={{ 
             marginTop: '16px',
             '--background': addedToCartId === viewingBook.id ? '#28a745' : '',
             '--color': addedToCartId === viewingBook.id ? 'white' : ''
           }}
         >
-          {getItemQuantity(viewingBook.id.toString(), 'textbooks') === 0 ? 'Sold Out' : 
+          {viewingBook.quantity === 0 ? 'Sold Out' :
            addedToCartId === viewingBook.id ? '✓ Added to Cart!' : 'Add to Cart'}
         </IonButton>
         {renderPhotoViewer()}
@@ -859,9 +842,9 @@ const SchoolGradesComponent: React.FC<SchoolGradesComponentProps> = ({
                                                   <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#E74C3C' }}>
                                                     R{book.price}
                                                   </div>
-                                                  {getItemQuantity(book.id.toString(), 'textbooks') > 0 ? (
+                                                  {book.quantity > 0 ? (
                                                     <IonBadge color="success" style={{ fontSize: '9px' }}>
-                                                      {getItemQuantity(book.id.toString(), 'textbooks')} available
+                                                      {book.quantity} available
                                                     </IonBadge>
                                                   ) : (
                                                     <IonBadge color="danger" style={{ fontSize: '9px' }}>
