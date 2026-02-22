@@ -21,6 +21,7 @@ import { cartOutline, checkmarkCircleOutline, closeCircleOutline, closeOutline, 
 import { useListingsStore } from '../stores/listingsStore';
 import { useCartStore } from '../stores/cartStore';
 import { useToast } from '../hooks/useToast';
+import { Item } from '../types/models';
 
 const ItemPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
