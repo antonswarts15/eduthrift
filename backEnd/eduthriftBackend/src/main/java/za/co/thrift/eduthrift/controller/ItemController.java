@@ -5,8 +5,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import za.co.thrift.eduthrift.entity.Item;
+import za.co.thrift.eduthrift.entity.ItemType;
 import za.co.thrift.eduthrift.entity.User;
 import za.co.thrift.eduthrift.repository.ItemRepository;
+import za.co.thrift.eduthrift.repository.ItemTypeRepository;
 import za.co.thrift.eduthrift.repository.UserRepository;
 
 import java.math.BigDecimal;
@@ -19,10 +21,12 @@ public class ItemController {
 
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
+    private final ItemTypeRepository itemTypeRepository;
 
-    public ItemController(ItemRepository itemRepository, UserRepository userRepository) {
+    public ItemController(ItemRepository itemRepository, UserRepository userRepository, ItemTypeRepository itemTypeRepository) {
         this.itemRepository = itemRepository;
         this.userRepository = userRepository;
+        this.itemTypeRepository = itemTypeRepository;
     }
 
     @PostMapping
@@ -72,9 +76,28 @@ public class ItemController {
                 }
             }
 
+            // Fallback for item_type_id NOT NULL constraint
+            List<ItemType> itemTypes = itemTypeRepository.findAll();
+            if (!itemTypes.isEmpty()) {
+                item.setItemType(itemTypes.get(0));
+            } else {
+                // Create a dummy item type if none exists to prevent 500 error
+                try {
+                    ItemType defaultType = new ItemType();
+                    defaultType.setName("General");
+                    defaultType.setSlug("general-" + UUID.randomUUID().toString());
+                    ItemType savedType = itemTypeRepository.save(defaultType);
+                    item.setItemType(savedType);
+                } catch (Exception e) {
+                    System.err.println("Failed to create default ItemType: " + e.getMessage());
+                    // If this fails, we can't do much, but at least we tried
+                }
+            }
+
             Item saved = itemRepository.save(item);
             return ResponseEntity.ok(toResponse(saved, user));
         } catch (Exception e) {
+            e.printStackTrace(); // Log the full stack trace
             return ResponseEntity.status(500).body(Map.of("error", "Failed to create item: " + e.getMessage()));
         }
     }

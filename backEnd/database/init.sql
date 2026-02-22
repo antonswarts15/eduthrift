@@ -87,13 +87,13 @@ CREATE TABLE IF NOT EXISTS items (
     club_name VARCHAR(255),
     team VARCHAR(100),
     size VARCHAR(50),
-    gender ENUM('boy', 'girl', 'unisex'),
+    gender ENUM('BOY', 'GIRL', 'UNISEX'),
     condition_grade TINYINT CHECK (condition_grade BETWEEN 1 AND 4),
     price DECIMAL(10,2) NOT NULL,
     front_photo TEXT,
     back_photo TEXT,
     description TEXT,
-    status ENUM('available', 'sold', 'reserved') DEFAULT 'available',
+    status ENUM('AVAILABLE', 'SOLD', 'RESERVED') DEFAULT 'AVAILABLE',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
@@ -282,26 +282,26 @@ INSERT IGNORE INTO users (email, password_hash, first_name, last_name, phone, us
 -- Insert sample items
 INSERT IGNORE INTO items (user_id, item_type_id, school_name, size, gender, condition_grade, price, description, status) VALUES
 -- School uniform items
-(1, 1, 'Hoërskool Waterkloof', 'M', 'boy', 2, 85.00, 'White short sleeve school shirt in excellent condition', 'available'),
-(1, 2, 'Hoërskool Waterkloof', 'L', 'boy', 1, 95.00, 'Brand new long sleeve school shirt', 'available'),
-(1, 5, 'Hoërskool Waterkloof', 'One Size', 'unisex', 3, 45.00, 'Navy blue school tie, slightly used', 'available'),
+(1, 1, 'Hoërskool Waterkloof', 'M', 'BOY', 2, 85.00, 'White short sleeve school shirt in excellent condition', 'AVAILABLE'),
+(1, 2, 'Hoërskool Waterkloof', 'L', 'BOY', 1, 95.00, 'Brand new long sleeve school shirt', 'AVAILABLE'),
+(1, 5, 'Hoërskool Waterkloof', 'One Size', 'UNISEX', 3, 45.00, 'Navy blue school tie, slightly used', 'AVAILABLE'),
 -- Rugby sporting uniforms
-(1, 12, 'Hoërskool Waterkloof', 'M', 'boy', 2, 120.00, 'Rugby jersey in excellent condition', 'available'),
-(1, 13, 'Hoërskool Waterkloof', 'M', 'boy', 1, 85.00, 'Brand new rugby shorts', 'available'),
-(1, 16, 'Hoërskool Waterkloof', 'L', 'boy', 2, 95.00, 'Home match jersey', 'available'),
-(1, 17, 'Hoërskool Waterkloof', 'M', 'boy', 3, 90.00, 'Away match jersey', 'available'),
-(1, 18, 'Hoërskool Waterkloof', 'L', 'boy', 1, 75.00, 'Training polo shirt', 'available'),
-(1, 19, 'Hoërskool Waterkloof', 'M', 'boy', 2, 140.00, 'Tracksuit top', 'available'),
-(1, 21, 'Hoërskool Waterkloof', 'L', 'boy', 1, 180.00, 'Team hoodie', 'available'),
+(1, 12, 'Hoërskool Waterkloof', 'M', 'BOY', 2, 120.00, 'Rugby jersey in excellent condition', 'AVAILABLE'),
+(1, 13, 'Hoërskool Waterkloof', 'M', 'BOY', 1, 85.00, 'Brand new rugby shorts', 'AVAILABLE'),
+(1, 16, 'Hoërskool Waterkloof', 'L', 'BOY', 2, 95.00, 'Home match jersey', 'AVAILABLE'),
+(1, 17, 'Hoërskool Waterkloof', 'M', 'BOY', 3, 90.00, 'Away match jersey', 'AVAILABLE'),
+(1, 18, 'Hoërskool Waterkloof', 'L', 'BOY', 1, 75.00, 'Training polo shirt', 'AVAILABLE'),
+(1, 19, 'Hoërskool Waterkloof', 'M', 'BOY', 2, 140.00, 'Tracksuit top', 'AVAILABLE'),
+(1, 21, 'Hoërskool Waterkloof', 'L', 'BOY', 1, 180.00, 'Team hoodie', 'AVAILABLE'),
 -- Netball sporting uniforms
-(1, 23, 'Pretoria High School for Girls', 'M', 'girl', 2, 110.00, 'Netball dress in good condition', 'available'),
-(1, 25, 'Pretoria High School for Girls', 'S', 'girl', 1, 105.00, 'Home match dress', 'available'),
-(1, 27, 'Pretoria High School for Girls', 'M', 'girl', 2, 80.00, 'Training polo', 'available'),
-(1, 28, 'Pretoria High School for Girls', 'L', 'girl', 1, 130.00, 'Tracksuit top', 'available'),
+(1, 23, 'Pretoria High School for Girls', 'M', 'GIRL', 2, 110.00, 'Netball dress in good condition', 'AVAILABLE'),
+(1, 25, 'Pretoria High School for Girls', 'S', 'GIRL', 1, 105.00, 'Home match dress', 'AVAILABLE'),
+(1, 27, 'Pretoria High School for Girls', 'M', 'GIRL', 2, 80.00, 'Training polo', 'AVAILABLE'),
+(1, 28, 'Pretoria High School for Girls', 'L', 'GIRL', 1, 130.00, 'Tracksuit top', 'AVAILABLE'),
 -- Hockey sporting uniforms
-(1, 30, 'Menlopark High School', 'M', 'unisex', 2, 100.00, 'Hockey jersey', 'available'),
-(1, 33, 'Menlopark High School', 'L', 'boy', 1, 95.00, 'Home match jersey', 'available'),
-(1, 35, 'Menlopark High School', 'M', 'girl', 2, 75.00, 'Training polo', 'available');
+(1, 30, 'Menlopark High School', 'M', 'UNISEX', 2, 100.00, 'Hockey jersey', 'AVAILABLE'),
+(1, 33, 'Menlopark High School', 'L', 'BOY', 1, 95.00, 'Home match jersey', 'AVAILABLE'),
+(1, 35, 'Menlopark High School', 'M', 'GIRL', 2, 75.00, 'Training polo', 'AVAILABLE');
 
 -- Wishlist table
 CREATE TABLE IF NOT EXISTS wishlist (
@@ -313,7 +313,7 @@ CREATE TABLE IF NOT EXISTS wishlist (
     sport VARCHAR(255),
     school_name VARCHAR(255),
     size VARCHAR(50),
-    gender ENUM('boy', 'girl', 'unisex'),
+    gender ENUM('BOY', 'GIRL', 'UNISEX'),
     max_price DECIMAL(10,2),
     notify_when_available BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

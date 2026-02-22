@@ -29,6 +29,7 @@ import PhotoCapture from '../components/PhotoCapture';
 import { useUserStore } from '../stores/userStore';
 import { useListingsStore } from '../stores/listingsStore';
 import api from '../services/api';
+import { AxiosError } from 'axios';
 
 const CreateListingPage: React.FC = () => {
   const history = useHistory();
@@ -137,8 +138,8 @@ const CreateListingPage: React.FC = () => {
         sport,
         frontPhoto: frontPhotoUrl,
         backPhoto: backPhotoUrl,
-        dateCreated: new Date().toLocaleDateString(),
-        quantity: 1
+        quantity: 1,
+        dateCreated: new Date().toISOString()
       };
 
       await addListing(listingData);
@@ -148,8 +149,15 @@ const CreateListingPage: React.FC = () => {
 
       setTimeout(() => history.push('/seller'), 2000);
 
-    } catch (error: any) {
-      setToastMessage(error.message || 'Failed to create listing');
+    } catch (error) {
+      console.error('Error creating listing:', error);
+      if (error instanceof AxiosError) {
+        setToastMessage(error.response?.data?.error || error.message || 'Failed to create listing');
+      } else if (error instanceof Error) {
+        setToastMessage(error.message);
+      } else {
+        setToastMessage('An unknown error occurred');
+      }
       setShowToast(true);
     } finally {
       setLoading(false);
@@ -370,8 +378,8 @@ const CreateListingPage: React.FC = () => {
           <IonButton
             expand="block"
             onClick={handleSubmit}
-            disabled={progressPercent !== 100 || loading}
-            color={progressPercent === 100 ? 'success' : 'medium'}
+            disabled={loading}
+            color={progressPercent === 100 ? 'success' : 'primary'}
             style={{ margin: '16px 0' }}
           >
             <IonIcon icon={addOutline} slot="start" />
