@@ -18,7 +18,7 @@ import {
   IonToast,
   IonBadge
 } from '@ionic/react';
-import { constructOutline, shirtOutline, shieldOutline, footstepsOutline, bagOutline, schoolOutline, peopleOutline, imageOutline, cartOutline, checkmarkCircleOutline, closeCircleOutline, manOutline, womanOutline } from 'ionicons/icons';
+import { shirtOutline, footstepsOutline, bagOutline, schoolOutline, peopleOutline, imageOutline, cartOutline, checkmarkCircleOutline, closeCircleOutline } from 'ionicons/icons';
 import SchoolSelector from '../SchoolSelector';
 import { useListingsStore } from '../../stores/listingsStore';
 import { useCartStore } from '../../stores/cartStore';
@@ -55,7 +55,7 @@ const GenericSportEquipmentComponent: React.FC<GenericSportEquipmentProps> = ({
   const { addToCart } = useCartStore();
   const { isOpen: showToast, message: toastMessage, color: toastColor, showToast: displayToast, hideToast } = useToast();
   const [photoViewer, setPhotoViewer] = useState<string | null>(null);
-  const [addedToCartId, setAddedToCartId] = useState<number | null>(null);
+  const [addedToCartId, setAddedToCartId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchListings();
@@ -373,7 +373,7 @@ const GenericSportEquipmentComponent: React.FC<GenericSportEquipmentProps> = ({
                               size="small"
                               onClick={(e) => {
                                 handleAddToCart(item, e);
-                                setAddedToCartId(typeof item.id === 'string' ? parseInt(item.id) : item.id);
+                                setAddedToCartId(item.id);
                                 setTimeout(() => setAddedToCartId(null), 2000);
                               }}
                               disabled={item.soldOut || item.quantity === 0}
