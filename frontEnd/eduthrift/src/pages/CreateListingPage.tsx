@@ -224,9 +224,11 @@ const CreateListingPage: React.FC = () => {
                   <IonSelectOption value="School & sport uniform">School & Sport Uniform</IonSelectOption>
                   <IonSelectOption value="Club clothing">Club Clothing</IonSelectOption>
                   <IonSelectOption value="Training wear">Training Wear</IonSelectOption>
+                  <IonSelectOption value="Belts, bags & shoes">Belts, Bags & Shoes</IonSelectOption>
                   <IonSelectOption value="Sports equipment">Sports Equipment</IonSelectOption>
                   <IonSelectOption value="Textbooks">Textbooks</IonSelectOption>
                   <IonSelectOption value="Stationery">Stationery</IonSelectOption>
+                  <IonSelectOption value="Matric dance clothing">Matric Dance Clothing</IonSelectOption>
                 </IonSelect>
               </IonItem>
 
