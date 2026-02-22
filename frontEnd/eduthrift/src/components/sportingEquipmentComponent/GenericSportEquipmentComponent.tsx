@@ -51,13 +51,14 @@ const GenericSportEquipmentComponent: React.FC<GenericSportEquipmentProps> = ({
   const [team, setTeam] = useState('');
   const [selectedGender, setSelectedGender] = useState('');
   const [viewingItem, setViewingItem] = useState<any>(null);
-  const { addListing, listings, decreaseQuantity } = useListingsStore();
+  const { addListing, listings, decreaseQuantity, fetchListings } = useListingsStore();
   const { addToCart } = useCartStore();
   const { isOpen: showToast, message: toastMessage, color: toastColor, showToast: displayToast, hideToast } = useToast();
   const [photoViewer, setPhotoViewer] = useState<string | null>(null);
   const [addedToCartId, setAddedToCartId] = useState<number | null>(null);
 
   useEffect(() => {
+    fetchListings();
     return () => {
       setSelectedItem('');
       setShowItemDetails(false);
@@ -68,7 +69,7 @@ const GenericSportEquipmentComponent: React.FC<GenericSportEquipmentProps> = ({
       setSize('');
       setTeam('');
     };
-  }, []);
+  }, [fetchListings]);
 
   const getSizeOptions = (item: string) => {
     if (item.toLowerCase().includes('ball')) {
@@ -146,47 +147,15 @@ const GenericSportEquipmentComponent: React.FC<GenericSportEquipmentProps> = ({
           backPhoto: listing.backPhoto,
           school: listing.school,
           soldOut: false,
-          quantity: listing.quantity
+          quantity: listing.quantity,
+          description: listing.description,
+          gender: listing.gender,
+          category: listing.category,
+          subcategory: listing.subcategory,
+          sport: listing.sport
         }));
       }
-      
-      // Mock rugby equipment data
-      const rugbyMockData = {
-        'Rugby Jersey': [
-          { id: 1, item: 'Rugby Jersey', size: 'M', condition: 2, price: 180, school: schoolName || clubName, soldOut: false, quantity: 2,
-            frontPhoto: `https://via.placeholder.com/150x200/E74C3C/white?text=Rugby+Jersey+Front`,
-            backPhoto: `https://via.placeholder.com/150x200/E74C3C/white?text=Rugby+Jersey+Back` },
-          { id: 2, item: 'Rugby Jersey', size: 'L', condition: 1, price: 200, school: schoolName || clubName, soldOut: false, quantity: 1,
-            frontPhoto: `https://via.placeholder.com/150x200/27AE60/white?text=Rugby+Jersey+Front`,
-            backPhoto: `https://via.placeholder.com/150x200/27AE60/white?text=Rugby+Jersey+Back` }
-        ],
-        'Rugby Boots': [
-          { id: 3, item: 'Rugby Boots', size: '9', condition: 2, price: 350, school: schoolName || clubName, soldOut: false, quantity: 1,
-            frontPhoto: `https://via.placeholder.com/150x200/8E44AD/white?text=Rugby+Boots`,
-            backPhoto: `https://via.placeholder.com/150x200/8E44AD/white?text=Rugby+Boots+Side` },
-          { id: 4, item: 'Rugby Boots', size: '10', condition: 3, price: 280, school: schoolName || clubName, soldOut: false, quantity: 2,
-            frontPhoto: `https://via.placeholder.com/150x200/F39C12/white?text=Rugby+Boots`,
-            backPhoto: `https://via.placeholder.com/150x200/F39C12/white?text=Rugby+Boots+Side` }
-        ],
-        'Rugby Ball': [
-          { id: 5, item: 'Rugby Ball', size: 'Size 5 (Adult)', condition: 1, price: 120, school: schoolName || clubName, soldOut: false, quantity: 3,
-            frontPhoto: `https://via.placeholder.com/150x200/3498DB/white?text=Rugby+Ball`,
-            backPhoto: `https://via.placeholder.com/150x200/3498DB/white?text=Rugby+Ball+Side` }
-        ],
-        'Scrum Cap': [
-          { id: 6, item: 'Scrum Cap', size: 'M', condition: 2, price: 85, school: schoolName || clubName, soldOut: false, quantity: 2,
-            frontPhoto: `https://via.placeholder.com/150x200/1ABC9C/white?text=Scrum+Cap`,
-            backPhoto: `https://via.placeholder.com/150x200/1ABC9C/white?text=Scrum+Cap+Back` }
-        ],
-        'Mouthguards': [
-          { id: 7, item: 'Mouthguards', size: 'One Size', condition: 1, price: 45, school: schoolName || clubName, soldOut: false, quantity: 5,
-            frontPhoto: `https://via.placeholder.com/150x200/E67E22/white?text=Mouth+Guard`,
-            backPhoto: `https://via.placeholder.com/150x200/E67E22/white?text=Mouth+Guard+Case` }
-        ]
-      };
-      
-      const mockItems = rugbyMockData[selectedItem as keyof typeof rugbyMockData] || [];
-      return mockItems;
+      return [];
     }
     return [];
   };
@@ -206,7 +175,7 @@ const GenericSportEquipmentComponent: React.FC<GenericSportEquipmentProps> = ({
 
     const cartItem = {
       id: item.id,
-      name: item.name,
+      name: item.item,
       description: item.description,
       price: item.price,
       condition: item.condition,
@@ -217,7 +186,8 @@ const GenericSportEquipmentComponent: React.FC<GenericSportEquipmentProps> = ({
       subcategory: item.subcategory,
       sport: item.sport,
       frontPhoto: item.frontPhoto,
-      backPhoto: item.backPhoto
+      backPhoto: item.backPhoto,
+      quantity: 1
     };
 
     addToCart(cartItem, displayToast);
@@ -584,224 +554,6 @@ const GenericSportEquipmentComponent: React.FC<GenericSportEquipmentProps> = ({
           </div>,
           document.body
         )}
-      </div>
-    );
-  }
-
-  // Item viewing screen (like BeltsBagsShoes)
-  if (viewingItem) {
-    return (
-      <div style={{ padding: '16px' }}>
-        <IonButton fill="clear" onClick={() => setViewingItem(null)}>← Back</IonButton>
-
-        <div style={{ textAlign: 'center', margin: '0 0 20px 0' }}>
-          <span style={{ fontSize: '20px', fontWeight: 'bold', color: '#666' }}>
-            {viewingItem.item}
-          </span>
-        </div>
-
-        <div style={{ display: 'flex', gap: '16px', margin: '16px 0', justifyContent: 'center' }}>
-          <div style={{ textAlign: 'center' }}>
-            <img
-              src={viewingItem.frontPhoto}
-              alt="Front view"
-              onClick={() => setPhotoViewer(viewingItem.frontPhoto)}
-              style={{
-                width: '150px', height: '200px', borderRadius: '8px',
-                objectFit: 'cover', border: '1px solid #ddd', cursor: 'pointer'
-              }}
-            />
-            <p style={{ fontSize: '12px', margin: '4px 0', fontWeight: 'bold' }}>Front</p>
-          </div>
-          <div style={{ textAlign: 'center' }}>
-            <img
-              src={viewingItem.backPhoto}
-              alt="Back view"
-              onClick={() => setPhotoViewer(viewingItem.backPhoto)}
-              style={{
-                width: '150px', height: '200px', borderRadius: '8px',
-                objectFit: 'cover', border: '1px solid #ddd', cursor: 'pointer'
-              }}
-            />
-            <p style={{ fontSize: '12px', margin: '4px 0', fontWeight: 'bold' }}>Back</p>
-          </div>
-        </div>
-
-        <div style={{ backgroundColor: '#f8f9fa', padding: '16px', borderRadius: '8px', margin: '16px 0' }}>
-          <div style={{ marginBottom: '8px' }}><strong>Size:</strong> {viewingItem.size}</div>
-          <div style={{ marginBottom: '8px' }}><strong>Condition:</strong> {getConditionText(viewingItem.condition)}</div>
-          <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#E74C3C' }}>R{viewingItem.price}</div>
-        </div>
-
-        <IonButton 
-          expand="full" 
-          onClick={() => {
-            const cartItem = {
-              id: viewingItem.id,
-              name: viewingItem.item,
-              description: `${viewingItem.item} - Size: ${viewingItem.size}`,
-              price: viewingItem.price,
-              condition: viewingItem.condition,
-              school: viewingItem.school || '',
-              size: viewingItem.size,
-              gender: selectedGender || 'Unisex',
-              frontPhoto: viewingItem.frontPhoto,
-              backPhoto: viewingItem.backPhoto,
-              category: `${sportName} Equipment`,
-              quantity: 1
-            };
-            addToCart(cartItem);
-            setAddedToCartId(typeof viewingItem.id === 'string' ? parseInt(viewingItem.id) : viewingItem.id);
-            setTimeout(() => setAddedToCartId(null), 2000);
-            setViewingItem(null);
-          }}
-          style={{ 
-            marginTop: '16px',
-            '--background': addedToCartId === viewingItem.id ? '#28a745' : '',
-            '--color': addedToCartId === viewingItem.id ? 'white' : ''
-          }}
-        >
-          {addedToCartId === viewingItem.id ? '✓ Added to Cart!' : 'Add to Cart'}
-        </IonButton>
-        {photoViewer && createPortal(
-          <div 
-            style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              width: '100%',
-              height: '100%',
-              backgroundColor: 'rgba(0, 0, 0, 0.9)',
-              zIndex: 1000,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}
-            onClick={() => setPhotoViewer(null)}
-          >
-            <div 
-              style={{
-                backgroundColor: '#fff',
-                borderRadius: '12px',
-                padding: '20px',
-                maxWidth: '90%',
-                maxHeight: '90%',
-                position: 'relative',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center'
-              }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <button 
-                style={{
-                  position: 'absolute',
-                  top: '10px',
-                  right: '10px',
-                  background: 'none',
-                  border: 'none',
-                  fontSize: '24px',
-                  cursor: 'pointer',
-                  color: '#666',
-                  zIndex: 10
-                }}
-                onClick={() => setPhotoViewer(null)}
-              >
-                ×
-              </button>
-              <img 
-                src={photoViewer}
-                alt="Zoomed view"
-                style={{
-                  maxWidth: '100%',
-                  maxHeight: '80vh',
-                  objectFit: 'contain',
-                  borderRadius: '8px',
-                  border: '1px solid #ddd'
-                }}
-              />
-            </div>
-          </div>,
-          document.body
-        )}
-      </div>
-    );
-  }
-
-  // Show gender selection for clothing categories
-  if (categoryFilter === 'clothing' && !selectedGender) {
-    return (
-      <div style={{ padding: '16px' }}>
-        <h2 style={{ textAlign: 'center', marginBottom: '24px' }}>Select Gender</h2>
-        <IonGrid>
-          <IonRow>
-            <IonCol size="6">
-              <IonCard button onClick={() => setSelectedGender('Boy')} style={{ textAlign: 'center', padding: '20px' }}>
-                <IonIcon icon={manOutline} size="large" style={{ color: '#3498DB', marginBottom: '8px' }} />
-                <h3 style={{ margin: 0, color: '#3498DB' }}>Boy</h3>
-              </IonCard>
-            </IonCol>
-            <IonCol size="6">
-              <IonCard button onClick={() => setSelectedGender('Girl')} style={{ textAlign: 'center', padding: '20px' }}>
-                <IonIcon icon={womanOutline} size="large" style={{ color: '#E74C3C', marginBottom: '8px' }} />
-                <h3 style={{ margin: 0, color: '#E74C3C' }}>Girl</h3>
-              </IonCard>
-            </IonCol>
-          </IonRow>
-        </IonGrid>
-      </div>
-    );
-  }
-
-  // Show available items for buyers (like BeltsBagsShoes)
-  if (userType === 'buyer' && selectedItem && !showItemDetails) {
-    const availableItems = getAvailableItems();
-    return (
-      <div style={{ padding: '16px' }}>
-        <IonButton fill="clear" onClick={() => setSelectedItem('')}>← Back</IonButton>
-        
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-          <h2 style={{ margin: 0 }}>{selectedItem} - {selectedGender || 'Available'}</h2>
-        </div>
-
-        <h3 style={{ margin: '16px 0', color: '#666' }}>Available Items</h3>
-
-        <IonGrid>
-          <IonRow>
-            {availableItems.map((item) => (
-              <IonCol size="6" key={item.id}>
-                <IonCard button onClick={() => setViewingItem(item)} style={{ backgroundColor: 'transparent', border: '1px solid #444' }}>
-                  <IonCardContent style={{ padding: '8px' }}>
-                    <div style={{ display: 'flex', gap: '4px', marginBottom: '8px' }}>
-                      <div style={{
-                        width: '50px', height: '60px', borderRadius: '4px',
-                        backgroundImage: `url(${item.frontPhoto})`,
-                        backgroundSize: 'cover', backgroundPosition: 'center'
-                      }} />
-                      <div style={{
-                        width: '50px', height: '60px', borderRadius: '4px',
-                        backgroundImage: `url(${item.backPhoto})`,
-                        backgroundSize: 'cover', backgroundPosition: 'center'
-                      }} />
-                    </div>
-                    <div style={{ fontSize: '13px', fontWeight: 'bold', marginBottom: '4px' }}>
-                      {item.item}
-                    </div>
-                    <div style={{ fontSize: '11px', color: '#666', marginBottom: '2px' }}>
-                      Size: {item.size}
-                    </div>
-                    <div style={{ fontSize: '11px', color: '#666', marginBottom: '4px' }}>
-                      Condition: {getConditionText(item.condition)}
-                    </div>
-                    <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#E74C3C' }}>
-                      R{item.price}
-                    </div>
-                  </IonCardContent>
-                </IonCard>
-              </IonCol>
-            ))}
-          </IonRow>
-        </IonGrid>
       </div>
     );
   }

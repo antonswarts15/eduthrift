@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   IonItem,
   IonLabel,
@@ -13,10 +13,14 @@ import {
   IonCol,
   IonIcon,
   IonAccordion,
-  IonAccordionGroup
+  IonAccordionGroup,
+  IonToast,
+  IonBadge
 } from '@ionic/react';
-import { cameraOutline, imageOutline, manOutline, womanOutline, roseOutline, ribbonOutline, diamondOutline } from 'ionicons/icons';
-import { generatePlaceholder } from '../../utils/imagePlaceholder';
+import { cameraOutline, imageOutline, manOutline, womanOutline, roseOutline, ribbonOutline, diamondOutline, checkmarkCircleOutline, closeCircleOutline } from 'ionicons/icons';
+import { useCartStore } from '../../stores/cartStore';
+import { useListingsStore } from '../../stores/listingsStore';
+
 
 interface MatricDanceProps {
   userType: 'seller' | 'buyer';
@@ -39,54 +43,39 @@ const MatricDanceComponent: React.FC<MatricDanceProps> = ({ userType, onItemSele
   const [conditionFilter, setConditionFilter] = useState<number | undefined>();
   const [priceRange, setPriceRange] = useState({ min: '', max: '' });
   const [zoomedPhoto, setZoomedPhoto] = useState<string | null>(null);
-  const [addedToCartId, setAddedToCartId] = useState<number | null>(null);
+  const [addedToCartId, setAddedToCartId] = useState<string | null>(null);
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const { addToCart } = useCartStore();
+  const { listings, fetchListings } = useListingsStore();
+
+  useEffect(() => {
+    fetchListings();
+  }, [fetchListings]);
 
   const sizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '4', '6', '8', '10', '12', '14', '16'];
 
-  const getAllAvailableItems = () => {
-    if (userType === 'buyer') {
-      return [
-        {
-          id: 1, item: 'Evening dress', size: 'M', condition: 1, price: 850, gender: 'Girls',
-          frontPhoto: generatePlaceholder('#E74C3C', 'Dress Front', 120, 150),
-          backPhoto: generatePlaceholder('#E74C3C', 'Dress Back', 120, 150)
-        },
-        {
-          id: 2, item: 'Tuxedo', size: 'L', condition: 2, price: 1200, gender: 'Boys',
-          frontPhoto: generatePlaceholder('#2C3E50', 'Tux Front', 120, 150),
-          backPhoto: generatePlaceholder('#2C3E50', 'Tux Back', 120, 150)
-        },
-        {
-          id: 3, item: 'Cocktail dress', size: 'S', condition: 1, price: 650, gender: 'Girls',
-          frontPhoto: generatePlaceholder('#8E44AD', 'Cocktail Front', 120, 150),
-          backPhoto: generatePlaceholder('#8E44AD', 'Cocktail Back', 120, 150)
-        },
-        {
-          id: 4, item: 'Formal shoes', size: '10', condition: 2, price: 300, gender: 'Unisex',
-          frontPhoto: generatePlaceholder('#34495E', 'Shoes Front', 120, 150),
-          backPhoto: generatePlaceholder('#34495E', 'Shoes Back', 120, 150)
-        },
-        {
-          id: 5, item: 'Bow tie', size: 'One Size', condition: 1, price: 120, gender: 'Boys',
-          frontPhoto: generatePlaceholder('#2C3E50', 'Bow Tie Front', 120, 150),
-          backPhoto: generatePlaceholder('#2C3E50', 'Bow Tie Back', 120, 150)
-        },
-        {
-          id: 6, item: 'Clutch bag', size: 'One Size', condition: 2, price: 180, gender: 'Girls',
-          frontPhoto: generatePlaceholder('#8E44AD', 'Clutch Front', 120, 150),
-          backPhoto: generatePlaceholder('#8E44AD', 'Clutch Back', 120, 150)
-        }
-      ];
-    }
-    return [];
-  };
-
   const getFilteredItems = (gender?: string) => {
-    let items = getAllAvailableItems();
-
-    if (gender) {
-      items = items.filter(item => item.gender === gender);
-    }
+    let items = listings.filter(listing => {
+      if (listing.category !== 'Matric dance clothing') return false;
+      if (gender && listing.gender !== gender && listing.gender !== 'Unisex') return false;
+      return true;
+    }).map(listing => ({
+      id: listing.id,
+      item: listing.name,
+      size: listing.size,
+      condition: listing.condition,
+      price: listing.price,
+      frontPhoto: listing.frontPhoto,
+      backPhoto: listing.backPhoto,
+      quantity: listing.quantity,
+      description: listing.description,
+      gender: listing.gender,
+      category: listing.category,
+      subcategory: listing.subcategory,
+      sport: listing.sport,
+      school: listing.school
+    }));
 
     if (sizeFilter) {
       items = items.filter(item => item.size.toLowerCase().includes(sizeFilter.toLowerCase()));
@@ -105,6 +94,35 @@ const MatricDanceComponent: React.FC<MatricDanceProps> = ({ userType, onItemSele
     }
 
     return items;
+  };
+
+  const handleAddToCart = (item: any) => {
+    if (item.quantity === 0) {
+      setToastMessage(`${item.item} is sold out!`);
+      setShowToast(true);
+      return;
+    }
+
+    const cartItem = {
+      id: item.id,
+      name: item.item,
+      description: item.description || `${item.item} - Size: ${item.size}`,
+      price: item.price,
+      condition: item.condition,
+      school: item.school || '',
+      size: item.size,
+      gender: item.gender || '',
+      frontPhoto: item.frontPhoto,
+      backPhoto: item.backPhoto,
+      category: 'Matric dance clothing',
+      subcategory: item.subcategory,
+      sport: item.sport,
+      quantity: 1
+    };
+
+    addToCart(cartItem);
+    setAddedToCartId(item.id);
+    setTimeout(() => setAddedToCartId(null), 2000);
   };
 
   const getConditionText = (condition: number) => {
@@ -237,18 +255,16 @@ const MatricDanceComponent: React.FC<MatricDanceProps> = ({ userType, onItemSele
 
         <IonButton 
           expand="full" 
-          onClick={() => {
-            onItemSelect?.(selectedAvailableItem);
-            setAddedToCartId(selectedAvailableItem.id);
-            setTimeout(() => setAddedToCartId(null), 2000);
-          }} 
+          onClick={() => handleAddToCart(selectedAvailableItem)}
+          disabled={selectedAvailableItem.quantity === 0}
           style={{ 
             marginTop: '16px',
             '--background': addedToCartId === selectedAvailableItem.id ? '#28a745' : '',
             '--color': addedToCartId === selectedAvailableItem.id ? 'white' : ''
           }}
         >
-          {addedToCartId === selectedAvailableItem.id ? '✓ Added to Cart!' : 'Add to Cart'}
+          {selectedAvailableItem.quantity === 0 ? 'Sold Out' : 
+           addedToCartId === selectedAvailableItem.id ? '✓ Added to Cart!' : 'Add to Cart'}
         </IonButton>
       </div>
     );
@@ -530,6 +546,15 @@ const MatricDanceComponent: React.FC<MatricDanceProps> = ({ userType, onItemSele
           ))}
         </IonAccordionGroup>
       )}
+      
+      <IonToast
+        isOpen={showToast}
+        onDidDismiss={() => setShowToast(false)}
+        message={toastMessage}
+        duration={2000}
+        position="bottom"
+        color={toastMessage.includes('successfully') ? 'success' : 'danger'}
+      />
 
       {/* Photo Zoom Overlay */}
       {zoomedPhoto && (

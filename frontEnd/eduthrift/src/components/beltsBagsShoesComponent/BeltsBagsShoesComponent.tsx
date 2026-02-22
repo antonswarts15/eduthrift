@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import {
   IonItem,
@@ -14,10 +14,14 @@ import {
   IonCol,
   IonIcon,
   IonAccordion,
-  IonAccordionGroup
+  IonAccordionGroup,
+  IonToast,
+  IonBadge
 } from '@ionic/react';
-import { cameraOutline, imageOutline, bagOutline, walletOutline, footstepsOutline, manOutline, womanOutline } from 'ionicons/icons';
-import { generatePlaceholder } from '../../utils/imagePlaceholder';
+import { cameraOutline, imageOutline, bagOutline, walletOutline, footstepsOutline, manOutline, womanOutline, checkmarkCircleOutline, closeCircleOutline } from 'ionicons/icons';
+import { useCartStore } from '../../stores/cartStore';
+import { useListingsStore } from '../../stores/listingsStore';
+
 
 interface BeltsBagsShoesProps {
   userType: 'seller' | 'buyer';
@@ -29,25 +33,67 @@ const BeltsBagsShoesComponent: React.FC<BeltsBagsShoesProps> = ({ userType, onIt
   const [selectedGender, setSelectedGender] = useState('');
   const [viewingItem, setViewingItem] = useState<any>(null);
   const [photoViewer, setPhotoViewer] = useState<string | null>(null);
-  const [addedToCartId, setAddedToCartId] = useState<number | null>(null);
+  const [addedToCartId, setAddedToCartId] = useState<string | null>(null);
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const { addToCart } = useCartStore();
+  const { listings, fetchListings } = useListingsStore();
 
-  const mockItems = [
-    {
-      id: 1, item: 'School shoes', size: '8', condition: 2, price: 120,
-      frontPhoto: generatePlaceholder('#2C3E50', 'Shoes Front', 120, 150),
-      backPhoto: generatePlaceholder('#2C3E50', 'Shoes Back', 120, 150)
-    },
-    {
-      id: 2, item: 'School bag', size: 'One Size', condition: 1, price: 150,
-      frontPhoto: generatePlaceholder('#E67E22', 'Bag Front', 120, 150),
-      backPhoto: generatePlaceholder('#E67E22', 'Bag Back', 120, 150)
-    },
-    {
-      id: 3, item: 'Belt', size: 'M', condition: 3, price: 40,
-      frontPhoto: generatePlaceholder('#8B4513', 'Belt Front', 120, 150),
-      backPhoto: generatePlaceholder('#8B4513', 'Belt Back', 120, 150)
+  useEffect(() => {
+    fetchListings();
+  }, [fetchListings]);
+
+  const getFilteredItems = () => {
+    return listings.filter(listing => {
+      if (listing.category !== 'Belts, bags & shoes') return false;
+      if (selectedGender && listing.gender !== selectedGender && listing.gender !== 'Unisex') return false;
+      return true;
+    }).map(listing => ({
+      id: listing.id,
+      item: listing.name,
+      size: listing.size,
+      condition: listing.condition,
+      price: listing.price,
+      frontPhoto: listing.frontPhoto,
+      backPhoto: listing.backPhoto,
+      quantity: listing.quantity,
+      description: listing.description,
+      gender: listing.gender,
+      category: listing.category,
+      subcategory: listing.subcategory,
+      sport: listing.sport,
+      school: listing.school
+    }));
+  };
+
+  const handleAddToCart = (item: any) => {
+    if (item.quantity === 0) {
+      setToastMessage(`${item.item} is sold out!`);
+      setShowToast(true);
+      return;
     }
-  ];
+
+    const cartItem = {
+      id: item.id,
+      name: item.item,
+      description: item.description || `${item.item} - Size: ${item.size}`,
+      price: item.price,
+      condition: item.condition,
+      school: item.school || '',
+      size: item.size,
+      gender: item.gender || '',
+      frontPhoto: item.frontPhoto,
+      backPhoto: item.backPhoto,
+      category: 'Belts, bags & shoes',
+      subcategory: item.subcategory,
+      sport: item.sport,
+      quantity: 1
+    };
+
+    addToCart(cartItem);
+    setAddedToCartId(item.id);
+    setTimeout(() => setAddedToCartId(null), 2000);
+  };
 
   const getConditionText = (condition: number) => {
     const conditions = { 1: 'Brand new', 2: 'Like new', 3: 'Used but good', 4: 'Used and worn' };
@@ -169,18 +215,16 @@ const BeltsBagsShoesComponent: React.FC<BeltsBagsShoesProps> = ({ userType, onIt
 
         <IonButton 
           expand="full" 
-          onClick={() => {
-            onItemSelect?.(viewingItem);
-            setAddedToCartId(viewingItem.id);
-            setTimeout(() => setAddedToCartId(null), 2000);
-          }} 
+          onClick={() => handleAddToCart(viewingItem)}
+          disabled={viewingItem.quantity === 0}
           style={{ 
             marginTop: '16px',
             '--background': addedToCartId === viewingItem.id ? '#28a745' : '',
             '--color': addedToCartId === viewingItem.id ? 'white' : ''
           }}
         >
-          {addedToCartId === viewingItem.id ? '✓ Added to Cart!' : 'Add to Cart'}
+          {viewingItem.quantity === 0 ? 'Sold Out' : 
+           addedToCartId === viewingItem.id ? '✓ Added to Cart!' : 'Add to Cart'}
         </IonButton>
         {renderPhotoViewer()}
       </div>
@@ -225,7 +269,7 @@ const BeltsBagsShoesComponent: React.FC<BeltsBagsShoesProps> = ({ userType, onIt
 
       <IonGrid>
         <IonRow>
-          {mockItems.map((item) => (
+          {getFilteredItems().map((item) => (
             <IonCol size="6" key={item.id}>
               <IonCard button onClick={() => setViewingItem(item)} style={{ backgroundColor: 'transparent', border: '1px solid #444' }}>
                 <IonCardContent style={{ padding: '8px' }}>
@@ -250,8 +294,21 @@ const BeltsBagsShoesComponent: React.FC<BeltsBagsShoesProps> = ({ userType, onIt
                   <div style={{ fontSize: '11px', color: '#666', marginBottom: '4px' }}>
                     Condition: {getConditionText(item.condition)}
                   </div>
-                  <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#E74C3C' }}>
-                    R{item.price}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#E74C3C' }}>
+                      R{item.price}
+                    </div>
+                    {item.quantity > 0 ? (
+                      <IonBadge color="success" style={{ fontSize: '9px' }}>
+                        <IonIcon icon={checkmarkCircleOutline} style={{ marginRight: '2px', fontSize: '10px' }} />
+                        {item.quantity} available
+                      </IonBadge>
+                    ) : (
+                      <IonBadge color="danger" style={{ fontSize: '9px' }}>
+                        <IonIcon icon={closeCircleOutline} style={{ marginRight: '2px', fontSize: '10px' }} />
+                        Sold Out
+                      </IonBadge>
+                    )}
                   </div>
                 </IonCardContent>
               </IonCard>
@@ -260,6 +317,15 @@ const BeltsBagsShoesComponent: React.FC<BeltsBagsShoesProps> = ({ userType, onIt
         </IonRow>
       </IonGrid>
       {renderPhotoViewer()}
+      
+      <IonToast
+        isOpen={showToast}
+        onDidDismiss={() => setShowToast(false)}
+        message={toastMessage}
+        duration={2000}
+        position="bottom"
+        color={toastMessage.includes('successfully') ? 'success' : 'danger'}
+      />
     </div>
   );
 };

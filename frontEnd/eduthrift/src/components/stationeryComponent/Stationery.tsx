@@ -19,8 +19,8 @@ import {
   IonBadge
 } from '@ionic/react';
 import { cameraOutline, imageOutline, pencilOutline, bookOutline, colorPaletteOutline, cutOutline, bagOutline, checkmarkCircleOutline, closeCircleOutline } from 'ionicons/icons';
-import { generatePlaceholder } from '../../utils/imagePlaceholder';
 import { useCartStore } from '../../stores/cartStore';
+import { useListingsStore } from '../../stores/listingsStore';
 
 
 interface StationeryProps {
@@ -39,46 +39,32 @@ const Stationery: React.FC<StationeryProps> = ({ userType, onItemSelect, categor
   const [selectedQuantity, setSelectedQuantity] = useState(1);
   const [addedToCart, setAddedToCart] = useState<{[key: string]: boolean}>({});
   const { addToCart } = useCartStore();
-  
-  const getItemQuantity = (id: string, category: string) => {
-    const item = mockItems.find(i => i.id.toString() === id);
-    return item ? item.quantity : 0;
-  };
-  
-  const decreaseInventory = (id: string, category: string) => {
-    // Mock function
-  };
+  const { listings, fetchListings } = useListingsStore();
 
-  const mockItems = [
-    {
-      id: 1, item: 'HB Pencils', condition: 1, price: 15, quantity: 3,
-      frontPhoto: generatePlaceholder('#3498DB', 'HB Pencils', 120, 150),
-      backPhoto: generatePlaceholder('#3498DB', 'Pack Back', 120, 150)
-    },
-    {
-      id: 2, item: 'A4 exercise books (72-page)', condition: 2, price: 25, quantity: 2,
-      frontPhoto: generatePlaceholder('#E74C3C', 'Exercise Book', 120, 150),
-      backPhoto: generatePlaceholder('#E74C3C', 'Book Back', 120, 150)
-    },
-    {
-      id: 3, item: 'Colouring pencils (12-pack)', condition: 1, price: 45, quantity: 1,
-      frontPhoto: generatePlaceholder('#27AE60', 'Colour Pencils', 120, 150),
-      backPhoto: generatePlaceholder('#27AE60', 'Pack Back', 120, 150)
-    },
-    {
-      id: 4, item: '30cm ruler', condition: 3, price: 8, quantity: 0,
-      frontPhoto: generatePlaceholder('#F39C12', 'Ruler 30cm', 120, 150),
-      backPhoto: generatePlaceholder('#F39C12', 'Ruler Back', 120, 150)
-    },
-    {
-      id: 5, item: 'Glue stick', condition: 2, price: 12, quantity: 4,
-      frontPhoto: generatePlaceholder('#8E44AD', 'Glue Stick', 120, 150),
-      backPhoto: generatePlaceholder('#8E44AD', 'Glue Back', 120, 150)
-    }
-  ];
+  useEffect(() => {
+    fetchListings();
+  }, [fetchListings]);
 
   const getFilteredItems = () => {
-    let items = mockItems;
+    let items = listings.filter(listing => {
+      if (listing.category !== 'Stationery') return false;
+      return true;
+    }).map(listing => ({
+      id: listing.id,
+      item: listing.name,
+      condition: listing.condition,
+      price: listing.price,
+      quantity: listing.quantity,
+      frontPhoto: listing.frontPhoto,
+      backPhoto: listing.backPhoto,
+      description: listing.description,
+      size: listing.size,
+      gender: listing.gender,
+      category: listing.category,
+      subcategory: listing.subcategory,
+      sport: listing.sport,
+      school: listing.school
+    }));
     
     if (conditionFilter) {
       items = items.filter(item => item.condition === conditionFilter);
@@ -96,15 +82,14 @@ const Stationery: React.FC<StationeryProps> = ({ userType, onItemSelect, categor
   };
 
   const handleAddToCart = (item: any, quantity: number = 1) => {
-    const currentQuantity = getItemQuantity(item.id.toString(), 'stationery');
-    if (currentQuantity === 0) {
+    if (item.quantity === 0) {
       setToastMessage(`${item.item} is sold out!`);
       setShowToast(true);
       return;
     }
 
-    if (quantity > currentQuantity) {
-      setToastMessage(`Only ${currentQuantity} items available!`);
+    if (quantity > item.quantity) {
+      setToastMessage(`Only ${item.quantity} items available!`);
       setShowToast(true);
       return;
     }
@@ -113,30 +98,29 @@ const Stationery: React.FC<StationeryProps> = ({ userType, onItemSelect, categor
       const cartItem = {
         id: `${item.id}-${Date.now()}-${i}`,
         name: item.item,
-        description: `${item.item} - Condition: ${getConditionText(item.condition)}`,
+        description: item.description || `${item.item} - Condition: ${getConditionText(item.condition)}`,
         price: item.price,
         condition: item.condition,
-        school: '',
-        size: '',
-        gender: '',
+        school: item.school || '',
+        size: item.size || '',
+        gender: item.gender || '',
         frontPhoto: item.frontPhoto,
         backPhoto: item.backPhoto,
         category: 'Stationery',
+        subcategory: item.subcategory,
+        sport: item.sport,
         quantity: 1
       };
       
       if (i === 0) {
         // Only show toast for the first item to avoid multiple toasts
-        addToCart(cartItem, (message, color) => {
-          setToastMessage(`${quantity} x ${item.item} added to cart!`);
-          setShowToast(true);
-        });
+        addToCart(cartItem);
+        setToastMessage(`${quantity} x ${item.item} added to cart!`);
+        setShowToast(true);
       } else {
         addToCart(cartItem);
       }
     }
-    
-    decreaseInventory(item.id.toString(), 'stationery');
   };
 
   const getConditionText = (condition: number) => {
@@ -287,7 +271,7 @@ const Stationery: React.FC<StationeryProps> = ({ userType, onItemSelect, categor
         <div style={{ backgroundColor: '#f8f9fa', padding: '16px', borderRadius: '8px', margin: '16px 0' }}>
           <div style={{ marginBottom: '8px' }}><strong>Condition:</strong> {getConditionText(viewingItem.condition)}</div>
           <div style={{ marginBottom: '8px', fontSize: '18px', fontWeight: 'bold', color: '#E74C3C' }}>R{viewingItem.price}</div>
-          <div style={{ marginBottom: '8px' }}><strong>Available:</strong> {getItemQuantity(viewingItem.id.toString(), 'stationery')}</div>
+          <div style={{ marginBottom: '8px' }}><strong>Available:</strong> {viewingItem.quantity}</div>
         </div>
 
         <IonItem style={{ marginBottom: '16px' }}>
@@ -296,7 +280,7 @@ const Stationery: React.FC<StationeryProps> = ({ userType, onItemSelect, categor
             value={selectedQuantity} 
             onIonChange={e => setSelectedQuantity(e.detail.value)}
           >
-            {Array.from({ length: getItemQuantity(viewingItem.id.toString(), 'stationery') }, (_, i) => i + 1).map(num => (
+            {Array.from({ length: viewingItem.quantity }, (_, i) => i + 1).map(num => (
               <IonSelectOption key={num} value={num}>{num}</IonSelectOption>
             ))}
           </IonSelect>
@@ -309,11 +293,11 @@ const Stationery: React.FC<StationeryProps> = ({ userType, onItemSelect, categor
             setAddedToCart(prev => ({...prev, [viewingItem.id]: true}));
             setTimeout(() => setAddedToCart(prev => ({...prev, [viewingItem.id]: false})), 2000);
           }}
-          disabled={getItemQuantity(viewingItem.id.toString(), 'stationery') === 0}
+          disabled={viewingItem.quantity === 0}
           color={addedToCart[viewingItem.id] ? 'success' : 'primary'}
           style={{ marginTop: '16px' }}
         >
-          {getItemQuantity(viewingItem.id.toString(), 'stationery') === 0 ? 'Sold Out' : 
+          {viewingItem.quantity === 0 ? 'Sold Out' :
            addedToCart[viewingItem.id] ? '✓ Added to Cart!' : `Add ${selectedQuantity} to Cart`}
         </IonButton>
         {renderPhotoViewer()}
@@ -429,10 +413,10 @@ const Stationery: React.FC<StationeryProps> = ({ userType, onItemSelect, categor
                               <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#E74C3C' }}>
                                 R{item.price}
                               </div>
-                              {getItemQuantity(item.id.toString(), 'stationery') > 0 ? (
+                              {item.quantity > 0 ? (
                                 <IonBadge color="success" style={{ fontSize: '9px' }}>
                                   <IonIcon icon={checkmarkCircleOutline} style={{ marginRight: '2px', fontSize: '10px' }} />
-                                  {getItemQuantity(item.id.toString(), 'stationery')} available
+                                  {item.quantity} available
                                 </IonBadge>
                               ) : (
                                 <IonBadge color="danger" style={{ fontSize: '9px' }}>

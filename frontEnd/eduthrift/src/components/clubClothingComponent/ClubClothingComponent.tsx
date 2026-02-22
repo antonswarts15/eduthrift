@@ -24,8 +24,8 @@ import {
 } from '@ionic/react';
 import { cameraOutline, imageOutline, shirtOutline, bagOutline, peopleOutline, fitnessOutline, checkmarkCircleOutline, closeCircleOutline } from 'ionicons/icons';
 import ClubSelector from '../ClubSelector';
-import { generatePlaceholder } from '../../utils/imagePlaceholder';
 import { useCartStore } from '../../stores/cartStore';
+import { useListingsStore } from '../../stores/listingsStore';
 
 
 interface ClubClothingProps {
@@ -52,59 +52,45 @@ const ClubClothingComponent: React.FC<ClubClothingProps> = ({ userType, onItemSe
   const [zoomedPhoto, setZoomedPhoto] = useState<string | null>(null);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
-  const [addedToCartId, setAddedToCartId] = useState<number | null>(null);
+  const [addedToCartId, setAddedToCartId] = useState<string | null>(null);
   const { addToCart } = useCartStore();
-  
-  const getItemQuantity = (id: string, category: string) => {
-    const item = availableItems.find(i => i.id.toString() === id);
-    return item ? item.quantity : 0;
-  };
-  
-  const decreaseInventory = (id: string, category: string) => {
-    // Mock function
-  };
+  const { listings, fetchListings } = useListingsStore();
+
+  useEffect(() => {
+    fetchListings();
+  }, [fetchListings]);
 
   const childrenSizes = ['4', '5', '6', '7', '8', '9', '10', '11', '12'];
   const teenSizes = ['XS (28)', 'S (30)', 'M (32)', 'L (34)', 'XL (36)', 'XXL (38)'];
   const bagSizes = ['One Size'];
 
-  const availableItems = [
-    {
-      id: 1, item: 'Club jersey', size: 'M (32)', condition: 2, price: 95, quantity: 2,
-      frontPhoto: generatePlaceholder('#E74C3C', 'Jersey Front', 150, 200),
-      backPhoto: generatePlaceholder('#E74C3C', 'Jersey Back', 150, 200)
-    },
-    {
-      id: 2, item: 'Training shirt', size: 'L (34)', condition: 1, price: 70, quantity: 1,
-      frontPhoto: generatePlaceholder('#3498DB', 'Training Front', 150, 200),
-      backPhoto: generatePlaceholder('#3498DB', 'Training Back', 150, 200)
-    },
-    {
-      id: 3, item: 'Club shorts', size: 'M (32)', condition: 3, price: 55, quantity: 3,
-      frontPhoto: generatePlaceholder('#27AE60', 'Shorts Front', 150, 200),
-      backPhoto: generatePlaceholder('#27AE60', 'Shorts Back', 150, 200)
-    },
-    {
-      id: 4, item: 'Club tracksuit', size: 'L (34)', condition: 2, price: 160, quantity: 0,
-      frontPhoto: generatePlaceholder('#8E44AD', 'Tracksuit Front', 150, 200),
-      backPhoto: generatePlaceholder('#8E44AD', 'Tracksuit Back', 150, 200)
-    },
-    {
-      id: 5, item: 'Club bag', size: 'One Size', condition: 1, price: 85, quantity: 1,
-      frontPhoto: generatePlaceholder('#F39C12', 'Bag Front', 150, 200),
-      backPhoto: generatePlaceholder('#F39C12', 'Bag Back', 150, 200)
-    }
-  ];
-
-  const getAllAvailableItems = () => {
-    if (userType === 'buyer' && clubName) {
-      return availableItems;
-    }
-    return [];
-  };
-
   const getFilteredItems = () => {
-    let items = getAllAvailableItems();
+    if (userType !== 'buyer' || !clubName) return [];
+
+    let items = listings.filter(listing => {
+      if (listing.category !== 'Club clothing') return false;
+      // Assuming club name is stored in 'school' field or we need to check where it's stored
+      // In CreateListingPage, clubName is passed as club_name to backend, but mapped to school in store?
+      // Let's check listingsStore mapBackendItem: school: item.school_name || item.club_name || '',
+      // So listing.school holds the club name for Club Clothing category.
+      if (listing.school !== clubName) return false;
+      return true;
+    }).map(listing => ({
+      id: listing.id,
+      item: listing.name,
+      size: listing.size,
+      condition: listing.condition,
+      price: listing.price,
+      frontPhoto: listing.frontPhoto,
+      backPhoto: listing.backPhoto,
+      quantity: listing.quantity,
+      description: listing.description,
+      gender: listing.gender,
+      category: listing.category,
+      subcategory: listing.subcategory,
+      sport: listing.sport,
+      school: listing.school // This is the club name
+    }));
     
     if (sizeFilter) {
       items = items.filter(item => item.size.toLowerCase().includes(sizeFilter.toLowerCase()));
@@ -126,8 +112,7 @@ const ClubClothingComponent: React.FC<ClubClothingProps> = ({ userType, onItemSe
   };
 
   const handleAddToCart = (item: any) => {
-    const currentQuantity = getItemQuantity(item.id.toString(), 'club-clothing');
-    if (currentQuantity === 0) {
+    if (item.quantity === 0) {
       setToastMessage(`${item.item} is sold out!`);
       setShowToast(true);
       return;
@@ -136,23 +121,23 @@ const ClubClothingComponent: React.FC<ClubClothingProps> = ({ userType, onItemSe
     const cartItem = {
       id: item.id,
       name: item.item,
-      description: `${item.item} - Size: ${item.size}`,
+      description: item.description || `${item.item} - Size: ${item.size}`,
       price: item.price,
       condition: item.condition,
-      school: '',
+      school: clubName, // Use clubName as school for cart context
       size: item.size,
-      gender: '',
+      gender: item.gender || '',
       frontPhoto: item.frontPhoto,
       backPhoto: item.backPhoto,
       category: 'Club Clothing',
+      subcategory: item.subcategory,
+      sport: item.sport,
       quantity: 1
     };
 
-    addToCart(cartItem, (message, color) => {
-      setAddedToCartId(item.id);
-      setTimeout(() => setAddedToCartId(null), 2000);
-    });
-    decreaseInventory(item.id.toString(), 'club-clothing');
+    addToCart(cartItem);
+    setAddedToCartId(item.id);
+    setTimeout(() => setAddedToCartId(null), 2000);
   };
 
   const getConditionText = (condition: number) => {
@@ -405,14 +390,14 @@ const ClubClothingComponent: React.FC<ClubClothingProps> = ({ userType, onItemSe
         <IonButton 
           expand="full" 
           onClick={() => handleAddToCart(selectedAvailableItem)}
-          disabled={getItemQuantity(selectedAvailableItem.id.toString(), 'club-clothing') === 0}
+          disabled={selectedAvailableItem.quantity === 0}
           style={{ 
             marginTop: '16px',
             '--background': addedToCartId === selectedAvailableItem.id ? '#28a745' : '',
             '--color': addedToCartId === selectedAvailableItem.id ? 'white' : ''
           }}
         >
-          {getItemQuantity(selectedAvailableItem.id.toString(), 'club-clothing') === 0 ? 'Sold Out' : 
+          {selectedAvailableItem.quantity === 0 ? 'Sold Out' :
            addedToCartId === selectedAvailableItem.id ? '✓ Added to Cart!' : 'Add to Cart'}
         </IonButton>
       </div>
@@ -649,9 +634,9 @@ const ClubClothingComponent: React.FC<ClubClothingProps> = ({ userType, onItemSe
             {Object.entries(getFilteredCategories()).map(([category, categoryData]) => {
               const categoryItems = getFilteredItems().filter(item => {
                 if (category === 'Boys Club Wear') {
-                  return categoryData.items.includes(item.item);
+                  return categoryData.items.includes(item.item) && (item.gender === 'Boy' || item.gender === 'Unisex');
                 } else if (category === 'Girls Club Wear') {
-                  return categoryData.items.includes(item.item);
+                  return categoryData.items.includes(item.item) && (item.gender === 'Girl' || item.gender === 'Unisex');
                 } else if (category === 'Unisex Items') {
                   return categoryData.items.includes(item.item);
                 }
@@ -714,10 +699,10 @@ const ClubClothingComponent: React.FC<ClubClothingProps> = ({ userType, onItemSe
                                   <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#E74C3C' }}>
                                     R{availableItem.price}
                                   </div>
-                                  {getItemQuantity(availableItem.id.toString(), 'club-clothing') > 0 ? (
+                                  {availableItem.quantity > 0 ? (
                                     <IonBadge color="success" style={{ fontSize: '9px' }}>
                                       <IonIcon icon={checkmarkCircleOutline} style={{ marginRight: '2px', fontSize: '10px' }} />
-                                      {getItemQuantity(availableItem.id.toString(), 'club-clothing')} available
+                                      {availableItem.quantity} available
                                     </IonBadge>
                                   ) : (
                                     <IonBadge color="danger" style={{ fontSize: '9px' }}>

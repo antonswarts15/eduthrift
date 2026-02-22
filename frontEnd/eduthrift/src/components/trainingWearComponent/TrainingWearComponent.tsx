@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import {
   IonItem,
@@ -19,8 +19,8 @@ import {
   IonBadge
 } from '@ionic/react';
 import { cameraOutline, imageOutline, fitnessOutline, shirtOutline, footstepsOutline, manOutline, womanOutline, checkmarkCircleOutline, closeCircleOutline } from 'ionicons/icons';
-import { generatePlaceholder } from '../../utils/imagePlaceholder';
 import { useCartStore } from '../../stores/cartStore';
+import { useListingsStore } from '../../stores/listingsStore';
 
 
 interface TrainingWearProps {
@@ -37,44 +37,13 @@ const TrainingWearComponent: React.FC<TrainingWearProps> = ({ userType, onItemSe
   const [priceRange, setPriceRange] = useState({ min: '', max: '' });
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
-  const [addedToCartId, setAddedToCartId] = useState<number | null>(null);
+  const [addedToCartId, setAddedToCartId] = useState<string | null>(null);
   const { addToCart } = useCartStore();
-  // Mock functions to replace context dependency
-  const getItemQuantity = (id: string, category: string) => {
-    return Math.floor(Math.random() * 5) + 1;
-  };
-  
-  const decreaseInventory = (id: string, category: string) => {
-    // Mock function
-  };
+  const { listings, fetchListings } = useListingsStore();
 
-  const mockItems = [
-    {
-      id: 1, item: 'Training shirt', size: 'M (32)', condition: 2, price: 85, gender: 'Boys',
-      frontPhoto: generatePlaceholder('#3498DB','Shirt Front',120, 150 ),
-      backPhoto: generatePlaceholder('#3498DB','Shirt Back',120, 150 )
-    },
-    {
-      id: 2, item: 'Training shorts', size: 'L (34)', condition: 1, price: 70, gender: 'Boys',
-      frontPhoto: generatePlaceholder('#27AE60','Shorts Front',120, 150),
-      backPhoto: generatePlaceholder( '#27AE60','Shorts Back',120, 150)
-    },
-    {
-      id: 3, item: 'Compression shirt', size: 'S (30)', condition: 3, price: 60, gender: 'Girls',
-      frontPhoto: generatePlaceholder('#E74C3C','Compression Front',120, 150),
-      backPhoto: generatePlaceholder('#E74C3C','Compression Back',120, 150)
-    },
-    {
-      id: 4, item: 'Running shoes', size: '10', condition: 2, price: 220, gender: 'Unisex',
-      frontPhoto: generatePlaceholder('#F39C12','Shoes Front',120, 150),
-      backPhoto: generatePlaceholder('#F39C12','Shoes Back',120, 150)
-    },
-    {
-      id: 5, item: 'Tracksuit', size: 'M (32)', condition: 1, price: 180, gender: 'Girls',
-      frontPhoto: generatePlaceholder('#8E44AD','Tracksuit Front',120, 150),
-      backPhoto: generatePlaceholder('#8E44AD','Tracksuit Back',120, 150)
-    }
-  ];
+  useEffect(() => {
+    fetchListings();
+  }, [fetchListings]);
 
   const getConditionText = (condition: number) => {
     const conditions = { 1: 'Brand new', 2: 'Like new', 3: 'Used but good', 4: 'Used and worn' };
@@ -82,8 +51,7 @@ const TrainingWearComponent: React.FC<TrainingWearProps> = ({ userType, onItemSe
   };
 
   const handleAddToCart = (item: any) => {
-    const currentQuantity = getItemQuantity(item.id.toString(), 'training-wear');
-    if (currentQuantity === 0) {
+    if (item.quantity === 0) {
       setToastMessage(`${item.item} is sold out!`);
       setShowToast(true);
       return;
@@ -92,31 +60,46 @@ const TrainingWearComponent: React.FC<TrainingWearProps> = ({ userType, onItemSe
     const cartItem = {
       id: item.id,
       name: item.item,
-      description: `${item.item} - Size: ${item.size}`,
+      description: item.description || `${item.item} - Size: ${item.size}`,
       price: item.price,
       condition: item.condition,
-      school: '',
+      school: item.school || '',
       size: item.size,
-      gender: item.gender,
+      gender: item.gender || '',
       frontPhoto: item.frontPhoto,
       backPhoto: item.backPhoto,
       category: 'Training Wear',
+      subcategory: item.subcategory,
+      sport: item.sport,
       quantity: 1
     };
 
     addToCart(cartItem);
-    decreaseInventory(item.id.toString(), 'training-wear');
     setAddedToCartId(item.id);
     setTimeout(() => setAddedToCartId(null), 2000);
   };
 
   const getFilteredItems = (gender?: string) => {
-    let items = mockItems;
-
-    // Filter by gender if specified
-    if (gender) {
-      items = items.filter(item => item.gender === gender || item.gender === 'Unisex');
-    }
+    let items = listings.filter(listing => {
+      if (listing.category !== 'Training wear') return false;
+      if (gender && listing.gender !== gender && listing.gender !== 'Unisex') return false;
+      return true;
+    }).map(listing => ({
+      id: listing.id,
+      item: listing.name,
+      size: listing.size,
+      condition: listing.condition,
+      price: listing.price,
+      frontPhoto: listing.frontPhoto,
+      backPhoto: listing.backPhoto,
+      quantity: listing.quantity,
+      description: listing.description,
+      gender: listing.gender,
+      category: listing.category,
+      subcategory: listing.subcategory,
+      sport: listing.sport,
+      school: listing.school
+    }));
 
     // Apply size filter
     if (sizeFilter) {
@@ -290,14 +273,14 @@ const TrainingWearComponent: React.FC<TrainingWearProps> = ({ userType, onItemSe
         <IonButton 
           expand="full" 
           onClick={() => handleAddToCart(viewingItem)}
-          disabled={getItemQuantity(viewingItem.id.toString(), 'training-wear') === 0}
+          disabled={viewingItem.quantity === 0}
           style={{ 
             marginTop: '16px',
             '--background': addedToCartId === viewingItem.id ? '#28a745' : '',
             '--color': addedToCartId === viewingItem.id ? 'white' : ''
           }}
         >
-          {getItemQuantity(viewingItem.id.toString(), 'training-wear') === 0 ? 'Sold Out' : 
+          {viewingItem.quantity === 0 ? 'Sold Out' :
            addedToCartId === viewingItem.id ? '✓ Added to Cart!' : 'Add to Cart'}
         </IonButton>
         {renderPhotoViewer()}
@@ -460,10 +443,10 @@ const TrainingWearComponent: React.FC<TrainingWearProps> = ({ userType, onItemSe
                               <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#E74C3C' }}>
                                 R{item.price}
                               </div>
-                              {getItemQuantity(item.id.toString(), 'training-wear') > 0 ? (
+                              {item.quantity > 0 ? (
                                 <IonBadge color="success" style={{ fontSize: '9px' }}>
                                   <IonIcon icon={checkmarkCircleOutline} style={{ marginRight: '2px', fontSize: '10px' }} />
-                                  {getItemQuantity(item.id.toString(), 'training-wear')} available
+                                  {item.quantity} available
                                 </IonBadge>
                               ) : (
                                 <IonBadge color="danger" style={{ fontSize: '9px' }}>

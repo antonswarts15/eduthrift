@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import {
   IonItem,
@@ -20,8 +20,8 @@ import {
 } from '@ionic/react';
 import { cameraOutline, imageOutline, shirtOutline, bagOutline, schoolOutline, peopleOutline, checkmarkCircleOutline, closeCircleOutline } from 'ionicons/icons';
 import SchoolSelector from '../SchoolSelector';
-import { generatePlaceholder } from '../../utils/imagePlaceholder';
 import { useCartStore } from '../../stores/cartStore';
+import { useListingsStore, Listing } from '../../stores/listingsStore';
 
 
 interface SchoolUniformProps {
@@ -48,66 +48,43 @@ const SchoolUniformComponent: React.FC<SchoolUniformProps> = ({ userType, onItem
   const [photoViewer, setPhotoViewer] = useState<string | null>(null);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
-  const [addedToCartId, setAddedToCartId] = useState<number | null>(null);
+  const [addedToCartId, setAddedToCartId] = useState<string | null>(null);
   const { addToCart } = useCartStore();
-  
-  const getItemQuantity = (id: string, category: string) => {
-    return Math.floor(Math.random() * 5) + 1; // Mock quantity 1-5
-  };
-  
-  const decreaseInventory = (id: string, category: string) => {
-    // Mock function
-  };
+  const { listings, fetchListings } = useListingsStore();
+
+  useEffect(() => {
+    fetchListings();
+  }, [fetchListings]);
 
   const childrenSizes = ['4', '5', '6', '7', '8', '9', '10', '11', '12'];
   const teenSizes = ['XS (28)', 'S (30)', 'M (32)', 'L (34)', 'XL (36)', 'XXL (38)'];
   const bagSizes = ['One Size'];
 
-  const getAllAvailableItems = () => {
-    if (userType === 'buyer' && schoolName) {
-      return [
-        {
-          id: 1, item: 'Short sleeve shirts', size: 'M (32)', condition: 2, price: 80,
-          frontPhoto: generatePlaceholder('#3498DB', 'Shirt Front', 150, 200),
-          backPhoto: generatePlaceholder('#3498DB', 'Shirt Back', 150, 200)
-        },
-        {
-          id: 2, item: 'Blouse', size: 'M (32)', condition: 1, price: 85,
-          frontPhoto: generatePlaceholder('#E74C3C', 'Blouse Front', 150, 200),
-          backPhoto: generatePlaceholder('#E74C3C', 'Blouse Back', 150, 200)
-        },
-        {
-          id: 3, item: 'School bag', size: 'One Size', condition: 3, price: 120,
-          frontPhoto: generatePlaceholder('#8E44AD', 'Bag Front', 150, 200),
-          backPhoto: generatePlaceholder('#8E44AD', 'Bag Back', 150, 200)
-        },
-        {
-          id: 4, item: 'School tracksuit', size: 'M (32)', condition: 2, price: 180,
-          frontPhoto: generatePlaceholder('#27AE60', 'Tracksuit Front', 150, 200),
-          backPhoto: generatePlaceholder('#27AE60', 'Tracksuit Back', 150, 200)
-        },
-        {
-          id: 5, item: 'School T-shirt', size: 'L (34)', condition: 1, price: 60,
-          frontPhoto: generatePlaceholder('#F39C12', 'T-shirt Front', 150, 200),
-          backPhoto: generatePlaceholder('#F39C12', 'T-shirt Back', 150, 200)
-        },
-        {
-          id: 6, item: 'PE shorts', size: 'S (30)', condition: 3, price: 45,
-          frontPhoto: generatePlaceholder('#1ABC9C', 'Shorts Front', 150, 200),
-          backPhoto: generatePlaceholder('#1ABC9C', 'Shorts Back', 150, 200)
-        },
-        {
-          id: 7, item: 'Backpack', size: 'One Size', condition: 2, price: 95,
-          frontPhoto: generatePlaceholder('#9B59B6', 'Backpack Front', 150, 200),
-          backPhoto: generatePlaceholder('#9B59B6', 'Backpack Back', 150, 200)
-        }
-      ];
-    }
-    return [];
-  };
-
   const getFilteredItems = () => {
-    let items = getAllAvailableItems();
+    if (userType !== 'buyer' || !schoolName) return [];
+
+    let items = listings.filter(listing => {
+      if (listing.category !== 'School & sport uniform') return false;
+      if (listing.school !== schoolName) return false;
+      // Filter by subcategory if needed (e.g. 'School Uniform' vs 'Sports Uniform')
+      // Assuming SchoolUniformComponent handles 'School Uniform' primarily or both
+      return true;
+    }).map(listing => ({
+      id: listing.id,
+      item: listing.name,
+      size: listing.size,
+      condition: listing.condition,
+      price: listing.price,
+      frontPhoto: listing.frontPhoto,
+      backPhoto: listing.backPhoto,
+      quantity: listing.quantity,
+      description: listing.description,
+      gender: listing.gender,
+      category: listing.category,
+      subcategory: listing.subcategory,
+      sport: listing.sport,
+      school: listing.school
+    }));
     
     if (sizeFilter) {
       items = items.filter(item => item.size.toLowerCase().includes(sizeFilter.toLowerCase()));
@@ -183,8 +160,7 @@ const SchoolUniformComponent: React.FC<SchoolUniformProps> = ({ userType, onItem
   };
 
   const handleAddToCart = (item: any) => {
-    const currentQuantity = getItemQuantity(item.id.toString(), 'school-uniform');
-    if (currentQuantity === 0) {
+    if (item.quantity === 0) {
       setToastMessage(`${item.item} is sold out!`);
       setShowToast(true);
       return;
@@ -193,23 +169,23 @@ const SchoolUniformComponent: React.FC<SchoolUniformProps> = ({ userType, onItem
     const cartItem = {
       id: item.id,
       name: item.item,
-      description: `${item.item} - Size: ${item.size}`,
+      description: item.description || `${item.item} - Size: ${item.size}`,
       price: item.price,
       condition: item.condition,
       school: schoolName,
       size: item.size,
-      gender: '',
+      gender: item.gender || '',
       frontPhoto: item.frontPhoto,
       backPhoto: item.backPhoto,
-      category: 'School Uniform',
+      category: item.category || 'School Uniform',
+      subcategory: item.subcategory,
+      sport: item.sport,
       quantity: 1
     };
 
-    addToCart(cartItem, (message, color) => {
-      setAddedToCartId(item.id);
-      setTimeout(() => setAddedToCartId(null), 2000);
-    });
-    decreaseInventory(item.id.toString(), 'school-uniform');
+    addToCart(cartItem);
+    setAddedToCartId(item.id);
+    setTimeout(() => setAddedToCartId(null), 2000);
   };
 
   const handleAvailableItemClick = (item: any) => {
@@ -412,14 +388,14 @@ const SchoolUniformComponent: React.FC<SchoolUniformProps> = ({ userType, onItem
         <IonButton 
           expand="full" 
           onClick={() => handleAddToCart(selectedAvailableItem)}
-          disabled={getItemQuantity(selectedAvailableItem.id.toString(), 'school-uniform') === 0}
+          disabled={selectedAvailableItem.quantity === 0}
           style={{ 
             marginTop: '16px',
             '--background': addedToCartId === selectedAvailableItem.id ? '#28a745' : '',
             '--color': addedToCartId === selectedAvailableItem.id ? 'white' : ''
           }}
         >
-          {getItemQuantity(selectedAvailableItem.id.toString(), 'school-uniform') === 0 ? 'Sold Out' : 
+          {selectedAvailableItem.quantity === 0 ? 'Sold Out' :
            addedToCartId === selectedAvailableItem.id ? '✓ Added to Cart!' : 'Add to Cart'}
         </IonButton>
         {renderPhotoViewer()}
@@ -657,9 +633,9 @@ const SchoolUniformComponent: React.FC<SchoolUniformProps> = ({ userType, onItem
             {Object.entries(getFilteredCategories()).map(([category, categoryData]) => {
               const categoryItems = getFilteredItems().filter(item => {
                 if (category === 'Boys Uniform') {
-                  return categoryData.items.includes(item.item);
+                  return categoryData.items.includes(item.item) && (item.gender === 'Boy' || item.gender === 'Unisex');
                 } else if (category === 'Girls Uniform') {
-                  return categoryData.items.includes(item.item);
+                  return categoryData.items.includes(item.item) && (item.gender === 'Girl' || item.gender === 'Unisex');
                 } else if (category === 'Unisex Items') {
                   return categoryData.items.includes(item.item);
                 }
@@ -722,10 +698,10 @@ const SchoolUniformComponent: React.FC<SchoolUniformProps> = ({ userType, onItem
                                   <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#E74C3C' }}>
                                     R{availableItem.price}
                                   </div>
-                                  {getItemQuantity(availableItem.id.toString(), 'school-uniform') > 0 ? (
+                                  {availableItem.quantity > 0 ? (
                                     <IonBadge color="success" style={{ fontSize: '9px' }}>
                                       <IonIcon icon={checkmarkCircleOutline} style={{ marginRight: '2px', fontSize: '10px' }} />
-                                      {getItemQuantity(availableItem.id.toString(), 'school-uniform')} available
+                                      {availableItem.quantity} available
                                     </IonBadge>
                                   ) : (
                                     <IonBadge color="danger" style={{ fontSize: '9px' }}>
