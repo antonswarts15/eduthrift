@@ -26,8 +26,7 @@ import {
 import { createOutline, trashOutline, closeOutline, warningOutline } from 'ionicons/icons';
 import { useListingsStore, Listing } from '../stores/listingsStore';
 import { useNotificationStore } from '../stores/notificationStore';
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+import PhotoCapture from '../components/PhotoCapture';
 
 const ListingsPage: React.FC = () => {
   const [selectedTab, setSelectedTab] = useState('current');
@@ -38,6 +37,10 @@ const ListingsPage: React.FC = () => {
   const [toastColor, setToastColor] = useState<string>('success');
   const [deleteAlert, setDeleteAlert] = useState<{ isOpen: boolean; id: string; name: string }>({ isOpen: false, id: '', name: '' });
   const [isSaving, setIsSaving] = useState(false);
+  const [newFrontPhoto, setNewFrontPhoto] = useState<File | null>(null);
+  const [newBackPhoto, setNewBackPhoto] = useState<File | null>(null);
+  const [frontPhotoPreview, setFrontPhotoPreview] = useState<string | null>(null);
+  const [backPhotoPreview, setBackPhotoPreview] = useState<string | null>(null);
 
   const { myListings, isLoading, fetchMyListings, updateListing, deleteListing, getListingsNearExpiry, getDaysUntilExpiry, relistItem } = useListingsStore();
   const { addNotification } = useNotificationStore();
@@ -59,6 +62,10 @@ const ListingsPage: React.FC = () => {
 
   const handleEditListing = (listing: Listing) => {
     setEditingListing({ ...listing });
+    setNewFrontPhoto(null);
+    setNewBackPhoto(null);
+    setFrontPhotoPreview(null);
+    setBackPhotoPreview(null);
     setIsEditModalOpen(true);
   };
 
@@ -66,13 +73,22 @@ const ListingsPage: React.FC = () => {
     if (!editingListing) return;
     setIsSaving(true);
     try {
-      await updateListing(editingListing.id, editingListing);
+      const photoUpdates: { frontPhoto?: File; backPhoto?: File } = {};
+      if (newFrontPhoto) photoUpdates.frontPhoto = newFrontPhoto;
+      if (newBackPhoto) photoUpdates.backPhoto = newBackPhoto;
+
+      const hasPhotos = newFrontPhoto || newBackPhoto;
+      await updateListing(editingListing.id, editingListing, hasPhotos ? photoUpdates : undefined);
       setToastMessage('Listing updated successfully!');
       setToastColor('success');
       setShowToast(true);
       addNotification('Listing Updated', `${editingListing.name} has been updated`);
       setIsEditModalOpen(false);
       setEditingListing(null);
+      setNewFrontPhoto(null);
+      setNewBackPhoto(null);
+      setFrontPhotoPreview(null);
+      setBackPhotoPreview(null);
     } catch (error: any) {
       setToastMessage(error.message || 'Failed to update listing');
       setToastColor('danger');
@@ -107,12 +123,25 @@ const ListingsPage: React.FC = () => {
   const handleCloseModal = () => {
     setIsEditModalOpen(false);
     setEditingListing(null);
+    setNewFrontPhoto(null);
+    setNewBackPhoto(null);
+    setFrontPhotoPreview(null);
+    setBackPhotoPreview(null);
+  };
+
+  const handleFrontPhotoSelected = (file: File) => {
+    setNewFrontPhoto(file);
+    setFrontPhotoPreview(URL.createObjectURL(file));
+  };
+
+  const handleBackPhotoSelected = (file: File) => {
+    setNewBackPhoto(file);
+    setBackPhotoPreview(URL.createObjectURL(file));
   };
 
   const getPhotoUrl = (photo: string) => {
     if (!photo) return '';
-    if (photo.startsWith('http') || photo.startsWith('data:')) return photo;
-    return `${API_BASE_URL}${photo}`;
+    return photo;
   };
 
   return (
@@ -292,31 +321,37 @@ const ListingsPage: React.FC = () => {
           <IonContent>
             {editingListing && (
               <div style={{ padding: '16px' }}>
-                {/* Read-only photo display */}
-                {(editingListing.frontPhoto || editingListing.backPhoto) && (
-                  <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', marginBottom: '16px' }}>
-                    {editingListing.frontPhoto && (
-                      <div style={{ textAlign: 'center' }}>
-                        <p style={{ margin: '0 0 4px', fontSize: '12px', color: '#666' }}>Front</p>
-                        <img
-                          src={getPhotoUrl(editingListing.frontPhoto)}
-                          alt="Front"
-                          style={{ width: '80px', height: '100px', objectFit: 'cover', borderRadius: '4px', border: '1px solid #ddd' }}
-                        />
-                      </div>
+                {/* Editable photo section */}
+                <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', marginBottom: '16px' }}>
+                  <div style={{ textAlign: 'center' }}>
+                    <p style={{ margin: '0 0 4px', fontSize: '12px', color: '#666' }}>Front Photo</p>
+                    {(frontPhotoPreview || editingListing.frontPhoto) && (
+                      <img
+                        src={frontPhotoPreview || getPhotoUrl(editingListing.frontPhoto)}
+                        alt="Front"
+                        style={{ width: '80px', height: '100px', objectFit: 'cover', borderRadius: '4px', border: '1px solid #ddd', marginBottom: '4px' }}
+                      />
                     )}
-                    {editingListing.backPhoto && (
-                      <div style={{ textAlign: 'center' }}>
-                        <p style={{ margin: '0 0 4px', fontSize: '12px', color: '#666' }}>Back</p>
-                        <img
-                          src={getPhotoUrl(editingListing.backPhoto)}
-                          alt="Back"
-                          style={{ width: '80px', height: '100px', objectFit: 'cover', borderRadius: '4px', border: '1px solid #ddd' }}
-                        />
-                      </div>
-                    )}
+                    <PhotoCapture
+                      onPhotoSelected={handleFrontPhotoSelected}
+                      buttonText={editingListing.frontPhoto || frontPhotoPreview ? 'Change' : 'Add'}
+                    />
                   </div>
-                )}
+                  <div style={{ textAlign: 'center' }}>
+                    <p style={{ margin: '0 0 4px', fontSize: '12px', color: '#666' }}>Back Photo</p>
+                    {(backPhotoPreview || editingListing.backPhoto) && (
+                      <img
+                        src={backPhotoPreview || getPhotoUrl(editingListing.backPhoto)}
+                        alt="Back"
+                        style={{ width: '80px', height: '100px', objectFit: 'cover', borderRadius: '4px', border: '1px solid #ddd', marginBottom: '4px' }}
+                      />
+                    )}
+                    <PhotoCapture
+                      onPhotoSelected={handleBackPhotoSelected}
+                      buttonText={editingListing.backPhoto || backPhotoPreview ? 'Change' : 'Add'}
+                    />
+                  </div>
+                </div>
 
                 <IonItem style={{ marginBottom: '16px' }}>
                   <IonInput

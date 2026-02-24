@@ -40,7 +40,7 @@ interface ListingsStore {
   fetchListings: (userLocation?: string) => Promise<void>;
   fetchMyListings: () => Promise<void>;
   fetchListingById: (id: string) => Promise<Listing | null>;
-  updateListing: (id: string, listing: Partial<Listing>) => Promise<void>;
+  updateListing: (id: string, listing: Partial<Listing>, newPhotos?: { frontPhoto?: File; backPhoto?: File }) => Promise<void>;
   deleteListing: (id: string) => Promise<void>;
   decreaseQuantity: (id: string) => void;
   getListingById: (id: string) => Listing | undefined;
@@ -62,8 +62,8 @@ const mapBackendItem = (item: any): Listing => ({
   category: item.category || '',
   subcategory: item.subcategory || undefined,
   sport: item.sport || undefined,
-  frontPhoto: item.front_photo ? (item.front_photo.startsWith('http') || item.front_photo.startsWith('data:') ? item.front_photo : `${API_BASE_URL}${item.front_photo}`) : '',
-  backPhoto: item.back_photo ? (item.back_photo.startsWith('http') || item.back_photo.startsWith('data:') ? item.back_photo : `${API_BASE_URL}${item.back_photo}`) : '',
+  frontPhoto: item.front_photo || '',
+  backPhoto: item.back_photo || '',
   dateCreated: item.created_at ? new Date(item.created_at).toLocaleDateString() : new Date().toLocaleDateString(),
   quantity: item.quantity || 1,
   soldOut: item.sold_out || item.quantity === 0 || item.status === 'sold',
@@ -224,8 +224,36 @@ export const useListingsStore = create<ListingsStore>((set, get) => ({
     }
   },
 
-  updateListing: async (id: string, updatedListing: Partial<Listing>) => {
+  updateListing: async (id: string, updatedListing: Partial<Listing>, newPhotos?: { frontPhoto?: File; backPhoto?: File }) => {
     try {
+      // Upload new photos if provided
+      let frontPhotoUrl = updatedListing.frontPhoto;
+      let backPhotoUrl = updatedListing.backPhoto;
+
+      if (newPhotos?.frontPhoto || newPhotos?.backPhoto) {
+        const formData = new FormData();
+        if (newPhotos.frontPhoto) {
+          formData.append('images', newPhotos.frontPhoto);
+        }
+        if (newPhotos.backPhoto) {
+          formData.append('images', newPhotos.backPhoto);
+        }
+
+        const uploadResponse = await api.post('/upload/images', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+
+        const uploadedFiles = uploadResponse.data.files || [];
+        let fileIndex = 0;
+        if (newPhotos.frontPhoto && uploadedFiles[fileIndex]) {
+          frontPhotoUrl = uploadedFiles[fileIndex].url;
+          fileIndex++;
+        }
+        if (newPhotos.backPhoto && uploadedFiles[fileIndex]) {
+          backPhotoUrl = uploadedFiles[fileIndex].url;
+        }
+      }
+
       // Map frontend field names to backend field names
       const backendData: Record<string, any> = {};
       if (updatedListing.name !== undefined) backendData.item_name = updatedListing.name;
@@ -236,15 +264,22 @@ export const useListingsStore = create<ListingsStore>((set, get) => ({
       if (updatedListing.size !== undefined) backendData.size = updatedListing.size;
       if (updatedListing.gender !== undefined) backendData.gender = updatedListing.gender;
       if (updatedListing.quantity !== undefined) backendData.quantity = updatedListing.quantity;
+      if (frontPhotoUrl !== undefined && newPhotos?.frontPhoto) backendData.front_photo = frontPhotoUrl;
+      if (backPhotoUrl !== undefined && newPhotos?.backPhoto) backendData.back_photo = backPhotoUrl;
 
       await itemsApi.updateItem(id, backendData);
 
+      // Update local state with new photo URLs
+      const localUpdate = { ...updatedListing };
+      if (frontPhotoUrl !== undefined && newPhotos?.frontPhoto) localUpdate.frontPhoto = frontPhotoUrl;
+      if (backPhotoUrl !== undefined && newPhotos?.backPhoto) localUpdate.backPhoto = backPhotoUrl;
+
       set((state) => ({
         listings: state.listings.map(listing =>
-          listing.id === id ? { ...listing, ...updatedListing } : listing
+          listing.id === id ? { ...listing, ...localUpdate } : listing
         ),
         myListings: state.myListings.map(listing =>
-          listing.id === id ? { ...listing, ...updatedListing } : listing
+          listing.id === id ? { ...listing, ...localUpdate } : listing
         )
       }));
     } catch (error: any) {
