@@ -18,7 +18,7 @@ import {
   IonToast,
   IonBadge
 } from '@ionic/react';
-import { cameraOutline, imageOutline, pencilOutline, bookOutline, colorPaletteOutline, cutOutline, bagOutline, checkmarkCircleOutline, closeCircleOutline } from 'ionicons/icons';
+import { cameraOutline, imageOutline, pencilOutline, bookOutline, colorPaletteOutline, cutOutline, bagOutline, checkmarkCircleOutline, closeCircleOutline, ellipsisHorizontalOutline } from 'ionicons/icons';
 import { useCartStore } from '../../stores/cartStore';
 import { useListingsStore } from '../../stores/listingsStore';
 
@@ -297,13 +297,16 @@ const Stationery: React.FC<StationeryProps> = ({ userType, onItemSelect, categor
           color={addedToCart[viewingItem.id] ? 'success' : 'primary'}
           style={{ marginTop: '16px' }}
         >
-          {viewingItem.quantity === 0 ? 'Sold Out' :
+          {viewingItem.quantity === 0 ? 'Sold Out' : 
            addedToCart[viewingItem.id] ? '✓ Added to Cart!' : `Add ${selectedQuantity} to Cart`}
         </IonButton>
         {renderPhotoViewer()}
       </div>
     );
   }
+
+  const allFilteredItems = getFilteredItems();
+  const categorizedItems = new Set();
 
   return (
     <div style={{ padding: '16px' }}>
@@ -356,8 +359,15 @@ const Stationery: React.FC<StationeryProps> = ({ userType, onItemSelect, categor
 
       <IonAccordionGroup>
         {Object.entries(stationeryCategories).map(([category, categoryData]) => {
-          const categoryItems = getFilteredItems().filter(item => {
-            return categoryData.items.includes(item.item);
+          const categoryItems = allFilteredItems.filter(item => {
+            const matches = categoryData.items.some(catItem => 
+              item.item.toLowerCase().includes(catItem.toLowerCase()) || 
+              catItem.toLowerCase().includes(item.item.toLowerCase())
+            );
+            if (matches) {
+              categorizedItems.add(item.id);
+            }
+            return matches;
           });
           
           if (categoryItems.length === 0) return null;
@@ -435,6 +445,85 @@ const Stationery: React.FC<StationeryProps> = ({ userType, onItemSelect, categor
             </IonAccordion>
           );
         })}
+
+        {/* Other Items Category */}
+        {(() => {
+          const otherItems = allFilteredItems.filter(item => !categorizedItems.has(item.id));
+          if (otherItems.length === 0) return null;
+
+          return (
+            <IonAccordion key="Other" value="Other">
+              <IonItem slot="header" style={{ '--background': 'transparent' }}>
+                <IonIcon 
+                  icon={ellipsisHorizontalOutline} 
+                  style={{ 
+                    fontSize: '24px', 
+                    color: '#95A5A6', 
+                    marginRight: '12px'
+                  }} 
+                />
+                <IonLabel>
+                  <h3 style={{ 
+                    margin: '0', 
+                    fontWeight: 'bold', 
+                    color: '#95A5A6',
+                    fontSize: '16px'
+                  }}>
+                    Other ({otherItems.length})
+                  </h3>
+                </IonLabel>
+              </IonItem>
+              <div slot="content" style={{ padding: '8px' }}>
+                <IonGrid>
+                  <IonRow>
+                    {otherItems.map((item) => (
+                      <IonCol size="6" key={item.id}>
+                        <IonCard button onClick={() => setViewingItem(item)} style={{ backgroundColor: 'transparent', border: '1px solid #444' }}>
+                          <IonCardContent style={{ padding: '8px' }}>
+                            <div style={{ display: 'flex', gap: '4px', marginBottom: '8px' }}>
+                              <div style={{
+                                width: '50px', height: '60px', borderRadius: '4px',
+                                backgroundImage: `url(${item.frontPhoto})`,
+                                backgroundSize: 'cover', backgroundPosition: 'center'
+                              }} />
+                              <div style={{
+                                width: '50px', height: '60px', borderRadius: '4px',
+                                backgroundImage: `url(${item.backPhoto})`,
+                                backgroundSize: 'cover', backgroundPosition: 'center'
+                              }} />
+                            </div>
+                            <div style={{ fontSize: '13px', fontWeight: 'bold', marginBottom: '4px' }}>
+                              {item.item}
+                            </div>
+                            <div style={{ fontSize: '11px', color: '#666', marginBottom: '4px' }}>
+                              Condition: {getConditionText(item.condition)}
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#E74C3C' }}>
+                                R{item.price}
+                              </div>
+                              {item.quantity > 0 ? (
+                                <IonBadge color="success" style={{ fontSize: '9px' }}>
+                                  <IonIcon icon={checkmarkCircleOutline} style={{ marginRight: '2px', fontSize: '10px' }} />
+                                  {item.quantity} available
+                                </IonBadge>
+                              ) : (
+                                <IonBadge color="danger" style={{ fontSize: '9px' }}>
+                                  <IonIcon icon={closeCircleOutline} style={{ marginRight: '2px', fontSize: '10px' }} />
+                                  Sold Out
+                                </IonBadge>
+                              )}
+                            </div>
+                          </IonCardContent>
+                        </IonCard>
+                      </IonCol>
+                    ))}
+                  </IonRow>
+                </IonGrid>
+              </div>
+            </IonAccordion>
+          );
+        })()}
       </IonAccordionGroup>
       {renderPhotoViewer()}
       

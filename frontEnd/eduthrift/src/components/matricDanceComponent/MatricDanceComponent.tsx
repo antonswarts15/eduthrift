@@ -546,15 +546,6 @@ const MatricDanceComponent: React.FC<MatricDanceProps> = ({ userType, onItemSele
           ))}
         </IonAccordionGroup>
       )}
-      
-      <IonToast
-        isOpen={showToast}
-        onDidDismiss={() => setShowToast(false)}
-        message={toastMessage}
-        duration={2000}
-        position="bottom"
-        color={toastMessage.includes('successfully') ? 'success' : 'danger'}
-      />
 
       {/* Photo Zoom Overlay */}
       {zoomedPhoto && (

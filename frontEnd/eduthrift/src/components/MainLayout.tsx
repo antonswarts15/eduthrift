@@ -22,9 +22,11 @@ import {
   IonModal
 } from '@ionic/react';
 import { useHistory, useLocation } from 'react-router-dom';
+import { isLoggedIn } from '../utils/auth';
 import { useCartStore } from '../stores/cartStore';
 import { useNotificationStore } from '../stores/notificationStore';
 import { useUserStore } from '../stores/userStore';
+import AuthPromptModal from './AuthPromptModal';
 import logo from '../assets/logo.png';
 import {
   bagOutline,
@@ -61,9 +63,9 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const history = useHistory();
   const location = useLocation();
   
-  // Ensure user profile is loaded when layout mounts
+  // Ensure user profile is loaded when layout mounts (only for logged-in users)
   useEffect(() => {
-    if (!userProfile) {
+    if (!userProfile && isLoggedIn()) {
       fetchUserProfile();
     }
   }, [userProfile, fetchUserProfile]);
@@ -195,7 +197,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
             </IonButton>
             <IonButtons slot="end">
               <span style={{ marginRight: '12px', fontSize: '14px', fontWeight: '500', color: '#777' }}>
-                {userProfile?.name || 'User'}
+                {isLoggedIn() ? (userProfile?.name || 'User') : 'Guest'}
               </span>
               <IonButton id="notifications-trigger" onClick={() => setShowNotifications(true)}>
                 <IonIcon icon={notificationsOutline} />
@@ -379,6 +381,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
           </IonContent>
         </IonModal>
       </IonPage>
+      <AuthPromptModal />
     </>
   );
 };

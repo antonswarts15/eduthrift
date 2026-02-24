@@ -34,6 +34,9 @@ import { useListingsStore } from '../stores/listingsStore';
 import { useToast } from '../hooks/useToast';
 import { enhanceAndCompressImage, validateImageFile } from '../utils/imageEnhancer';
 import { useWishlistStore } from '../stores/wishlistStore';
+import { useUserStore } from '../stores/userStore';
+import { useAuthPromptStore } from '../stores/authPromptStore';
+import SellerVerification from './SellerVerification';
 import * as SportEquipmentComponents from './sportingEquipmentComponent';
 import SchoolUniformComponent from './schoolUniformComponent/SchoolUniformComponent';
 import ClubClothingComponent from './clubClothingComponent/ClubClothingComponent';
@@ -280,7 +283,10 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
   const { addNotification } = useNotificationStore();
   const { addListing, listings } = useListingsStore();
   const { checkForMatches } = useWishlistStore();
+  const { isSellerVerified, userProfile, updateProfile, fetchUserProfile } = useUserStore();
+  const { showPrompt: showAuthPrompt } = useAuthPromptStore();
   const { isOpen: showToast, message: toastMessage, color: toastColor, showToast: displayToast, hideToast } = useToast();
+  const [showVerificationModal, setShowVerificationModal] = useState(false);
 
   // Calculate item counts per category
   const getCategoryCount = (categoryName: string): number => {
@@ -632,13 +638,13 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
       if (userType === 'buyer') {
         setShowBeltsBagsShoes(true);
       } else {
-        setShowLocationSearch(true);
+        setShowItemDetails(true);
       }
     } else if (category === 'Training wear') {
       if (userType === 'buyer') {
         setShowTrainingWear(true);
       } else {
-        setShowLocationSearch(true);
+        setShowItemDetails(true);
       }
     } else if (category === 'Textbooks') {
       setShowSchoolGrades(true);
@@ -767,9 +773,32 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
     }
   };
 
+  const handleVerificationComplete = () => {
+    updateProfile({
+      sellerVerification: {
+        ...userProfile?.sellerVerification,
+        status: 'pending',
+        submittedAt: new Date().toISOString()
+      }
+    });
+    setShowVerificationModal(false);
+    displayToast('Verification documents submitted. Please wait for admin approval before listing.', 'warning');
+  };
+
   const handleShowPreview = () => {
     if (!isLoggedIn()) {
-      history.push('/login');
+      showAuthPrompt(userType === 'seller' ? 'list your item for sale' : 'add items to your cart');
+      return;
+    }
+
+    // For sellers: check verification status
+    if (userType === 'seller' && !isSellerVerified()) {
+      const verificationStatus = userProfile?.sellerVerification?.status;
+      if (verificationStatus === 'pending') {
+        displayToast('Your verification is still under review. Please wait for admin approval.', 'warning');
+        return;
+      }
+      setShowVerificationModal(true);
       return;
     }
 
@@ -781,6 +810,12 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
 
     if (selectedCategory === 'Club clothing' && !clubName) {
       alert('Please enter a club name first');
+      return;
+    }
+
+    // Validation: Check item name for generic categories
+    if (!selectedItem && !customItemType) {
+      alert('Please enter an item name');
       return;
     }
 
@@ -818,10 +853,12 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
 
     if (userType === 'seller') {
       // Build preview listing
+      const itemName = selectedItem || customItemType;
+      const brandInfo = customBrand ? ` - ${customBrand}` : '';
       const listing = {
         id: Date.now().toString(),
-        name: selectedItem,
-        description: `${selectedItem} from ${schoolName || clubName || 'Unknown'}`,
+        name: itemName,
+        description: `${itemName}${brandInfo} from ${schoolName || clubName || selectedCategory || 'Unknown'}`,
         price: parseInt(sellingPrice),
         condition: condition!,
         school: schoolName || clubName || 'Unknown',
@@ -837,7 +874,7 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
         sellerIdDocument: idDocumentPreview || undefined,
         sellerProofOfAddress: proofOfAddressPreview || undefined,
         verificationStatus: 'pending' as const,
-        item_name: selectedItem,
+        item_name: itemName,
         school_name: schoolName,
         club_name: clubName
       };
@@ -845,10 +882,11 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
       setShowPreview(true);
     } else {
       // Buyer flow — add to cart directly
+      const buyerItemName = selectedItem || customItemType;
       const cartItem = {
         id: Date.now().toString(),
-        name: selectedItem,
-        description: `${selectedItem} from ${schoolName || clubName || 'Unknown'}`,
+        name: buyerItemName,
+        description: `${buyerItemName} from ${schoolName || clubName || 'Unknown'}`,
         price: Math.floor(Math.random() * 200) + 50,
         condition: condition!,
         school: schoolName || clubName || 'Unknown',
@@ -862,7 +900,7 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
       };
 
       addToCart(cartItem, displayToast);
-      addNotification('Item Added to Cart', `${selectedItem} has been added to your cart`);
+      addNotification('Item Added to Cart', `${buyerItemName} has been added to your cart`);
     }
   };
 
@@ -1184,9 +1222,32 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
               </p>
             </div>
           )}
-          <IonItem>
-            <IonLabel><strong>Selected Item:</strong> {selectedItem}</IonLabel>
-          </IonItem>
+          {selectedItem ? (
+            <IonItem>
+              <IonLabel><strong>Selected Item:</strong> {selectedItem}</IonLabel>
+            </IonItem>
+          ) : (
+            <IonItem style={{ marginBottom: '16px' }}>
+              <IonInput
+                label="Item Name *"
+                labelPlacement="stacked"
+                value={customItemType}
+                onIonChange={e => setCustomItemType(e.detail.value!)}
+                placeholder="e.g. Nike Running Shoes, Adidas Training Shorts"
+              />
+            </IonItem>
+          )}
+          {!selectedItem && userType === 'seller' && (
+            <IonItem style={{ marginBottom: '16px' }}>
+              <IonInput
+                label="Brand (optional)"
+                labelPlacement="stacked"
+                value={customBrand}
+                onIonChange={e => setCustomBrand(e.detail.value!)}
+                placeholder="e.g. Nike, Adidas, Puma"
+              />
+            </IonItem>
+          )}
           
 
           
@@ -1557,7 +1618,7 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
           <IonButton
             expand="full"
             onClick={handleShowPreview}
-            disabled={!gender || !size || !condition || (userType === 'seller' && !sellingPrice) || (selectedCategory === 'School & sport uniform' && !schoolName) || (selectedCategory === 'Club clothing' && !clubName)}
+            disabled={!gender || !size || !condition || (userType === 'seller' && !sellingPrice) || (selectedCategory === 'School & sport uniform' && !schoolName) || (selectedCategory === 'Club clothing' && !clubName) || (!selectedItem && !customItemType)}
             style={{ marginTop: '16px' }}
           >
             {userType === 'seller' ? (
@@ -2059,6 +2120,25 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
         position="bottom"
         color={toastColor}
       />
+
+      {/* Seller Verification Modal */}
+      <IonModal isOpen={showVerificationModal} onDidDismiss={() => setShowVerificationModal(false)}>
+        <IonHeader>
+          <IonToolbar>
+            <IonTitle>Seller Verification</IonTitle>
+            <IonButtons slot="end">
+              <IonButton onClick={() => setShowVerificationModal(false)}>
+                <IonIcon icon={closeOutline} />
+              </IonButton>
+            </IonButtons>
+          </IonToolbar>
+        </IonHeader>
+        <IonContent>
+          <div style={{ paddingTop: '16px' }}>
+            <SellerVerification onVerificationComplete={handleVerificationComplete} />
+          </div>
+        </IonContent>
+      </IonModal>
     </div>
   );
 };

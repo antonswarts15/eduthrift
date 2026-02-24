@@ -19,12 +19,14 @@ api.interceptors.request.use((config) => {
 });
 
 // Handle 401/403 responses (expired/invalid token)
+// Only redirect if the user was previously logged in (prevents guest redirect loops)
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     const requestUrl = error.config?.url || '';
     const isLoginOrRegister = requestUrl === '/auth/login' || requestUrl === '/auth/register';
-    if (!isLoginOrRegister && (error.response?.status === 403 || error.response?.status === 401)) {
+    const wasLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+    if (!isLoginOrRegister && wasLoggedIn && (error.response?.status === 403 || error.response?.status === 401)) {
       localStorage.removeItem('authToken');
       localStorage.setItem('isLoggedIn', 'false');
       window.location.href = '/login';

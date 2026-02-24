@@ -44,11 +44,11 @@ const Welcome: React.FC = () => {
 
 
   const handleBuyClick = () => {
-    history.push('/login?type=buyer');
+    history.push('/buyer');
   };
 
   const handleSellClick = () => {
-    history.push('/login?type=seller');
+    history.push('/seller');
   };
 
   return (

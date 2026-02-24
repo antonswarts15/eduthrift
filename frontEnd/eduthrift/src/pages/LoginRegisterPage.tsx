@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   IonContent,
   IonPage,
@@ -21,7 +21,7 @@ import {
   IonSelectOption
 } from '@ionic/react';
 import { logInOutline, personAddOutline, eyeOutline, eyeOffOutline, locationOutline } from 'ionicons/icons';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
 import { useUserStore } from '../stores/userStore';
 import { userApi } from '../services/api';
@@ -51,8 +51,18 @@ const LoginRegisterPage: React.FC = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const history = useHistory();
+  const location = useLocation();
   const { login: authLogin } = useAuthStore();
   const { fetchUserProfile } = useUserStore();
+
+  // Read segment query param to support direct navigation to register tab
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const segmentParam = params.get('segment');
+    if (segmentParam === 'register') {
+      setSegment('register');
+    }
+  }, [location.search]);
 
   const handleLogin = async () => {
     if (!loginEmail || !loginPassword) {

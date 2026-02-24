@@ -1,5 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { isLoggedIn } from '../utils/auth';
+import { useAuthPromptStore } from './authPromptStore';
 
 export interface CartItem {
   id: string;
@@ -32,6 +34,11 @@ export const useCartStore = create<CartStore>()(
       cartItems: [],
 
   addToCart: (item: CartItem, showToast?: (message: string, color?: 'success' | 'warning' | 'danger') => void) => {
+    if (!isLoggedIn()) {
+      useAuthPromptStore.getState().showPrompt('add items to your cart');
+      return;
+    }
+
     const { cartItems } = get();
 
     // Check if item already exists in cart

@@ -120,25 +120,19 @@ const App: React.FC = () => {
             <LoginRegisterPage />
           </Route>
           <Route exact path="/home">
-            <ProtectedRoute>
-              <MainLayout>
-                <Home />
-              </MainLayout>
-            </ProtectedRoute>
+            <MainLayout>
+              <Home />
+            </MainLayout>
           </Route>
           <Route exact path="/buyer">
-            <ProtectedRoute>
-              <MainLayout>
-                <Buyer />
-              </MainLayout>
-            </ProtectedRoute>
+            <MainLayout>
+              <Buyer />
+            </MainLayout>
           </Route>
           <Route exact path="/seller">
-            <ProtectedRoute>
-              <MainLayout>
-                <Seller />
-              </MainLayout>
-            </ProtectedRoute>
+            <MainLayout>
+              <Seller />
+            </MainLayout>
           </Route>
           <Route exact path="/cart">
             <ProtectedRoute>
@@ -217,11 +211,9 @@ const App: React.FC = () => {
             </MainLayout>
           </Route>
           <Route exact path="/privacy-policy">
-            <ProtectedRoute>
-              <MainLayout>
-                <PrivacyPolicyPage />
-              </MainLayout>
-            </ProtectedRoute>
+            <MainLayout>
+              <PrivacyPolicyPage />
+            </MainLayout>
           </Route>
           <Route exact path="/item/:id">
             <MainLayout>

@@ -2,7 +2,16 @@ import React from 'react';
 import { constructOutline, shirtOutline, shieldOutline, footstepsOutline, bagOutline } from 'ionicons/icons';
 import GenericSportEquipmentComponent from './GenericSportEquipmentComponent';
 
-const WaterpoloEquipmentComponent: React.FC<any> = (props) => {
+interface WaterpoloEquipmentProps {
+  userType: 'seller' | 'buyer';
+  onItemSelect?: (item: any) => void;
+  categoryFilter?: 'clothing' | 'footwear' | 'equipment-protective-accessories' | 'all';
+  schoolName?: string;
+  hideSchoolClubSelection?:boolean;
+
+}
+
+const WaterpoloEquipmentComponent: React.FC< WaterpoloEquipmentProps > = (props) => {
   const waterpoloCategories = {
     'Equipment': {
       items: ['Water Polo Ball', 'Goal Posts', 'Training Equipment', 'Ball Pump', 'Pool Markers'],
