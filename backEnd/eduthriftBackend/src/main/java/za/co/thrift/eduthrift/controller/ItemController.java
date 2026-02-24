@@ -190,6 +190,8 @@ public class ItemController {
                 item.setGender(Item.Gender.valueOf(((String) updates.get("gender")).toUpperCase()));
             } catch (Exception ignored) {}
         }
+        if (updates.containsKey("front_photo")) item.setFrontPhoto((String) updates.get("front_photo"));
+        if (updates.containsKey("back_photo")) item.setBackPhoto((String) updates.get("back_photo"));
 
         Item saved = itemRepository.save(item);
         return ResponseEntity.ok(toResponse(saved, userOpt.get()));
