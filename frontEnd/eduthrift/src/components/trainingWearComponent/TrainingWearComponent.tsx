@@ -77,11 +77,14 @@ const TrainingWearComponent: React.FC<TrainingWearProps> = () => {
     setTimeout(() => setAddedToCartId(null), 2000);
   };
 
+  const genderMap: Record<string, string> = { 'Boys': 'Boy', 'Girls': 'Girl' };
+
   const getFilteredItems = () => {
     let items = listings.filter(listing => {
       if (listing.category !== 'Training wear') return false;
       if (genderFilter === 'All') return true;
-      return listing.gender === genderFilter;
+      const mappedGender = genderMap[genderFilter] || genderFilter;
+      return listing.gender === mappedGender;
     }).map(listing => ({
       id: listing.id,
       item: listing.name,

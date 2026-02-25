@@ -129,36 +129,31 @@ const GenericSportEquipmentComponent: React.FC<GenericSportEquipmentProps> = ({
 
 
   const getAvailableItems = () => {
-    if (userType === 'buyer' && (schoolName || clubName)) {
-      // Filter actual listings based on selected item and gender
-      const filteredListings = listings.filter(listing => 
-        listing.name === selectedItem &&
-        listing.quantity > 0 &&
-        (categoryFilter !== 'clothing' || listing.gender === selectedGender || listing.gender === 'Unisex')
-      );
-      
-      if (filteredListings.length > 0) {
-        return filteredListings.map(listing => ({
-          id: listing.id,
-          item: listing.name,
-          size: listing.size,
-          condition: listing.condition,
-          price: listing.price,
-          frontPhoto: listing.frontPhoto,
-          backPhoto: listing.backPhoto,
-          school: listing.school,
-          soldOut: false,
-          quantity: listing.quantity,
-          description: listing.description,
-          gender: listing.gender,
-          category: listing.category,
-          subcategory: listing.subcategory,
-          sport: listing.sport
-        }));
-      }
-      return [];
-    }
-    return [];
+    if (userType !== 'buyer') return [];
+
+    const filteredListings = listings.filter(listing =>
+      listing.name === selectedItem &&
+      listing.quantity > 0 &&
+      (categoryFilter !== 'clothing' || listing.gender === selectedGender || listing.gender === 'Unisex')
+    );
+
+    return filteredListings.map(listing => ({
+      id: listing.id,
+      item: listing.name,
+      size: listing.size,
+      condition: listing.condition,
+      price: listing.price,
+      frontPhoto: listing.frontPhoto,
+      backPhoto: listing.backPhoto,
+      school: listing.school,
+      soldOut: false,
+      quantity: listing.quantity,
+      description: listing.description,
+      gender: listing.gender,
+      category: listing.category,
+      subcategory: listing.subcategory,
+      sport: listing.sport
+    }));
   };
 
   const getConditionText = (condition: number) => {
@@ -197,13 +192,7 @@ const GenericSportEquipmentComponent: React.FC<GenericSportEquipmentProps> = ({
 
   const handleItemClick = (item: string) => {
     setSelectedItem(item);
-    if (userType === 'buyer') {
-      // For buyers, show available items first
-      setShowItemDetails(false);
-    } else {
-      // For sellers, go to item details form
-      setShowItemDetails(true);
-    }
+    setShowItemDetails(true);
   };
 
   const handleBackFromDetails = () => {

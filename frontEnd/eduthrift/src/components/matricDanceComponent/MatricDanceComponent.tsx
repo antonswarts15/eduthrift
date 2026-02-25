@@ -43,13 +43,16 @@ const MatricDanceComponent: React.FC<MatricDanceProps> = () => {
     return conditions[condition as keyof typeof conditions] || 'Unknown';
   };
 
+  const genderMap: Record<string, string> = { 'Girls': 'Girl', 'Boys': 'Boy' };
+
   const getFilteredItems = () => {
     return listings
       .filter(listing => {
         if (listing.category !== 'Matric dance clothing') return false;
         if (genderFilter === 'All') return true;
         if (genderFilter === 'Accessories') return listing.gender === 'Unisex';
-        return listing.gender === genderFilter;
+        const mappedGender = genderMap[genderFilter] || genderFilter;
+        return listing.gender === mappedGender;
       })
       .map(listing => ({
         id: listing.id,

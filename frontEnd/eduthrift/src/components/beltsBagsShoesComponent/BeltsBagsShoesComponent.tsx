@@ -37,11 +37,14 @@ const BeltsBagsShoesComponent: React.FC<BeltsBagsShoesProps> = () => {
     fetchListings();
   }, [fetchListings]);
 
+  const genderMap: Record<string, string> = { 'Boys': 'Boy', 'Girls': 'Girl' };
+
   const getFilteredItems = () => {
     return listings.filter(listing => {
       if (listing.category !== 'Belts, bags & shoes') return false;
       if (genderFilter === 'All') return true;
-      return listing.gender === genderFilter || listing.gender === 'Unisex';
+      const mappedGender = genderMap[genderFilter] || genderFilter;
+      return listing.gender === mappedGender || listing.gender === 'Unisex';
     }).map(listing => ({
       id: listing.id,
       item: listing.name,
