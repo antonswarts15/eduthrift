@@ -50,6 +50,12 @@ interface ListingsStore {
   getDaysUntilExpiry: (listing: Listing) => number;
 }
 
+const toAbsolutePhotoUrl = (path: string | null | undefined): string => {
+  if (!path) return '';
+  if (path.startsWith('http') || path.startsWith('data:')) return path;
+  return `${API_BASE_URL}${path}`;
+};
+
 const mapBackendItem = (item: any): Listing => ({
   id: item.id.toString(),
   name: item.item_name || item.name || 'Unknown Item',
@@ -62,8 +68,8 @@ const mapBackendItem = (item: any): Listing => ({
   category: item.category || '',
   subcategory: item.subcategory || undefined,
   sport: item.sport || undefined,
-  frontPhoto: item.front_photo || '',
-  backPhoto: item.back_photo || '',
+  frontPhoto: toAbsolutePhotoUrl(item.front_photo),
+  backPhoto: toAbsolutePhotoUrl(item.back_photo),
   dateCreated: item.created_at ? new Date(item.created_at).toLocaleDateString() : new Date().toLocaleDateString(),
   quantity: item.quantity || 1,
   soldOut: item.sold_out || item.quantity === 0 || item.status === 'sold',
@@ -161,12 +167,12 @@ export const useListingsStore = create<ListingsStore>((set, get) => ({
 
         const uploadedFiles = uploadResponse.data.files || [];
         if (listing.frontPhoto?.startsWith('data:') && uploadedFiles[0]) {
-          frontPhotoUrl = uploadedFiles[0].url;
+          frontPhotoUrl = toAbsolutePhotoUrl(uploadedFiles[0].url);
         }
         if (listing.backPhoto?.startsWith('data:')) {
           const backIndex = listing.frontPhoto?.startsWith('data:') ? 1 : 0;
           if (uploadedFiles[backIndex]) {
-            backPhotoUrl = uploadedFiles[backIndex].url;
+            backPhotoUrl = toAbsolutePhotoUrl(uploadedFiles[backIndex].url);
           }
         }
       }
@@ -246,11 +252,11 @@ export const useListingsStore = create<ListingsStore>((set, get) => ({
         const uploadedFiles = uploadResponse.data.files || [];
         let fileIndex = 0;
         if (newPhotos.frontPhoto && uploadedFiles[fileIndex]) {
-          frontPhotoUrl = uploadedFiles[fileIndex].url;
+          frontPhotoUrl = toAbsolutePhotoUrl(uploadedFiles[fileIndex].url);
           fileIndex++;
         }
         if (newPhotos.backPhoto && uploadedFiles[fileIndex]) {
-          backPhotoUrl = uploadedFiles[fileIndex].url;
+          backPhotoUrl = toAbsolutePhotoUrl(uploadedFiles[fileIndex].url);
         }
       }
 

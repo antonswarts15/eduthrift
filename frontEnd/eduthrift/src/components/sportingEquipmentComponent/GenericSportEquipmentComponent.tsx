@@ -104,13 +104,14 @@ const GenericSportEquipmentComponent: React.FC<GenericSportEquipmentProps> = ({
         }
         return {};
       case 'footwear':
-        return { 'Footwear': sportCategories['Footwear'] };
-      case 'equipment-protective-accessories':
-        return {
-          'Equipment': sportCategories['Equipment'],
-          'Protective Gear': sportCategories['Protective Gear'],
-          'Accessories': sportCategories['Accessories']
-        };
+        return sportCategories['Footwear'] ? { 'Footwear': sportCategories['Footwear'] } : {};
+      case 'equipment-protective-accessories': {
+        const filtered: any = {};
+        if (sportCategories['Equipment']) filtered['Equipment'] = sportCategories['Equipment'];
+        if (sportCategories['Protective Gear']) filtered['Protective Gear'] = sportCategories['Protective Gear'];
+        if (sportCategories['Accessories']) filtered['Accessories'] = sportCategories['Accessories'];
+        return filtered;
+      }
       default:
         return sportCategories;
     }

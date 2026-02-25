@@ -1,10 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import {
-  IonItem,
-  IonLabel,
-  IonSelect,
-  IonSelectOption,
   IonInput,
   IonButton,
   IonCard,
@@ -13,15 +9,14 @@ import {
   IonRow,
   IonCol,
   IonIcon,
-  IonAccordion,
-  IonAccordionGroup,
+  IonSelect,
+  IonSelectOption,
   IonToast,
   IonBadge
 } from '@ionic/react';
-import { cameraOutline, imageOutline, fitnessOutline, shirtOutline, footstepsOutline, manOutline, womanOutline, checkmarkCircleOutline, closeCircleOutline } from 'ionicons/icons';
+import { fitnessOutline, checkmarkCircleOutline, closeCircleOutline } from 'ionicons/icons';
 import { useCartStore } from '../../stores/cartStore';
 import { useListingsStore } from '../../stores/listingsStore';
-
 
 interface TrainingWearProps {
   userType: 'seller' | 'buyer';
@@ -29,7 +24,10 @@ interface TrainingWearProps {
   categoryFilter?: 'all';
 }
 
-const TrainingWearComponent: React.FC<TrainingWearProps> = ({ userType, onItemSelect }) => {
+type GenderFilter = 'All' | 'Boys' | 'Girls' | 'Unisex';
+
+const TrainingWearComponent: React.FC<TrainingWearProps> = () => {
+  const [genderFilter, setGenderFilter] = useState<GenderFilter>('All');
   const [viewingItem, setViewingItem] = useState<any>(null);
   const [photoViewer, setPhotoViewer] = useState<string | null>(null);
   const [sizeFilter, setSizeFilter] = useState('');
@@ -79,11 +77,11 @@ const TrainingWearComponent: React.FC<TrainingWearProps> = ({ userType, onItemSe
     setTimeout(() => setAddedToCartId(null), 2000);
   };
 
-  const getFilteredItems = (gender?: string) => {
+  const getFilteredItems = () => {
     let items = listings.filter(listing => {
       if (listing.category !== 'Training wear') return false;
-      if (gender && listing.gender !== gender && listing.gender !== 'Unisex') return false;
-      return true;
+      if (genderFilter === 'All') return true;
+      return listing.gender === genderFilter;
     }).map(listing => ({
       id: listing.id,
       item: listing.name,
@@ -101,21 +99,15 @@ const TrainingWearComponent: React.FC<TrainingWearProps> = ({ userType, onItemSe
       school: listing.school
     }));
 
-    // Apply size filter
     if (sizeFilter) {
       items = items.filter(item => item.size.toLowerCase().includes(sizeFilter.toLowerCase()));
     }
-
-    // Apply condition filter
     if (conditionFilter) {
       items = items.filter(item => item.condition === conditionFilter);
     }
-
-    // Apply price range filters
     if (priceRange.min) {
       items = items.filter(item => item.price >= parseInt(priceRange.min));
     }
-
     if (priceRange.max) {
       items = items.filter(item => item.price <= parseInt(priceRange.max));
     }
@@ -125,63 +117,40 @@ const TrainingWearComponent: React.FC<TrainingWearProps> = ({ userType, onItemSe
 
   const renderPhotoViewer = () => {
     if (!photoViewer) return null;
-    
+
     return createPortal(
-      <div 
+      <div
         style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          backgroundColor: 'rgba(0, 0, 0, 0.9)',
-          zIndex: 1000,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center'
+          position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
+          backgroundColor: 'rgba(0, 0, 0, 0.9)', zIndex: 1000,
+          display: 'flex', alignItems: 'center', justifyContent: 'center'
         }}
         onClick={() => setPhotoViewer(null)}
       >
-        <div 
+        <div
           style={{
-            backgroundColor: '#fff',
-            borderRadius: '12px',
-            padding: '20px',
-            maxWidth: '90%',
-            maxHeight: '90%',
-            position: 'relative',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center'
+            backgroundColor: '#fff', borderRadius: '12px', padding: '20px',
+            maxWidth: '90%', maxHeight: '90%', position: 'relative',
+            display: 'flex', flexDirection: 'column', alignItems: 'center'
           }}
           onClick={(e) => e.stopPropagation()}
         >
-          <button 
+          <button
             style={{
-              position: 'absolute',
-              top: '10px',
-              right: '10px',
-              background: 'none',
-              border: 'none',
-              fontSize: '24px',
-              cursor: 'pointer',
-              color: '#666',
-              zIndex: 10
+              position: 'absolute', top: '10px', right: '10px',
+              background: 'none', border: 'none', fontSize: '24px',
+              cursor: 'pointer', color: '#666', zIndex: 10
             }}
             onClick={() => setPhotoViewer(null)}
           >
             ×
           </button>
-          <img 
+          <img
             src={photoViewer}
             alt="Zoomed view"
             style={{
-              maxWidth: '100%',
-              maxHeight: '80vh',
-              objectFit: 'contain',
-              borderRadius: '8px',
-              border: '1px solid #ddd',
-              touchAction: 'pinch-zoom'
+              maxWidth: '100%', maxHeight: '80vh', objectFit: 'contain',
+              borderRadius: '8px', border: '1px solid #ddd', touchAction: 'pinch-zoom'
             }}
             onTouchStart={(e) => e.stopPropagation()}
             onTouchMove={(e) => e.stopPropagation()}
@@ -192,41 +161,33 @@ const TrainingWearComponent: React.FC<TrainingWearProps> = ({ userType, onItemSe
     );
   };
 
+  const filterChipStyle = (active: boolean) => ({
+    padding: '6px 16px',
+    borderRadius: '20px',
+    border: active ? '2px solid #27AE60' : '1px solid #ccc',
+    backgroundColor: active ? '#27AE60' : 'transparent',
+    color: active ? '#fff' : '#666',
+    fontSize: '13px',
+    fontWeight: active ? 'bold' : 'normal' as const,
+    cursor: 'pointer'
+  });
+
+  // ---------- ITEM DETAIL VIEW ----------
   if (viewingItem) {
     return (
       <div style={{ padding: '16px' }}>
         <IonButton fill="clear" onClick={() => setViewingItem(null)}>← Back</IonButton>
 
-        {/* Prominent Training Wear Header */}
         <div style={{
-          marginBottom: '20px',
-          textAlign: 'center',
-          backgroundColor: 'rgba(39, 174, 96, 0.1)',
-          border: '2px solid #27AE60',
-          borderRadius: '12px',
-          padding: '16px'
+          marginBottom: '20px', textAlign: 'center',
+          backgroundColor: 'rgba(39, 174, 96, 0.1)', border: '2px solid #27AE60',
+          borderRadius: '12px', padding: '16px'
         }}>
-          <IonIcon
-            icon={fitnessOutline}
-            style={{
-              fontSize: '32px',
-              color: '#27AE60',
-              marginBottom: '8px'
-            }}
-          />
-          <h2 style={{
-            margin: '0',
-            color: '#27AE60',
-            fontSize: '18px',
-            fontWeight: 'bold'
-          }}>
+          <IonIcon icon={fitnessOutline} style={{ fontSize: '32px', color: '#27AE60', marginBottom: '8px' }} />
+          <h2 style={{ margin: '0', color: '#27AE60', fontSize: '18px', fontWeight: 'bold' }}>
             Sporting Clothing
           </h2>
-          <p style={{
-            margin: '4px 0 0 0',
-            color: '#666',
-            fontSize: '14px'
-          }}>
+          <p style={{ margin: '4px 0 0 0', color: '#666', fontSize: '14px' }}>
             Training & Athletic Wear
           </p>
         </div>
@@ -270,11 +231,11 @@ const TrainingWearComponent: React.FC<TrainingWearProps> = ({ userType, onItemSe
           <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#E74C3C' }}>R{viewingItem.price}</div>
         </div>
 
-        <IonButton 
-          expand="full" 
+        <IonButton
+          expand="full"
           onClick={() => handleAddToCart(viewingItem)}
           disabled={viewingItem.quantity === 0}
-          style={{ 
+          style={{
             marginTop: '16px',
             '--background': addedToCartId === viewingItem.id ? '#28a745' : '',
             '--color': addedToCartId === viewingItem.id ? 'white' : ''
@@ -288,49 +249,39 @@ const TrainingWearComponent: React.FC<TrainingWearProps> = ({ userType, onItemSe
     );
   }
 
-
+  // ---------- MAIN GRID VIEW ----------
+  const items = getFilteredItems();
+  const filters: GenderFilter[] = ['All', 'Boys', 'Girls', 'Unisex'];
 
   return (
-    <div>
-      <h2>Training Wear</h2>
+    <div style={{ padding: '16px' }}>
+      <h2 style={{ textAlign: 'center', marginBottom: '8px' }}>Training Wear</h2>
 
-      {/* Prominent Training Wear Header */}
+      {/* Sporting Clothing header */}
       <div style={{
-        marginBottom: '20px',
-        textAlign: 'center',
-        backgroundColor: 'rgba(39, 174, 96, 0.1)',
-        border: '2px solid #27AE60',
-        borderRadius: '12px',
-        padding: '16px'
+        marginBottom: '16px', textAlign: 'center',
+        backgroundColor: 'rgba(39, 174, 96, 0.1)', border: '2px solid #27AE60',
+        borderRadius: '12px', padding: '16px'
       }}>
-        <IonIcon
-          icon={fitnessOutline}
-          style={{
-            fontSize: '32px',
-            color: '#27AE60',
-            marginBottom: '8px'
-          }}
-        />
-        <h2 style={{
-          margin: '0',
-          color: '#27AE60',
-          fontSize: '18px',
-          fontWeight: 'bold'
-        }}>
+        <IonIcon icon={fitnessOutline} style={{ fontSize: '32px', color: '#27AE60', marginBottom: '8px' }} />
+        <h2 style={{ margin: '0', color: '#27AE60', fontSize: '18px', fontWeight: 'bold' }}>
           Sporting Clothing
         </h2>
-        <p style={{
-          margin: '4px 0 0 0',
-          color: '#666',
-          fontSize: '14px'
-        }}>
+        <p style={{ margin: '4px 0 0 0', color: '#666', fontSize: '14px' }}>
           Training & Athletic Wear
         </p>
       </div>
 
-      <h3 style={{ margin: '16px 0', color: '#666' }}>Available Items</h3>
+      {/* Gender filter chips */}
+      <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', marginBottom: '16px', flexWrap: 'wrap' }}>
+        {filters.map(f => (
+          <button key={f} style={filterChipStyle(genderFilter === f)} onClick={() => setGenderFilter(f)}>
+            {f}
+          </button>
+        ))}
+      </div>
 
-      {/* Filters */}
+      {/* Size / Condition / Price filters */}
       <div style={{ backgroundColor: 'transparent', border: '1px solid #444', padding: '12px', borderRadius: '8px', marginBottom: '16px' }}>
         <h4 style={{ margin: '0 0 12px 0', fontSize: '14px', color: '#666' }}>Filters</h4>
         <IonGrid>
@@ -384,90 +335,65 @@ const TrainingWearComponent: React.FC<TrainingWearProps> = ({ userType, onItemSe
         </IonGrid>
       </div>
 
-      <IonAccordionGroup>
-        {['Boys', 'Girls', 'Unisex'].map((gender) => {
-          const genderItems = getFilteredItems(gender);
-          if (genderItems.length === 0) return null;
+      {items.length === 0 ? (
+        <div style={{ textAlign: 'center', padding: '40px 16px', color: '#999' }}>
+          <p style={{ fontSize: '16px' }}>No items listed yet</p>
+          <p style={{ fontSize: '13px' }}>Check back soon for training wear!</p>
+        </div>
+      ) : (
+        <IonGrid>
+          <IonRow>
+            {items.map((item) => (
+              <IonCol size="6" key={item.id}>
+                <IonCard button onClick={() => setViewingItem(item)} style={{ backgroundColor: 'transparent', border: '1px solid #444' }}>
+                  <IonCardContent style={{ padding: '8px' }}>
+                    <div style={{ display: 'flex', gap: '4px', marginBottom: '8px' }}>
+                      <img
+                        src={item.frontPhoto}
+                        alt="Front"
+                        style={{ width: '50px', height: '60px', borderRadius: '4px', objectFit: 'cover' }}
+                      />
+                      <img
+                        src={item.backPhoto}
+                        alt="Back"
+                        style={{ width: '50px', height: '60px', borderRadius: '4px', objectFit: 'cover' }}
+                      />
+                    </div>
+                    <div style={{ fontSize: '13px', fontWeight: 'bold', marginBottom: '4px' }}>
+                      {item.item}
+                    </div>
+                    <div style={{ fontSize: '11px', color: '#666', marginBottom: '2px' }}>
+                      Size: {item.size}
+                    </div>
+                    <div style={{ fontSize: '11px', color: '#666', marginBottom: '4px' }}>
+                      Condition: {getConditionText(item.condition)}
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#E74C3C' }}>
+                        R{item.price}
+                      </div>
+                      {item.quantity > 0 ? (
+                        <IonBadge color="success" style={{ fontSize: '9px' }}>
+                          <IonIcon icon={checkmarkCircleOutline} style={{ marginRight: '2px', fontSize: '10px' }} />
+                          {item.quantity} available
+                        </IonBadge>
+                      ) : (
+                        <IonBadge color="danger" style={{ fontSize: '9px' }}>
+                          <IonIcon icon={closeCircleOutline} style={{ marginRight: '2px', fontSize: '10px' }} />
+                          Sold Out
+                        </IonBadge>
+                      )}
+                    </div>
+                  </IonCardContent>
+                </IonCard>
+              </IonCol>
+            ))}
+          </IonRow>
+        </IonGrid>
+      )}
 
-          return (
-            <IonAccordion key={gender} value={gender}>
-              <IonItem slot="header" style={{ '--background': 'transparent' }}>
-                <IonIcon
-                  icon={gender === 'Boys' ? manOutline : gender === 'Girls' ? womanOutline : fitnessOutline}
-                  style={{
-                    fontSize: '24px',
-                    color: gender === 'Boys' ? '#3498DB' : gender === 'Girls' ? '#E74C3C' : '#27AE60',
-                    marginRight: '12px'
-                  }}
-                />
-                <IonLabel>
-                  <h3 style={{
-                    margin: '0',
-                    fontWeight: 'bold',
-                    color: gender === 'Boys' ? '#3498DB' : gender === 'Girls' ? '#E74C3C' : '#27AE60',
-                    fontSize: '16px'
-                  }}>
-                    {gender} ({genderItems.length})
-                  </h3>
-                </IonLabel>
-              </IonItem>
-              <div slot="content" style={{ padding: '8px' }}>
-                <IonGrid>
-                  <IonRow>
-                    {genderItems.map((item) => (
-                      <IonCol size="6" key={item.id}>
-                        <IonCard button onClick={() => setViewingItem(item)} style={{ backgroundColor: 'transparent', border: '1px solid #444' }}>
-                          <IonCardContent style={{ padding: '8px' }}>
-                            <div style={{ display: 'flex', gap: '4px', marginBottom: '8px' }}>
-                              <img
-                                src={item.frontPhoto}
-                                alt="Front"
-                                style={{ width: '50px', height: '60px', borderRadius: '4px', objectFit: 'cover' }}
-                              />
-                              <img
-                                src={item.backPhoto}
-                                alt="Back"
-                                style={{ width: '50px', height: '60px', borderRadius: '4px', objectFit: 'cover' }}
-                              />
-                            </div>
-                            <div style={{ fontSize: '13px', fontWeight: 'bold', marginBottom: '4px' }}>
-                              {item.item}
-                            </div>
-                            <div style={{ fontSize: '11px', color: '#666', marginBottom: '2px' }}>
-                              Size: {item.size}
-                            </div>
-                            <div style={{ fontSize: '11px', color: '#666', marginBottom: '4px' }}>
-                              Condition: {getConditionText(item.condition)}
-                            </div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                              <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#E74C3C' }}>
-                                R{item.price}
-                              </div>
-                              {item.quantity > 0 ? (
-                                <IonBadge color="success" style={{ fontSize: '9px' }}>
-                                  <IonIcon icon={checkmarkCircleOutline} style={{ marginRight: '2px', fontSize: '10px' }} />
-                                  {item.quantity} available
-                                </IonBadge>
-                              ) : (
-                                <IonBadge color="danger" style={{ fontSize: '9px' }}>
-                                  <IonIcon icon={closeCircleOutline} style={{ marginRight: '2px', fontSize: '10px' }} />
-                                  Sold Out
-                                </IonBadge>
-                              )}
-                            </div>
-                          </IonCardContent>
-                        </IonCard>
-                      </IonCol>
-                    ))}
-                  </IonRow>
-                </IonGrid>
-              </div>
-            </IonAccordion>
-          );
-        })}
-      </IonAccordionGroup>
       {renderPhotoViewer()}
-      
+
       <IonToast
         isOpen={showToast}
         onDidDismiss={() => setShowToast(false)}

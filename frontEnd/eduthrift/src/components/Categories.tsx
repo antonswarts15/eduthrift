@@ -653,7 +653,11 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
     } else if (category === 'Sports equipment') {
       setCurrentLevel('sportEquipment');
     } else if (category === 'Matric dance clothing') {
-      setShowMatricDance(true);
+      if (userType === 'buyer') {
+        setShowMatricDance(true);
+      } else {
+        setShowItemDetails(true);
+      }
     } else if (['Training wear & shoes'].includes(category)) {
       setSelectedSubcategory(category);
       setShowItemDetails(true);
@@ -1686,7 +1690,7 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
                                  .replace('Icehockey', 'IceHockey')
                                  .replace('Iceskating', 'IceSkating')
                                  .replace('Horseriding', 'HorseRiding')
-                                 .replace('Ringtenis', 'RingTennis')
+                                 .replace('Ringtennis', 'RingTennis')
                                  .replace('Targetshooting', 'TargetShooting');
             const componentName = `${sportName}EquipmentComponent`;
             const Component = (SportEquipmentComponents as any)[componentName];

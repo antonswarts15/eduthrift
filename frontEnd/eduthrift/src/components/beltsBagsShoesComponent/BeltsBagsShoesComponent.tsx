@@ -1,11 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import {
-  IonItem,
-  IonLabel,
-  IonSelect,
-  IonSelectOption,
-  IonInput,
   IonButton,
   IonCard,
   IonCardContent,
@@ -13,15 +8,12 @@ import {
   IonRow,
   IonCol,
   IonIcon,
-  IonAccordion,
-  IonAccordionGroup,
   IonToast,
   IonBadge
 } from '@ionic/react';
-import { cameraOutline, imageOutline, bagOutline, walletOutline, footstepsOutline, manOutline, womanOutline, checkmarkCircleOutline, closeCircleOutline } from 'ionicons/icons';
+import { checkmarkCircleOutline, closeCircleOutline } from 'ionicons/icons';
 import { useCartStore } from '../../stores/cartStore';
 import { useListingsStore } from '../../stores/listingsStore';
-
 
 interface BeltsBagsShoesProps {
   userType: 'seller' | 'buyer';
@@ -29,8 +21,10 @@ interface BeltsBagsShoesProps {
   categoryFilter?: 'all';
 }
 
-const BeltsBagsShoesComponent: React.FC<BeltsBagsShoesProps> = ({ userType, onItemSelect }) => {
-  const [selectedGender, setSelectedGender] = useState('');
+type GenderFilter = 'All' | 'Boys' | 'Girls';
+
+const BeltsBagsShoesComponent: React.FC<BeltsBagsShoesProps> = () => {
+  const [genderFilter, setGenderFilter] = useState<GenderFilter>('All');
   const [viewingItem, setViewingItem] = useState<any>(null);
   const [photoViewer, setPhotoViewer] = useState<string | null>(null);
   const [addedToCartId, setAddedToCartId] = useState<string | null>(null);
@@ -46,8 +40,8 @@ const BeltsBagsShoesComponent: React.FC<BeltsBagsShoesProps> = ({ userType, onIt
   const getFilteredItems = () => {
     return listings.filter(listing => {
       if (listing.category !== 'Belts, bags & shoes') return false;
-      if (selectedGender && listing.gender !== selectedGender && listing.gender !== 'Unisex') return false;
-      return true;
+      if (genderFilter === 'All') return true;
+      return listing.gender === genderFilter || listing.gender === 'Unisex';
     }).map(listing => ({
       id: listing.id,
       item: listing.name,
@@ -102,63 +96,40 @@ const BeltsBagsShoesComponent: React.FC<BeltsBagsShoesProps> = ({ userType, onIt
 
   const renderPhotoViewer = () => {
     if (!photoViewer) return null;
-    
+
     return createPortal(
-      <div 
+      <div
         style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          backgroundColor: 'rgba(0, 0, 0, 0.9)',
-          zIndex: 1000,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center'
+          position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
+          backgroundColor: 'rgba(0, 0, 0, 0.9)', zIndex: 1000,
+          display: 'flex', alignItems: 'center', justifyContent: 'center'
         }}
         onClick={() => setPhotoViewer(null)}
       >
-        <div 
+        <div
           style={{
-            backgroundColor: '#fff',
-            borderRadius: '12px',
-            padding: '20px',
-            maxWidth: '90%',
-            maxHeight: '90%',
-            position: 'relative',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center'
+            backgroundColor: '#fff', borderRadius: '12px', padding: '20px',
+            maxWidth: '90%', maxHeight: '90%', position: 'relative',
+            display: 'flex', flexDirection: 'column', alignItems: 'center'
           }}
           onClick={(e) => e.stopPropagation()}
         >
-          <button 
+          <button
             style={{
-              position: 'absolute',
-              top: '10px',
-              right: '10px',
-              background: 'none',
-              border: 'none',
-              fontSize: '24px',
-              cursor: 'pointer',
-              color: '#666',
-              zIndex: 10
+              position: 'absolute', top: '10px', right: '10px',
+              background: 'none', border: 'none', fontSize: '24px',
+              cursor: 'pointer', color: '#666', zIndex: 10
             }}
             onClick={() => setPhotoViewer(null)}
           >
             ×
           </button>
-          <img 
+          <img
             src={photoViewer}
             alt="Zoomed view"
             style={{
-              maxWidth: '100%',
-              maxHeight: '80vh',
-              objectFit: 'contain',
-              borderRadius: '8px',
-              border: '1px solid #ddd',
-              touchAction: 'pinch-zoom'
+              maxWidth: '100%', maxHeight: '80vh', objectFit: 'contain',
+              borderRadius: '8px', border: '1px solid #ddd', touchAction: 'pinch-zoom'
             }}
             onTouchStart={(e) => e.stopPropagation()}
             onTouchMove={(e) => e.stopPropagation()}
@@ -169,6 +140,18 @@ const BeltsBagsShoesComponent: React.FC<BeltsBagsShoesProps> = ({ userType, onIt
     );
   };
 
+  const filterChipStyle = (active: boolean) => ({
+    padding: '6px 16px',
+    borderRadius: '20px',
+    border: active ? '2px solid #3498DB' : '1px solid #ccc',
+    backgroundColor: active ? '#3498DB' : 'transparent',
+    color: active ? '#fff' : '#666',
+    fontSize: '13px',
+    fontWeight: active ? 'bold' : 'normal' as const,
+    cursor: 'pointer'
+  });
+
+  // ---------- ITEM DETAIL VIEW ----------
   if (viewingItem) {
     return (
       <div style={{ padding: '16px' }}>
@@ -213,17 +196,17 @@ const BeltsBagsShoesComponent: React.FC<BeltsBagsShoesProps> = ({ userType, onIt
           <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#E74C3C' }}>R{viewingItem.price}</div>
         </div>
 
-        <IonButton 
-          expand="full" 
+        <IonButton
+          expand="full"
           onClick={() => handleAddToCart(viewingItem)}
           disabled={viewingItem.quantity === 0}
-          style={{ 
+          style={{
             marginTop: '16px',
             '--background': addedToCartId === viewingItem.id ? '#28a745' : '',
             '--color': addedToCartId === viewingItem.id ? 'white' : ''
           }}
         >
-          {viewingItem.quantity === 0 ? 'Sold Out' : 
+          {viewingItem.quantity === 0 ? 'Sold Out' :
            addedToCartId === viewingItem.id ? '✓ Added to Cart!' : 'Add to Cart'}
         </IonButton>
         {renderPhotoViewer()}
@@ -231,93 +214,82 @@ const BeltsBagsShoesComponent: React.FC<BeltsBagsShoesProps> = ({ userType, onIt
     );
   }
 
-  if (!selectedGender) {
-    return (
-      <div style={{ padding: '16px' }}>
-        <h2 style={{ textAlign: 'center', marginBottom: '24px' }}>Select Gender</h2>
-        <IonGrid>
-          <IonRow>
-            <IonCol size="6">
-              <IonCard button onClick={() => setSelectedGender('Boy')} style={{ textAlign: 'center', padding: '20px' }}>
-                <IonIcon icon={manOutline} size="large" style={{ color: '#3498DB', marginBottom: '8px' }} />
-                <h3 style={{ margin: 0, color: '#3498DB' }}>Boy</h3>
-              </IonCard>
-            </IonCol>
-            <IonCol size="6">
-              <IonCard button onClick={() => setSelectedGender('Girl')} style={{ textAlign: 'center', padding: '20px' }}>
-                <IonIcon icon={womanOutline} size="large" style={{ color: '#E74C3C', marginBottom: '8px' }} />
-                <h3 style={{ margin: 0, color: '#E74C3C' }}>Girl</h3>
-              </IonCard>
-            </IonCol>
-          </IonRow>
-        </IonGrid>
-        {renderPhotoViewer()}
-      </div>
-    );
-  }
+  // ---------- MAIN GRID VIEW ----------
+  const items = getFilteredItems();
+  const filters: GenderFilter[] = ['All', 'Boys', 'Girls'];
 
   return (
     <div style={{ padding: '16px' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-        <h2 style={{ margin: 0 }}>Belts, Bags & Shoes - {selectedGender}</h2>
-        <IonButton fill="outline" size="small" onClick={() => setSelectedGender('')}>
-          Change Gender
-        </IonButton>
+      <h2 style={{ textAlign: 'center', marginBottom: '16px' }}>Belts, Bags & Shoes</h2>
+
+      {/* Gender filter chips */}
+      <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', marginBottom: '16px', flexWrap: 'wrap' }}>
+        {filters.map(f => (
+          <button key={f} style={filterChipStyle(genderFilter === f)} onClick={() => setGenderFilter(f)}>
+            {f}
+          </button>
+        ))}
       </div>
 
-      <h3 style={{ margin: '16px 0', color: '#666' }}>Available Items</h3>
-
-      <IonGrid>
-        <IonRow>
-          {getFilteredItems().map((item) => (
-            <IonCol size="6" key={item.id}>
-              <IonCard button onClick={() => setViewingItem(item)} style={{ backgroundColor: 'transparent', border: '1px solid #444' }}>
-                <IonCardContent style={{ padding: '8px' }}>
-                  <div style={{ display: 'flex', gap: '4px', marginBottom: '8px' }}>
-                    <div style={{
-                      width: '50px', height: '60px', borderRadius: '4px',
-                      backgroundImage: `url(${item.frontPhoto})`,
-                      backgroundSize: 'cover', backgroundPosition: 'center'
-                    }} />
-                    <div style={{
-                      width: '50px', height: '60px', borderRadius: '4px',
-                      backgroundImage: `url(${item.backPhoto})`,
-                      backgroundSize: 'cover', backgroundPosition: 'center'
-                    }} />
-                  </div>
-                  <div style={{ fontSize: '13px', fontWeight: 'bold', marginBottom: '4px' }}>
-                    {item.item}
-                  </div>
-                  <div style={{ fontSize: '11px', color: '#666', marginBottom: '2px' }}>
-                    Size: {item.size}
-                  </div>
-                  <div style={{ fontSize: '11px', color: '#666', marginBottom: '4px' }}>
-                    Condition: {getConditionText(item.condition)}
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#E74C3C' }}>
-                      R{item.price}
+      {items.length === 0 ? (
+        <div style={{ textAlign: 'center', padding: '40px 16px', color: '#999' }}>
+          <p style={{ fontSize: '16px' }}>No items listed yet</p>
+          <p style={{ fontSize: '13px' }}>Check back soon for belts, bags & shoes!</p>
+        </div>
+      ) : (
+        <IonGrid>
+          <IonRow>
+            {items.map((item) => (
+              <IonCol size="6" key={item.id}>
+                <IonCard button onClick={() => setViewingItem(item)} style={{ backgroundColor: 'transparent', border: '1px solid #444' }}>
+                  <IonCardContent style={{ padding: '8px' }}>
+                    <div style={{ display: 'flex', gap: '4px', marginBottom: '8px' }}>
+                      <div style={{
+                        width: '50px', height: '60px', borderRadius: '4px',
+                        backgroundImage: `url(${item.frontPhoto})`,
+                        backgroundSize: 'cover', backgroundPosition: 'center'
+                      }} />
+                      <div style={{
+                        width: '50px', height: '60px', borderRadius: '4px',
+                        backgroundImage: `url(${item.backPhoto})`,
+                        backgroundSize: 'cover', backgroundPosition: 'center'
+                      }} />
                     </div>
-                    {item.quantity > 0 ? (
-                      <IonBadge color="success" style={{ fontSize: '9px' }}>
-                        <IonIcon icon={checkmarkCircleOutline} style={{ marginRight: '2px', fontSize: '10px' }} />
-                        {item.quantity} available
-                      </IonBadge>
-                    ) : (
-                      <IonBadge color="danger" style={{ fontSize: '9px' }}>
-                        <IonIcon icon={closeCircleOutline} style={{ marginRight: '2px', fontSize: '10px' }} />
-                        Sold Out
-                      </IonBadge>
-                    )}
-                  </div>
-                </IonCardContent>
-              </IonCard>
-            </IonCol>
-          ))}
-        </IonRow>
-      </IonGrid>
+                    <div style={{ fontSize: '13px', fontWeight: 'bold', marginBottom: '4px' }}>
+                      {item.item}
+                    </div>
+                    <div style={{ fontSize: '11px', color: '#666', marginBottom: '2px' }}>
+                      Size: {item.size}
+                    </div>
+                    <div style={{ fontSize: '11px', color: '#666', marginBottom: '4px' }}>
+                      Condition: {getConditionText(item.condition)}
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#E74C3C' }}>
+                        R{item.price}
+                      </div>
+                      {item.quantity > 0 ? (
+                        <IonBadge color="success" style={{ fontSize: '9px' }}>
+                          <IonIcon icon={checkmarkCircleOutline} style={{ marginRight: '2px', fontSize: '10px' }} />
+                          {item.quantity} available
+                        </IonBadge>
+                      ) : (
+                        <IonBadge color="danger" style={{ fontSize: '9px' }}>
+                          <IonIcon icon={closeCircleOutline} style={{ marginRight: '2px', fontSize: '10px' }} />
+                          Sold Out
+                        </IonBadge>
+                      )}
+                    </div>
+                  </IonCardContent>
+                </IonCard>
+              </IonCol>
+            ))}
+          </IonRow>
+        </IonGrid>
+      )}
+
       {renderPhotoViewer()}
-      
+
       <IonToast
         isOpen={showToast}
         onDidDismiss={() => setShowToast(false)}
