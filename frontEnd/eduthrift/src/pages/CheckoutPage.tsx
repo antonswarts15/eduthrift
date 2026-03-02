@@ -39,6 +39,7 @@ import ShippingWebhookService from '../services/shipping-webhook';
 import { getCoordinatesFromAddress } from '../utils/geocoding';
 import FeeStructureInfo from '../components/FeeStructureInfo';
 import { userApi } from '../services/api';
+import AddressModal, { AddressData } from '../components/AddressModal';
 
 const CheckoutPage: React.FC = () => {
   const history = useHistory();
@@ -56,6 +57,13 @@ const CheckoutPage: React.FC = () => {
       fetchUserProfile();
     }
   }, [userProfile, fetchUserProfile]);
+
+  // Check if address is missing and show modal
+  useEffect(() => {
+    if (userProfile && !userProfile.suburb && !userProfile.town) {
+      setShowAddressModal(true);
+    }
+  }, [userProfile]);
 
   // Set up webhook callbacks
   useEffect(() => {
@@ -79,11 +87,29 @@ const CheckoutPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
+  const [showAddressModal, setShowAddressModal] = useState(false);
 
   // Calculate totals
   const totalAmount = items.reduce((sum: number, item: any) => sum + item.price, 0);
   const shippingCost = shippingRates.find(rate => rate.service_level_code === selectedRate)?.total_cost || 0;
   const finalAmount = totalAmount + shippingCost;
+
+  const handleAddressSave = async (addressData: AddressData) => {
+    try {
+      setLoading(true);
+      await userApi.updateProfile(addressData);
+      await fetchUserProfile();
+      setShowAddressModal(false);
+      setToastMessage('Address saved successfully');
+      setShowToast(true);
+    } catch (error) {
+      console.error('Failed to save address:', error);
+      setToastMessage('Failed to save address');
+      setShowToast(true);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const loadNearbyPickupPoints = async () => {
     console.log('Loading pickup points... User profile:', userProfile);
@@ -423,6 +449,18 @@ const CheckoutPage: React.FC = () => {
           )}
         </>
       )}
+
+      <AddressModal
+        isOpen={showAddressModal}
+        onDismiss={() => setShowAddressModal(false)}
+        onSave={handleAddressSave}
+        initialData={{
+          streetAddress: userProfile?.streetAddress,
+          suburb: userProfile?.suburb,
+          town: userProfile?.town,
+          province: userProfile?.province
+        }}
+      />
 
       <IonLoading isOpen={loading} message="Processing..." />
       <IonToast

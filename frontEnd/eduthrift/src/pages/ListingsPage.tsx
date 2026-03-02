@@ -23,10 +23,14 @@ import {
   IonRefresher,
   IonRefresherContent
 } from '@ionic/react';
-import { createOutline, trashOutline, closeOutline, warningOutline } from 'ionicons/icons';
+import { createOutline, trashOutline, closeOutline, warningOutline, cardOutline } from 'ionicons/icons';
 import { useListingsStore, Listing } from '../stores/listingsStore';
 import { useNotificationStore } from '../stores/notificationStore';
+import { useUserStore } from '../stores/userStore';
 import PhotoCapture from '../components/PhotoCapture';
+import BankingDetailsModal, { BankingData } from '../components/BankingDetailsModal';
+import PaymentBreakdown from '../components/PaymentBreakdown';
+import { userApi } from '../services/api';
 
 const ListingsPage: React.FC = () => {
   const [selectedTab, setSelectedTab] = useState('current');
@@ -41,13 +45,26 @@ const ListingsPage: React.FC = () => {
   const [newBackPhoto, setNewBackPhoto] = useState<File | null>(null);
   const [frontPhotoPreview, setFrontPhotoPreview] = useState<string | null>(null);
   const [backPhotoPreview, setBackPhotoPreview] = useState<string | null>(null);
+  const [showBankingModal, setShowBankingModal] = useState(false);
+  const [showPaymentBreakdown, setShowPaymentBreakdown] = useState(false);
+  const [selectedListingForBreakdown, setSelectedListingForBreakdown] = useState<Listing | null>(null);
 
   const { myListings, isLoading, fetchMyListings, updateListing, deleteListing, getListingsNearExpiry, getDaysUntilExpiry, relistItem } = useListingsStore();
   const { addNotification } = useNotificationStore();
+  const { userProfile, fetchUserProfile } = useUserStore();
 
   useEffect(() => {
     fetchMyListings();
-  }, [fetchMyListings]);
+    if (!userProfile) {
+      fetchUserProfile();
+    }
+  }, [fetchMyListings, userProfile, fetchUserProfile]);
+
+  useEffect(() => {
+    if (userProfile && !userProfile.bankAccountNumber && myListings.length > 0) {
+      setShowBankingModal(true);
+    }
+  }, [userProfile, myListings]);
 
   const listingsNearExpiry = getListingsNearExpiry();
 
@@ -139,6 +156,30 @@ const ListingsPage: React.FC = () => {
     setBackPhotoPreview(URL.createObjectURL(file));
   };
 
+  const handleBankingSave = async (bankingData: BankingData) => {
+    try {
+      setIsSaving(true);
+      await userApi.updateProfile(bankingData);
+      await fetchUserProfile();
+      setShowBankingModal(false);
+      setToastMessage('Banking details saved successfully');
+      setToastColor('success');
+      setShowToast(true);
+    } catch (error) {
+      console.error('Failed to save banking details:', error);
+      setToastMessage('Failed to save banking details');
+      setToastColor('danger');
+      setShowToast(true);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleViewPaymentBreakdown = (listing: Listing) => {
+    setSelectedListingForBreakdown(listing);
+    setShowPaymentBreakdown(true);
+  };
+
   const getPhotoUrl = (photo: string) => {
     if (!photo) return '';
     return photo;
@@ -165,6 +206,21 @@ const ListingsPage: React.FC = () => {
         {selectedTab === 'current' && (
           <div style={{ marginTop: '16px' }}>
             <h3>Currently Listed Items</h3>
+
+            {!userProfile?.bankAccountNumber && myListings.length > 0 && (
+              <IonCard style={{ border: '1px solid var(--ion-color-warning)', marginBottom: '16px' }}>
+                <IonCardContent>
+                  <h4 style={{ display: 'flex', alignItems: 'center', margin: '0 0 8px 0', color: 'var(--ion-color-warning)' }}>
+                    <IonIcon icon={cardOutline} style={{ marginRight: '8px' }} />
+                    Banking Details Required
+                  </h4>
+                  <p style={{ margin: '0 0 12px 0', fontSize: '14px' }}>Add your banking details to receive payments for sold items.</p>
+                  <IonButton size="small" onClick={() => setShowBankingModal(true)}>
+                    Add Banking Details
+                  </IonButton>
+                </IonCardContent>
+              </IonCard>
+            )}
 
             {listingsNearExpiry.length > 0 && (
               <IonCard style={{ border: '1px solid var(--ion-color-warning)', marginBottom: '16px' }}>
@@ -229,6 +285,14 @@ const ListingsPage: React.FC = () => {
                         <p style={{ margin: '0 0 4px 0' }}>Size: {listing.size} | Gender: {listing.gender}</p>
                         <p style={{ margin: '0 0 4px 0' }}>Quantity: <strong>{listing.quantity}</strong> available</p>
                         <p style={{ margin: '0' }}>Listed: {listing.dateCreated}</p>
+                        <IonButton
+                          size="small"
+                          fill="outline"
+                          onClick={() => handleViewPaymentBreakdown(listing)}
+                          style={{ marginTop: '8px' }}
+                        >
+                          View Payment Breakdown
+                        </IonButton>
                       </div>
                       <div style={{ display: 'flex', gap: '8px', marginLeft: '8px', flexShrink: 0 }}>
                         <IonButton
@@ -456,6 +520,42 @@ const ListingsPage: React.FC = () => {
           position="bottom"
           color={toastColor}
         />
+
+        <BankingDetailsModal
+          isOpen={showBankingModal}
+          onDismiss={() => setShowBankingModal(false)}
+          onSave={handleBankingSave}
+          initialData={{
+            bankName: userProfile?.bankName,
+            bankAccountNumber: userProfile?.bankAccountNumber,
+            bankAccountType: userProfile?.bankAccountType,
+            bankBranchCode: userProfile?.bankBranchCode
+          }}
+        />
+
+        <IonModal isOpen={showPaymentBreakdown} onDidDismiss={() => setShowPaymentBreakdown(false)}>
+          <IonHeader>
+            <IonToolbar>
+              <IonTitle>Payment Breakdown</IonTitle>
+              <IonButtons slot="end">
+                <IonButton onClick={() => setShowPaymentBreakdown(false)}>
+                  <IonIcon icon={closeOutline} />
+                </IonButton>
+              </IonButtons>
+            </IonToolbar>
+          </IonHeader>
+          <IonContent>
+            {selectedListingForBreakdown && (
+              <div style={{ padding: '16px' }}>
+                <h3>{selectedListingForBreakdown.name}</h3>
+                <PaymentBreakdown
+                  itemPrice={selectedListingForBreakdown.price}
+                  quantity={selectedListingForBreakdown.quantity}
+                />
+              </div>
+            )}
+          </IonContent>
+        </IonModal>
       </div>
     </IonContent>
   );

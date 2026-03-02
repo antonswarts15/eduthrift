@@ -151,6 +151,42 @@ public class AuthController {
         return ResponseEntity.ok(new ProfileResponse(user));
     }
 
+    @PutMapping("/profile")
+    public ResponseEntity<?> updateProfile(@RequestBody Map<String, Object> updates, Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(401).body(new ErrorResponse("Not authenticated"));
+        }
+
+        String email = authentication.getName();
+        Optional<User> userOpt = userRepository.findByEmail(email);
+        if (!userOpt.isPresent()) {
+            return ResponseEntity.status(404).body(new ErrorResponse("User not found"));
+        }
+
+        try {
+            User user = userOpt.get();
+            if (updates.containsKey("firstName")) user.setFirstName((String) updates.get("firstName"));
+            if (updates.containsKey("lastName")) user.setLastName((String) updates.get("lastName"));
+            if (updates.containsKey("phone")) user.setPhone((String) updates.get("phone"));
+            if (updates.containsKey("schoolName")) user.setSchoolName((String) updates.get("schoolName"));
+            if (updates.containsKey("suburb")) user.setSuburb((String) updates.get("suburb"));
+            if (updates.containsKey("town")) user.setTown((String) updates.get("town"));
+            if (updates.containsKey("province")) user.setProvince((String) updates.get("province"));
+            if (updates.containsKey("streetAddress")) user.setStreetAddress((String) updates.get("streetAddress"));
+            if (updates.containsKey("bankName")) user.setBankName((String) updates.get("bankName"));
+            if (updates.containsKey("bankAccountNumber")) user.setBankAccountNumber((String) updates.get("bankAccountNumber"));
+            if (updates.containsKey("bankAccountType")) user.setBankAccountType((String) updates.get("bankAccountType"));
+            if (updates.containsKey("bankBranchCode")) user.setBankBranchCode((String) updates.get("bankBranchCode"));
+            
+            userRepository.save(user);
+            return ResponseEntity.ok(new ProfileResponse(user));
+        } catch (Exception e) {
+            System.err.println("Profile update failed: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(new ErrorResponse("Failed to update profile: " + e.getMessage()));
+        }
+    }
+
     @PostMapping("/upload-id-document")
     public ResponseEntity<?> uploadIdDocument(
             @RequestParam("idDocument") MultipartFile file,
@@ -308,10 +344,15 @@ public class AuthController {
         private String town;
         private String suburb;
         private String province;
+        private String streetAddress;
         private String idDocumentPath;
         private String proofOfResidencePath;
         private String verificationStatus;
         private Boolean sellerVerified;
+        private String bankName;
+        private String bankAccountNumber;
+        private String bankAccountType;
+        private String bankBranchCode;
 
         public ProfileResponse(User user) {
             this.id = user.getId();
@@ -324,10 +365,15 @@ public class AuthController {
             this.town = user.getTown();
             this.suburb = user.getSuburb();
             this.province = user.getProvince();
+            this.streetAddress = user.getStreetAddress();
             this.idDocumentPath = user.getIdDocumentUrl();
             this.proofOfResidencePath = user.getProofOfAddressUrl();
             this.verificationStatus = user.getVerificationStatus();
             this.sellerVerified = user.getSellerVerified();
+            this.bankName = user.getBankName();
+            this.bankAccountNumber = user.getBankAccountNumber();
+            this.bankAccountType = user.getBankAccountType();
+            this.bankBranchCode = user.getBankBranchCode();
         }
 
         public Long getId() { return id; }
@@ -340,9 +386,14 @@ public class AuthController {
         public String getTown() { return town; }
         public String getSuburb() { return suburb; }
         public String getProvince() { return province; }
+        public String getStreetAddress() { return streetAddress; }
         public String getIdDocumentPath() { return idDocumentPath; }
         public String getProofOfResidencePath() { return proofOfResidencePath; }
         public String getVerificationStatus() { return verificationStatus; }
         public Boolean getSellerVerified() { return sellerVerified; }
+        public String getBankName() { return bankName; }
+        public String getBankAccountNumber() { return bankAccountNumber; }
+        public String getBankAccountType() { return bankAccountType; }
+        public String getBankBranchCode() { return bankBranchCode; }
     }
 }
