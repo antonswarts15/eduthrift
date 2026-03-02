@@ -285,20 +285,68 @@ const SchoolUniformComponent: React.FC<SchoolUniformProps> = ({ userType, onItem
 
 
 
-  const handleSubmit = () => {
-    const itemData = {
-      item: selectedItem,
-      size,
-      condition,
-      price,
-      frontPhoto,
-      backPhoto,
-      schoolName
-    };
-    onItemSelect?.(itemData);
-    setShowItemDetails(false);
-    setSelectedItem('');
-    setSize('');
+  const handleSubmit = async () => {
+    if (userType === 'seller') {
+      const missingFields = [];
+      if (!size) missingFields.push('Size');
+      if (!condition) missingFields.push('Condition');
+      if (!price) missingFields.push('Price');
+      if (!frontPhoto) missingFields.push('Front Photo');
+      if (!backPhoto) missingFields.push('Back Photo');
+      
+      if (missingFields.length > 0) {
+        setToastMessage(`Please fill in: ${missingFields.join(', ')}`);
+        setShowToast(true);
+        return;
+      }
+
+      const { addListing } = useListingsStore.getState();
+      const itemData = {
+        id: Date.now().toString(),
+        name: selectedItem,
+        description: `${selectedItem} - Size: ${size}`,
+        school: schoolName,
+        gender: 'Unisex',
+        size,
+        condition: condition || 1,
+        price: parseInt(price),
+        frontPhoto: frontPhoto || '',
+        backPhoto: backPhoto || '',
+        category: 'School & sport uniform',
+        dateCreated: new Date().toLocaleDateString(),
+        quantity: 1
+      };
+
+      try {
+        await addListing(itemData);
+        setToastMessage(`${selectedItem} listed successfully!`);
+        setShowToast(true);
+        setShowItemDetails(false);
+        setSelectedItem('');
+        setSize('');
+        setCondition(undefined);
+        setPrice('');
+        setFrontPhoto(null);
+        setBackPhoto(null);
+      } catch (error: any) {
+        setToastMessage(error.message || 'Failed to list item');
+        setShowToast(true);
+      }
+    } else {
+      const itemData = {
+        item: selectedItem,
+        size,
+        condition,
+        price,
+        frontPhoto,
+        backPhoto,
+        schoolName
+      };
+      onItemSelect?.(itemData);
+      setShowItemDetails(false);
+      setSelectedItem('');
+      setSize('');
+    }
   };
 
   if (showItemView && selectedAvailableItem) {

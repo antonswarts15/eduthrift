@@ -240,7 +240,7 @@ const GenericSportEquipmentComponent: React.FC<GenericSportEquipmentProps> = ({
     return missingFields;
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const missingFields = validateFields();
     if (missingFields.length > 0) {
       displayToast(`Please fill in: ${missingFields.join(', ')}`, 'danger');
@@ -264,18 +264,21 @@ const GenericSportEquipmentComponent: React.FC<GenericSportEquipmentProps> = ({
     };
 
     if (userType === 'seller') {
-      addListing(itemData);
-      displayToast(`${selectedItem} listed successfully!`, 'success');
+      try {
+        await addListing(itemData);
+        displayToast(`${selectedItem} listed successfully!`, 'success');
+        setShowItemDetails(false);
+        setSelectedItem('');
+        setSize('');
+        setTeam('');
+        setCondition(undefined);
+        setPrice('');
+        setFrontPhoto(null);
+        setBackPhoto(null);
+      } catch (error: any) {
+        displayToast(error.message || 'Failed to list item', 'danger');
+      }
     }
-
-    setShowItemDetails(false);
-    setSelectedItem('');
-    setSize('');
-    setTeam('');
-    setCondition(undefined);
-    setPrice('');
-    setFrontPhoto(null);
-    setBackPhoto(null);
   };
 
   if (showItemDetails) {
