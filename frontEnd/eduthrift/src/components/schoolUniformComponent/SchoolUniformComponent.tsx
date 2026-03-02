@@ -50,7 +50,7 @@ const SchoolUniformComponent: React.FC<SchoolUniformProps> = ({ userType, onItem
   const [toastMessage, setToastMessage] = useState('');
   const [addedToCartId, setAddedToCartId] = useState<string | null>(null);
   const { addToCart } = useCartStore();
-  const { listings, fetchListings } = useListingsStore();
+  const { listings, fetchListings, addListing } = useListingsStore();
 
   useEffect(() => {
     fetchListings();
@@ -300,7 +300,6 @@ const SchoolUniformComponent: React.FC<SchoolUniformProps> = ({ userType, onItem
         return;
       }
 
-      const { addListing } = useListingsStore.getState();
       const itemData = {
         id: Date.now().toString(),
         name: selectedItem,

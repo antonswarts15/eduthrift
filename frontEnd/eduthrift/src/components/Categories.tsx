@@ -649,7 +649,11 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
     } else if (category === 'Textbooks') {
       setShowSchoolGrades(true);
     } else if (category === 'Stationery') {
-      setShowStationery(true);
+      if (userType === 'buyer') {
+        setShowStationery(true);
+      } else {
+        setShowItemDetails(true);
+      }
     } else if (category === 'Sports equipment') {
       setCurrentLevel('sportEquipment');
     } else if (category === 'Matric dance clothing') {

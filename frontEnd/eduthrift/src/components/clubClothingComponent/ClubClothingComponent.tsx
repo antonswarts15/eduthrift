@@ -54,7 +54,7 @@ const ClubClothingComponent: React.FC<ClubClothingProps> = ({ userType, onItemSe
   const [toastMessage, setToastMessage] = useState('');
   const [addedToCartId, setAddedToCartId] = useState<string | null>(null);
   const { addToCart } = useCartStore();
-  const { listings, fetchListings } = useListingsStore();
+  const { listings, fetchListings, addListing } = useListingsStore();
 
   useEffect(() => {
     fetchListings();
@@ -221,7 +221,6 @@ const ClubClothingComponent: React.FC<ClubClothingProps> = ({ userType, onItemSe
         return;
       }
 
-      const { addListing } = useListingsStore.getState();
       const itemData = {
         id: Date.now().toString(),
         name: selectedItem,
