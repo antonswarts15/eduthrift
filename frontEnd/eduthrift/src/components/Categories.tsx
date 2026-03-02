@@ -41,6 +41,7 @@ import * as SportEquipmentComponents from './sportingEquipmentComponent';
 import SchoolUniformComponent from './schoolUniformComponent/SchoolUniformComponent';
 import ClubClothingComponent from './clubClothingComponent/ClubClothingComponent';
 import Stationery from './stationeryComponent/Stationery';
+import StationerySeller from './stationeryComponent/StationerySeller';
 import SchoolGradesComponent from './schoolGradesComponent/SchoolGradesComponent';
 import BeltsBagsShoesComponent from './beltsBagsShoesComponent/BeltsBagsShoesComponent';
 import TrainingWearComponent from './trainingWearComponent/TrainingWearComponent';
@@ -649,11 +650,7 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
     } else if (category === 'Textbooks') {
       setShowSchoolGrades(true);
     } else if (category === 'Stationery') {
-      if (userType === 'buyer') {
-        setShowStationery(true);
-      } else {
-        setShowItemDetails(true);
-      }
+      setShowStationery(true);
     } else if (category === 'Sports equipment') {
       setCurrentLevel('sportEquipment');
     } else if (category === 'Matric dance clothing') {
@@ -1776,11 +1773,15 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
         </div>
       ) : showStationery ? (
         <div style={{ padding: '16px' }}>
-          <Stationery 
-            userType={userType} 
-            onItemSelect={(item: any) => console.log('Selected:', typeof item === 'string' ? item.replace(/[\r\n\t]/g, '').substring(0, 100) : 'item')} 
-            categoryFilter='all'
-          />
+          {userType === 'seller' ? (
+            <StationerySeller />
+          ) : (
+            <Stationery 
+              userType={userType} 
+              onItemSelect={(item: any) => console.log('Selected:', typeof item === 'string' ? item.replace(/[\r\n\t]/g, '').substring(0, 100) : 'item')} 
+              categoryFilter='all'
+            />
+          )}
         </div>
       ) : showSchoolSelection ? (
         <div style={{ padding: '16px' }}>

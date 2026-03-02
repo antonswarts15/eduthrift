@@ -26,6 +26,7 @@ import { isLoggedIn } from '../utils/auth';
 import { useCartStore } from '../stores/cartStore';
 import { useNotificationStore } from '../stores/notificationStore';
 import { useUserStore } from '../stores/userStore';
+import { useAuthStore } from '../stores/authStore';
 import AuthPromptModal from './AuthPromptModal';
 import logo from '../assets/logo.png';
 import {
@@ -43,7 +44,8 @@ import {
   closeOutline,
   searchOutline,
   heartOutline,
-  shieldOutline
+  shieldOutline,
+  logOutOutline
 } from 'ionicons/icons';
 
 interface MainLayoutProps {
@@ -55,11 +57,13 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const [showOrdersSubmenu, setShowOrdersSubmenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showSearchModal, setShowSearchModal] = useState(false);
+  const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const { getCartItemCount } = useCartStore();
   const { notifications, removeNotification } = useNotificationStore();
   const { userProfile, fetchUserProfile } = useUserStore();
+  const { logout } = useAuthStore();
   const history = useHistory();
   const location = useLocation();
   
@@ -196,9 +200,19 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
               <IonIcon icon={searchOutline} />
             </IonButton>
             <IonButtons slot="end">
-              <span style={{ marginRight: '12px', fontSize: '14px', fontWeight: '500', color: '#777' }}>
-                {isLoggedIn() ? (userProfile?.name || 'User') : 'Guest'}
-              </span>
+              <IonButton
+                id="profile-dropdown-trigger"
+                fill="clear"
+                size="small"
+                onClick={() => setShowProfileDropdown(true)}
+                style={{ textTransform: 'none' }}
+              >
+                <IonIcon icon={personOutline} style={{ marginRight: '4px', fontSize: '16px', color: '#777' }} />
+                <span style={{ fontSize: '14px', fontWeight: '500', color: '#777' }}>
+                  {isLoggedIn() ? (userProfile?.name || 'User') : 'Guest'}
+                </span>
+                <IonIcon icon={chevronDownOutline} style={{ marginLeft: '2px', fontSize: '12px', color: '#777' }} />
+              </IonButton>
               <IonButton id="notifications-trigger" onClick={() => setShowNotifications(true)}>
                 <IonIcon icon={notificationsOutline} />
                 {notifications.length > 0 && <IonBadge>{notifications.length}</IonBadge>}
@@ -303,6 +317,54 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
           </IonContent>
         </IonPopover>
         
+        {/* Profile Dropdown */}
+        <IonPopover
+          isOpen={showProfileDropdown}
+          onDidDismiss={() => setShowProfileDropdown(false)}
+          trigger="profile-dropdown-trigger"
+          showBackdrop={true}
+          alignment="end"
+        >
+          <IonContent scrollY={false}>
+            <IonList lines="full" style={{ padding: '0' }}>
+              {isLoggedIn() ? (
+                <>
+                  <IonItem lines="full" style={{ '--background': '#f8f8f8' }}>
+                    <IonLabel style={{ fontWeight: '600', fontSize: '14px' }}>
+                      {userProfile?.name || 'User'}
+                    </IonLabel>
+                  </IonItem>
+                  <IonItem button onClick={() => { setShowProfileDropdown(false); history.push('/profile'); }}>
+                    <IonIcon icon={personOutline} slot="start" />
+                    <IonLabel>My Profile</IonLabel>
+                  </IonItem>
+                  <IonItem button onClick={() => { setShowProfileDropdown(false); history.push('/profile/listings'); }}>
+                    <IonIcon icon={listOutline} slot="start" />
+                    <IonLabel>My Listings</IonLabel>
+                  </IonItem>
+                  <IonItem button onClick={() => { setShowProfileDropdown(false); history.push('/profile/orders'); }}>
+                    <IonIcon icon={receiptOutline} slot="start" />
+                    <IonLabel>My Orders</IonLabel>
+                  </IonItem>
+                  <IonItem button onClick={() => { setShowProfileDropdown(false); history.push('/wishlist'); }}>
+                    <IonIcon icon={heartOutline} slot="start" />
+                    <IonLabel>My Wishlist</IonLabel>
+                  </IonItem>
+                  <IonItem button onClick={() => { setShowProfileDropdown(false); logout(); history.push('/home'); }} lines="none">
+                    <IonIcon icon={logOutOutline} slot="start" style={{ color: '#eb445a' }} />
+                    <IonLabel style={{ color: '#eb445a' }}>Logout</IonLabel>
+                  </IonItem>
+                </>
+              ) : (
+                <IonItem button onClick={() => { setShowProfileDropdown(false); history.push('/login'); }} lines="none">
+                  <IonIcon icon={personOutline} slot="start" />
+                  <IonLabel>Login / Register</IonLabel>
+                </IonItem>
+              )}
+            </IonList>
+          </IonContent>
+        </IonPopover>
+
         {/* Global Search Modal */}
         <IonModal isOpen={showSearchModal} onDidDismiss={() => {
           setShowSearchModal(false);

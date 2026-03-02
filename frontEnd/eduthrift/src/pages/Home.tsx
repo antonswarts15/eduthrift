@@ -37,6 +37,7 @@ import buyerIcon from '../assets/buyerIcon.jpg';
 import sellerIcon from '../assets/sellerIcon.jpg';
 import { itemsApi } from '../services/api';
 import { Swiper, SwiperSlide } from 'swiper/react';
+import { Autoplay } from 'swiper/modules';
 import 'swiper/css';
 import { Item } from '../types/models';
 
@@ -79,7 +80,7 @@ const Home: React.FC = () => {
 
   return (
     <IonContent>
-        <div style={{ padding: '20px', textAlign: 'center', marginTop: '60px', position: 'relative' }}>
+        <div style={{ padding: '20px', textAlign: 'center', position: 'relative' }}>
           {/* Video Advertisement */}
           <IonCard >
             <IonCardContent style={{ padding: '0' }}>
@@ -136,6 +137,10 @@ const Home: React.FC = () => {
             slidesPerView={2.5}
             spaceBetween={10}
             freeMode={true}
+            breakpoints={{
+              768: { slidesPerView: 4 },
+              1024: { slidesPerView: 6 }
+            }}
           >
             {categories.map((cat, index) => (
               <SwiperSlide key={index} onClick={() => history.push(`/category/${cat.slug}`)}>
@@ -158,6 +163,13 @@ const Home: React.FC = () => {
               slidesPerView={2.5}
               spaceBetween={10}
               freeMode={true}
+              modules={[Autoplay]}
+              autoplay={{ delay: 10000, disableOnInteraction: false }}
+              loop={true}
+              breakpoints={{
+                768: { slidesPerView: 3.5 },
+                1024: { slidesPerView: 5 }
+              }}
             >
               {recentItems.map((item, index) => (
                 <SwiperSlide key={index} onClick={() => history.push(`/item/${item.id}`)}>
@@ -420,7 +432,7 @@ const Home: React.FC = () => {
             </IonRow>
           </IonGrid>
 
-          {/* Privacy Policy Link */}
+          {/* Footer Links */}
           <div style={{ textAlign: 'center', padding: '20px', marginTop: '20px' }}>
             <IonText 
               color="medium" 
@@ -428,6 +440,15 @@ const Home: React.FC = () => {
               onClick={() => history.push('/privacy-policy')}
             >
               Privacy Policy
+            </IonText>
+            <IonText color="medium" style={{ fontSize: '14px', margin: '0 8px' }}>•</IonText>
+            <IonText 
+              color="medium" 
+              style={{ fontSize: '14px' }}
+            >
+              <a href="mailto:support@eduthrift.co.za" style={{ color: 'inherit', textDecoration: 'none' }}>
+                support@eduthrift.co.za
+              </a>
             </IonText>
           </div>
       </div>
