@@ -2,13 +2,14 @@ import { create } from 'zustand';
 
 export interface UserProfile {
   id: string;
-  name?: string; // Full name (computed from firstName + lastName)
-  firstName?: string; // From backend
-  lastName?: string; // From backend
+  name?: string;
+  firstName?: string;
+  lastName?: string;
   email: string;
   phone: string;
-  address?: string; // Street address
-  town?: string; // City/Town
+  address?: string;
+  streetAddress?: string;
+  town?: string;
   suburb?: string;
   province?: string;
   schoolName?: string;
@@ -20,6 +21,10 @@ export interface UserProfile {
   };
   idDocumentPath?: string;
   proofOfResidencePath?: string;
+  bankName?: string;
+  bankAccountNumber?: string;
+  bankAccountType?: string;
+  bankBranchCode?: string;
 }
 
 interface UserStore {
@@ -83,11 +88,15 @@ export const useUserStore = create<UserStore>((set, get) => ({
         },
         idDocumentPath: profileData.idDocumentUrl || undefined,
         proofOfResidencePath: profileData.proofOfAddressUrl || undefined,
+        streetAddress: profileData.streetAddress,
+        bankName: profileData.bankName,
+        bankAccountNumber: profileData.bankAccountNumber,
+        bankAccountType: profileData.bankAccountType,
+        bankBranchCode: profileData.bankBranchCode,
       };
       set({ userProfile: profile });
     } catch (error) {
       console.error('Failed to fetch user profile:', error);
-      // Don't clear the profile on error — keep existing state to avoid logout
     }
   }
 }));
