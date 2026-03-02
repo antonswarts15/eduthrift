@@ -845,14 +845,6 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
         alert('Please upload a back photo of the item (JPEG or PNG format)');
         return;
       }
-      if (!idDocument && !idDocumentPreview) {
-        alert('Please upload a copy of your ID document to verify this item is not stolen');
-        return;
-      }
-      if (!proofOfAddress && !proofOfAddressPreview) {
-        alert('Please upload proof of address to verify this item is not stolen');
-        return;
-      }
     }
 
     if (userType === 'seller') {
@@ -875,9 +867,6 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
         backPhoto: backPhotoPreview || '',
         dateCreated: new Date().toLocaleDateString(),
         quantity: 1,
-        sellerIdDocument: idDocumentPreview || undefined,
-        sellerProofOfAddress: proofOfAddressPreview || undefined,
-        verificationStatus: 'pending' as const,
         item_name: itemName,
         school_name: schoolName,
         club_name: clubName
@@ -1539,85 +1528,6 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
             </>
           )}
 
-          {/* Anti-Theft Verification Documents (Sellers Only) */}
-          {userType === 'seller' && (
-            <>
-              <div style={{
-                marginTop: '24px',
-                marginBottom: '16px',
-                padding: '12px',
-                backgroundColor: '#fff3cd',
-                border: '1px solid #ffc107',
-                borderRadius: '8px'
-              }}>
-                <h4 style={{ margin: '0 0 8px 0', color: '#856404' }}>
-                  <IonIcon icon={shieldCheckmarkOutline} style={{ marginRight: '8px' }} />
-                  Anti-Theft Verification Required
-                </h4>
-                <p style={{ margin: 0, fontSize: '14px', color: '#856404' }}>
-                  To ensure items are not stolen, please upload your ID document and proof of address.
-                </p>
-              </div>
-
-              <IonItem style={{ marginBottom: '16px' }}>
-                <IonLabel position="stacked">ID Document * (JPEG/PNG/PDF, max 5MB)</IonLabel>
-                {!idDocumentPreview ? (
-                  <div style={{ marginTop: '8px' }}>
-                    <IonButton
-                      size="small"
-                      fill="outline"
-                      onClick={() => handleDocumentUpload('id')}
-                    >
-                      <IonIcon icon={documentOutline} slot="start" />
-                      Upload ID Document
-                    </IonButton>
-                  </div>
-                ) : (
-                  <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <IonIcon icon={checkmarkCircle} color="success" style={{ fontSize: '24px' }} />
-                    <span style={{ color: '#27AE60', fontSize: '14px' }}>ID document uploaded</span>
-                    <IonButton
-                      size="small"
-                      fill="clear"
-                      color="danger"
-                      onClick={() => removeDocument('id')}
-                    >
-                      <IonIcon icon={trashOutline} slot="icon-only" />
-                    </IonButton>
-                  </div>
-                )}
-              </IonItem>
-
-              <IonItem style={{ marginBottom: '16px' }}>
-                <IonLabel position="stacked">Proof of Address * (JPEG/PNG/PDF, max 5MB)</IonLabel>
-                {!proofOfAddressPreview ? (
-                  <div style={{ marginTop: '8px' }}>
-                    <IonButton
-                      size="small"
-                      fill="outline"
-                      onClick={() => handleDocumentUpload('address')}
-                    >
-                      <IonIcon icon={documentOutline} slot="start" />
-                      Upload Proof of Address
-                    </IonButton>
-                  </div>
-                ) : (
-                  <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <IonIcon icon={checkmarkCircle} color="success" style={{ fontSize: '24px' }} />
-                    <span style={{ color: '#27AE60', fontSize: '14px' }}>Proof of address uploaded</span>
-                    <IonButton
-                      size="small"
-                      fill="clear"
-                      color="danger"
-                      onClick={() => removeDocument('address')}
-                    >
-                      <IonIcon icon={trashOutline} slot="icon-only" />
-                    </IonButton>
-                  </div>
-                )}
-              </IonItem>
-            </>
-          )}
 
           <IonButton
             expand="full"

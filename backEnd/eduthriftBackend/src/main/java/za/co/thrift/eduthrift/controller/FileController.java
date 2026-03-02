@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.MalformedURLException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -16,7 +17,7 @@ import java.nio.file.Paths;
 @CrossOrigin(origins = {"https://www.eduthrift.co.za", "https://eduthrift.co.za", "https://admin.eduthrift.co.za", "http://localhost:3000", "http://localhost:3001", "http://localhost:5173"}, allowCredentials = "true")
 public class FileController {
 
-    @Value("${file.upload.dir:/app/uploads}")
+    @Value("${file.upload.dir:./uploads}")
     private String uploadDir;
 
     @GetMapping("/{type}/{filename:.+}")
@@ -37,9 +38,13 @@ public class FileController {
                         .contentType(MediaType.parseMediaType(contentType))
                         .body(resource);
             } else {
+                System.err.println("File not found: " + file.toAbsolutePath());
+                System.err.println("Upload dir: " + uploadDir);
+                System.err.println("File exists: " + Files.exists(file));
                 return ResponseEntity.notFound().build();
             }
         } catch (MalformedURLException e) {
+            System.err.println("Malformed URL for file: " + type + "/" + filename);
             return ResponseEntity.badRequest().build();
         }
     }
