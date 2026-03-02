@@ -40,6 +40,7 @@ services:
       SPRING_DATASOURCE_USERNAME: ${DB_USER}
       SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
       JWT_SECRET: ${JWT_SECRET}
+      FILE_UPLOAD_DIR: /app/uploads
 
       # PayFast
       PAYFAST_MERCHANT_ID: ${PAYFAST_MERCHANT_ID}
@@ -53,6 +54,11 @@ services:
 
       # ShipLogic
       SHIPLOGIC_API_KEY: ${SHIPLOGIC_API_KEY}
+
+      # EBANX/Ozow
+      EBANX_INTEGRATION_KEY: ${EBANX_INTEGRATION_KEY}
+      EBANX_API_URL: ${EBANX_API_URL:-https://sandbox.ebanx.com}
+      APP_BASE_URL: ${APP_BASE_URL:-http://localhost:3000}
     ports:
       - "${BACKEND_PORT:-8080}:8080"
     depends_on:

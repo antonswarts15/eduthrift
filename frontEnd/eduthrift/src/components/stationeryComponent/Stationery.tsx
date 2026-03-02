@@ -370,8 +370,6 @@ const Stationery: React.FC<StationeryProps> = ({ userType, onItemSelect, categor
             return matches;
           });
           
-          if (categoryItems.length === 0) return null;
-          
           return (
             <IonAccordion key={category} value={category}>
               <IonItem slot="header" style={{ '--background': 'transparent' }}>
@@ -395,6 +393,11 @@ const Stationery: React.FC<StationeryProps> = ({ userType, onItemSelect, categor
                 </IonLabel>
               </IonItem>
               <div slot="content" style={{ padding: '8px' }}>
+                {categoryItems.length === 0 ? (
+                  <div style={{ padding: '16px', textAlign: 'center', color: '#666' }}>
+                    No items listed yet in this category
+                  </div>
+                ) : (
                 <IonGrid>
                   <IonRow>
                     {categoryItems.map((item) => (
@@ -441,6 +444,7 @@ const Stationery: React.FC<StationeryProps> = ({ userType, onItemSelect, categor
                     ))}
                   </IonRow>
                 </IonGrid>
+                )}
               </div>
             </IonAccordion>
           );
