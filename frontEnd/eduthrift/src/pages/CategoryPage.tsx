@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useHistory } from 'react-router-dom';
 import { 
@@ -73,7 +71,7 @@ const CategoryPage: React.FC = () => {
     <IonPage>
       <IonContent>
         {/* Featured Items Slider for this Category */}
-        {categoryItems.length > 0 && (
+        {categoryItems.length > 0 ? (
           <div style={{ marginTop: '16px', marginBottom: '10px' }}>
             <h3 style={{ textAlign: 'left', marginLeft: '16px', color: '#2C3E50', marginBottom: '10px', fontSize: '16px' }}>
               Featured in {subcategory || category}
@@ -90,21 +88,21 @@ const CategoryPage: React.FC = () => {
                       {item.front_photo ? (
                         <img src={item.front_photo} alt={item.item_name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                       ) : (
-                        <IonIcon icon={cameraOutline} style={{ fontSize: '28px', color: '#ccc' }} />
+                        <IonIcon icon={cameraOutline} style={{ fontSize: '48px', color: '#bdbdbd' }} />
                       )}
                     </div>
-                    <IonCardContent style={{ padding: '8px', textAlign: 'left' }}>
-                      <IonText style={{ fontSize: '11px', fontWeight: '600', color: '#333', display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        {item.item_name || item.name}
-                      </IonText>
-                      <IonText style={{ fontSize: '13px', fontWeight: 'bold', color: '#27AE60', marginTop: '2px', display: 'block' }}>
-                        R{item.price}
-                      </IonText>
+                    <IonCardContent>
+                      <IonText color="dark" style={{ fontWeight: 'bold' }}>{item.item_name}</IonText>
                     </IonCardContent>
                   </IonCard>
                 </SwiperSlide>
               ))}
             </Swiper>
+          </div>
+        ) : (
+          <div style={{ margin: '32px auto', textAlign: 'center', color: '#888', background: '#fffbe6', border: '1px solid #ffe58f', borderRadius: '8px', padding: '24px', maxWidth: '400px' }}>
+            <h4 style={{ marginBottom: '8px', color: '#d48806' }}>No items available</h4>
+            <p>There are currently no items listed in this category.<br />Please check back later or try another category.</p>
           </div>
         )}
 
