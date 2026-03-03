@@ -49,6 +49,7 @@ const SchoolUniformComponent: React.FC<SchoolUniformProps> = ({ userType, onItem
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [addedToCartId, setAddedToCartId] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { addToCart } = useCartStore();
   const { listings, fetchListings, addListing } = useListingsStore();
 
@@ -286,6 +287,7 @@ const SchoolUniformComponent: React.FC<SchoolUniformProps> = ({ userType, onItem
 
 
   const handleSubmit = async () => {
+    console.log('SchoolUniform: handleSubmit called, userType:', userType);
     if (userType === 'seller') {
       const missingFields = [];
       if (!size) missingFields.push('Size');
@@ -295,6 +297,7 @@ const SchoolUniformComponent: React.FC<SchoolUniformProps> = ({ userType, onItem
       if (!backPhoto) missingFields.push('Back Photo');
       
       if (missingFields.length > 0) {
+        console.log('SchoolUniform: Missing fields:', missingFields);
         setToastMessage(`Please fill in: ${missingFields.join(', ')}`);
         setShowToast(true);
         return;
@@ -316,8 +319,12 @@ const SchoolUniformComponent: React.FC<SchoolUniformProps> = ({ userType, onItem
         quantity: 1
       };
 
+      console.log('SchoolUniform: Submitting item:', itemData.name);
+      setIsSubmitting(true);
+      
       try {
         await addListing(itemData);
+        console.log('SchoolUniform: Item listed successfully');
         setToastMessage(`${selectedItem} listed successfully!`);
         setShowToast(true);
         setShowItemDetails(false);
@@ -328,8 +335,11 @@ const SchoolUniformComponent: React.FC<SchoolUniformProps> = ({ userType, onItem
         setFrontPhoto(null);
         setBackPhoto(null);
       } catch (error: any) {
+        console.error('SchoolUniform: Error listing item:', error);
         setToastMessage(error.message || 'Failed to list item');
         setShowToast(true);
+      } finally {
+        setIsSubmitting(false);
       }
     } else {
       const itemData = {
@@ -559,8 +569,8 @@ const SchoolUniformComponent: React.FC<SchoolUniformProps> = ({ userType, onItem
           </>
         )}
 
-        <IonButton expand="full" onClick={handleSubmit} style={{ marginTop: '16px' }}>
-          {userType === 'seller' ? 'List Item' : 'Add to Cart'}
+        <IonButton expand="full" onClick={handleSubmit} disabled={isSubmitting} style={{ marginTop: '16px' }}>
+          {userType === 'seller' ? (isSubmitting ? 'Listing...' : 'List Item') : 'Add to Cart'}
         </IonButton>
       </div>
     );

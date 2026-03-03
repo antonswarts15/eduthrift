@@ -29,6 +29,7 @@ const StationerySeller: React.FC = () => {
   const [backPhoto, setBackPhoto] = useState<string | null>(null);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { addListing } = useListingsStore();
 
   const stationeryCategories = {
@@ -91,6 +92,7 @@ const StationerySeller: React.FC = () => {
   };
 
   const handleSubmit = async () => {
+    console.log('StationerySeller: handleSubmit called');
     const missingFields = [];
     if (!condition) missingFields.push('Condition');
     if (!price) missingFields.push('Price');
@@ -99,6 +101,7 @@ const StationerySeller: React.FC = () => {
     if (!backPhoto) missingFields.push('Back Photo');
     
     if (missingFields.length > 0) {
+      console.log('StationerySeller: Missing fields:', missingFields);
       setToastMessage(`Please fill in: ${missingFields.join(', ')}`);
       setShowToast(true);
       return;
@@ -120,8 +123,12 @@ const StationerySeller: React.FC = () => {
       quantity: parseInt(quantity)
     };
 
+    console.log('StationerySeller: Submitting item:', itemData.name);
+    setIsSubmitting(true);
+    
     try {
       await addListing(itemData);
+      console.log('StationerySeller: Item listed successfully');
       setToastMessage(`${selectedItem} listed successfully!`);
       setShowToast(true);
       setShowItemDetails(false);
@@ -132,8 +139,11 @@ const StationerySeller: React.FC = () => {
       setFrontPhoto(null);
       setBackPhoto(null);
     } catch (error: any) {
+      console.error('StationerySeller: Error listing item:', error);
       setToastMessage(error.message || 'Failed to list item');
       setShowToast(true);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -212,8 +222,8 @@ const StationerySeller: React.FC = () => {
           </div>
         </div>
 
-        <IonButton expand="full" onClick={handleSubmit} style={{ marginTop: '16px' }}>
-          List Item
+        <IonButton expand="full" onClick={handleSubmit} disabled={isSubmitting} style={{ marginTop: '16px' }}>
+          {isSubmitting ? 'Listing...' : 'List Item'}
         </IonButton>
       </div>
     );
