@@ -62,13 +62,17 @@ const SchoolUniformComponent: React.FC<SchoolUniformProps> = ({ userType, onItem
   const bagSizes = ['One Size'];
 
   const getFilteredItems = () => {
-    if (userType !== 'buyer' || !schoolName) return [];
+    if (userType !== 'buyer' || !schoolName) {
+      console.log('SchoolUniform: Not showing items - userType:', userType, 'schoolName:', schoolName);
+      return [];
+    }
 
+    console.log('SchoolUniform: Filtering items for school:', schoolName);
+    console.log('SchoolUniform: Total listings:', listings.length);
+    
     let items = listings.filter(listing => {
       if (listing.category !== 'School & sport uniform') return false;
       if (listing.school !== schoolName) return false;
-      // Filter by subcategory if needed (e.g. 'School Uniform' vs 'Sports Uniform')
-      // Assuming SchoolUniformComponent handles 'School Uniform' primarily or both
       return true;
     }).map(listing => ({
       id: listing.id,
@@ -86,6 +90,8 @@ const SchoolUniformComponent: React.FC<SchoolUniformProps> = ({ userType, onItem
       sport: listing.sport,
       school: listing.school
     }));
+    
+    console.log('SchoolUniform: Filtered items for', schoolName, ':', items.length);
     
     if (sizeFilter) {
       items = items.filter(item => item.size.toLowerCase().includes(sizeFilter.toLowerCase()));
@@ -569,7 +575,7 @@ const SchoolUniformComponent: React.FC<SchoolUniformProps> = ({ userType, onItem
           </>
         )}
 
-        <IonButton expand="full" onClick={handleSubmit} disabled={isSubmitting} style={{ marginTop: '16px' }}>
+        <IonButton expand="full" onClick={() => { console.log('Button clicked!'); handleSubmit(); }} disabled={isSubmitting} style={{ marginTop: '16px' }}>
           {userType === 'seller' ? (isSubmitting ? 'Listing...' : 'List Item') : 'Add to Cart'}
         </IonButton>
       </div>
