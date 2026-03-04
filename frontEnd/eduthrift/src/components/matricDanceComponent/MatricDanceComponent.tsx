@@ -1,21 +1,28 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import {
+  IonItem,
+  IonLabel,
+  IonSelect,
+  IonSelectOption,
+  IonInput,
   IonButton,
   IonCard,
   IonCardContent,
+  IonGrid,
+  IonRow,
+  IonCol,
   IonIcon,
+  IonAccordion,
+  IonAccordionGroup,
   IonToast,
-  IonBadge,
-  IonModal,
-  IonHeader,
-  IonToolbar,
-  IonTitle,
-  IonButtons
+  IonBadge
 } from '@ionic/react';
-import { cartOutline, checkmarkCircleOutline, closeCircleOutline, closeOutline, notificationsOutline, heartOutline } from 'ionicons/icons';
+import { imageOutline, cartOutline, checkmarkCircleOutline, closeCircleOutline, sparklesOutline, shirtOutline, diamondOutline } from 'ionicons/icons';
 import { useCartStore } from '../../stores/cartStore';
 import { useListingsStore } from '../../stores/listingsStore';
-import { useWishlistStore } from '../../stores/wishlistStore';
+import { useToast } from '../../hooks/useToast';
+import { validateImageFile } from '../../utils/imageEnhancer';
 
 interface MatricDanceProps {
   userType: 'seller' | 'buyer';
@@ -23,281 +30,515 @@ interface MatricDanceProps {
   categoryFilter?: string;
 }
 
-type GenderFilter = 'All' | 'Girls' | 'Boys' | 'Accessories';
+const matricDanceCategories: Record<string, { items: string[]; icon: string; color: string }> = {
+  'Girls Matric Dance': {
+    items: ['Matric dance dress', 'Evening gown', 'Cocktail dress', 'Cover-up / Shawl', 'Clutch bag', 'Heels', 'Jewellery set'],
+    icon: diamondOutline,
+    color: '#E74C3C'
+  },
+  'Boys Matric Dance': {
+    items: ['Suit jacket', 'Suit pants', 'Dress shirt', 'Tie', 'Bow tie', 'Waistcoat', 'Dress shoes', 'Cufflinks'],
+    icon: shirtOutline,
+    color: '#3498DB'
+  },
+  'Accessories': {
+    items: ['Corsage', 'Boutonniere', 'Hair accessories', 'Belt', 'Pocket square', 'Suspenders'],
+    icon: sparklesOutline,
+    color: '#8E44AD'
+  }
+};
 
-const MatricDanceComponent: React.FC<MatricDanceProps> = () => {
+const MatricDanceComponent: React.FC<MatricDanceProps> = ({ userType, onItemSelect }) => {
+  const [selectedItem, setSelectedItem] = useState('');
+  const [showItemDetails, setShowItemDetails] = useState(false);
+  const [condition, setCondition] = useState<number | undefined>();
+  const [price, setPrice] = useState('');
+  const [frontPhoto, setFrontPhoto] = useState<string | null>(null);
+  const [backPhoto, setBackPhoto] = useState<string | null>(null);
+  const [size, setSize] = useState('');
+  const [selectedGender, setSelectedGender] = useState('');
+  const [photoViewer, setPhotoViewer] = useState<string | null>(null);
+  const [addedToCartId, setAddedToCartId] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { addListing, listings, decreaseQuantity, fetchListings } = useListingsStore();
   const { addToCart } = useCartStore();
-  const { listings, fetchListings, decreaseQuantity } = useListingsStore();
-  const { addToWishlist } = useWishlistStore();
-
-  const [genderFilter, setGenderFilter] = useState<GenderFilter>('All');
-  const [showToast, setShowToast] = useState(false);
-  const [toastMessage, setToastMessage] = useState('');
-  const [toastColor, setToastColor] = useState<'success' | 'danger'>('success');
-  const [photoModal, setPhotoModal] = useState<{ isOpen: boolean; photo: string; title: string }>({ isOpen: false, photo: '', title: '' });
+  const { isOpen: showToast, message: toastMessage, color: toastColor, showToast: displayToast, hideToast } = useToast();
 
   useEffect(() => {
     fetchListings();
+    return () => {
+      setSelectedItem('');
+      setShowItemDetails(false);
+      setCondition(undefined);
+      setPrice('');
+      setFrontPhoto(null);
+      setBackPhoto(null);
+      setSize('');
+    };
   }, [fetchListings]);
 
-  const getConditionText = (condition: number) => {
-    switch (condition) {
-      case 1: return 'Brand new';
-      case 2: return 'Like new';
-      case 3: return 'Good condition';
-      case 4: return 'Used';
-      default: return 'Unknown';
+  const getSizeOptions = (item: string) => {
+    if (item.toLowerCase().includes('shoe') || item.toLowerCase().includes('heel')) {
+      return ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15'];
     }
+    if (item.toLowerCase().includes('belt') || item.toLowerCase().includes('suspender')) {
+      return ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
+    }
+    if (item.toLowerCase().includes('cufflink') || item.toLowerCase().includes('corsage') || item.toLowerCase().includes('boutonniere') || item.toLowerCase().includes('pocket square') || item.toLowerCase().includes('hair') || item.toLowerCase().includes('jewellery')) {
+      return ['One Size'];
+    }
+    return ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL'];
   };
 
-  const genderMap: Record<string, string> = { 'Girls': 'Girl', 'Boys': 'Boy' };
-
-  const getFilteredItems = () => {
-    return listings.filter(listing => {
-      if (listing.category !== 'Matric dance clothing') return false;
-      if (genderFilter === 'All') return true;
-      if (genderFilter === 'Accessories') return listing.gender === 'Unisex';
-      const mappedGender = genderMap[genderFilter] || genderFilter;
-      return listing.gender === mappedGender;
-    });
+  const getItemCount = (itemName: string) => {
+    return listings.filter(listing =>
+      listing.name === itemName &&
+      listing.category === 'Matric dance clothing' &&
+      listing.quantity > 0
+    ).reduce((total, listing) => total + listing.quantity, 0);
   };
 
-  const handleAddToCart = (listing: any, event: React.MouseEvent) => {
+  const getAvailableItems = () => {
+    if (userType !== 'buyer') return [];
+    return listings.filter(listing =>
+      listing.name === selectedItem &&
+      listing.category === 'Matric dance clothing' &&
+      listing.quantity > 0
+    ).map(listing => ({
+      id: listing.id,
+      item: listing.name,
+      size: listing.size,
+      condition: listing.condition,
+      price: listing.price,
+      frontPhoto: listing.frontPhoto,
+      backPhoto: listing.backPhoto,
+      school: listing.school,
+      quantity: listing.quantity,
+      description: listing.description,
+      gender: listing.gender,
+      category: listing.category,
+      subcategory: listing.subcategory,
+      sport: listing.sport
+    }));
+  };
+
+  const getConditionText = (condition: number) => {
+    const conditions: Record<number, string> = { 1: 'Brand new', 2: 'Like new', 3: 'Used but good', 4: 'Used and worn' };
+    return conditions[condition] || 'Unknown';
+  };
+
+  const handleAddToCart = (item: any, event: React.MouseEvent) => {
     event.stopPropagation();
+    if (item.quantity === 0) {
+      displayToast('This item is sold out!', 'danger');
+      return;
+    }
+    const cartItem = {
+      id: item.id,
+      name: item.item,
+      description: item.description,
+      price: item.price,
+      condition: item.condition,
+      school: item.school,
+      size: item.size,
+      gender: item.gender,
+      category: item.category,
+      subcategory: item.subcategory,
+      sport: item.sport,
+      frontPhoto: item.frontPhoto,
+      backPhoto: item.backPhoto,
+      quantity: 1
+    };
+    addToCart(cartItem, displayToast);
+    decreaseQuantity(item.id);
+  };
 
-    if (listing.soldOut || listing.quantity === 0) {
-      setToastMessage('This item is sold out!');
-      setToastColor('danger');
-      setShowToast(true);
+  const handleItemClick = (item: string) => {
+    setSelectedItem(item);
+    setShowItemDetails(true);
+  };
+
+  const handleBackFromDetails = () => {
+    setShowItemDetails(false);
+    setSelectedItem('');
+    setSize('');
+    setCondition(undefined);
+    setPrice('');
+    setFrontPhoto(null);
+    setBackPhoto(null);
+  };
+
+  const handlePhotoUpload = (type: 'front' | 'back') => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/jpeg,image/png,image/heic,image/heif,.jpg,.jpeg,.png,.heic,.heif';
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file) {
+        const validation = validateImageFile(file);
+        if (!validation.valid) {
+          displayToast(validation.error || 'Invalid image file', 'danger');
+          return;
+        }
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          if (type === 'front') {
+            setFrontPhoto(event.target?.result as string);
+          } else {
+            setBackPhoto(event.target?.result as string);
+          }
+        };
+        reader.onerror = () => {
+          displayToast('Failed to read image file. Please try a different image.', 'danger');
+        };
+        reader.readAsDataURL(file);
+      }
+    };
+    input.click();
+  };
+
+  const validateFields = () => {
+    const missingFields = [];
+    if (!selectedGender) missingFields.push('Gender');
+    if (!size) missingFields.push('Size');
+    if (!condition) missingFields.push('Condition');
+    if (userType === 'seller') {
+      if (!price) missingFields.push('Price');
+      if (!frontPhoto) missingFields.push('Front Photo');
+      if (!backPhoto) missingFields.push('Back Photo');
+    }
+    return missingFields;
+  };
+
+  const handleSubmit = async () => {
+    const missingFields = validateFields();
+    if (missingFields.length > 0) {
+      displayToast(`Please fill in: ${missingFields.join(', ')}`, 'danger');
       return;
     }
 
-    const cartItem = {
-      id: String(listing.id),
-      name: listing.name,
-      description: listing.description || `${listing.name} - Size ${listing.size}`,
-      price: listing.price,
-      condition: listing.condition,
-      school: listing.school || '',
-      size: listing.size || '',
-      gender: listing.gender || '',
+    const itemData = {
+      id: Date.now().toString(),
+      name: selectedItem,
+      description: `${selectedItem} - Size: ${size}`,
+      school: '',
+      gender: selectedGender || 'Unisex',
+      size,
+      condition: condition || 1,
+      price: userType === 'seller' ? parseInt(price) : 0,
+      frontPhoto: frontPhoto || '',
+      backPhoto: backPhoto || '',
       category: 'Matric dance clothing',
-      subcategory: listing.subcategory,
-      sport: listing.sport,
-      frontPhoto: listing.frontPhoto || '',
-      backPhoto: listing.backPhoto || '',
+      dateCreated: new Date().toLocaleDateString(),
       quantity: 1
     };
 
-    addToCart(cartItem);
-    decreaseQuantity(listing.id);
+    if (userType === 'seller') {
+      setIsSubmitting(true);
+      try {
+        await addListing(itemData);
+        displayToast(`${selectedItem} listed successfully!`, 'success');
+        handleBackFromDetails();
+      } catch (error: any) {
+        displayToast(error.message || 'Failed to list item. Please check your connection and try again.', 'danger');
+      } finally {
+        setIsSubmitting(false);
+      }
+    }
   };
 
-  const handleNotifyMe = (listing: any, event: React.MouseEvent) => {
-    event.stopPropagation();
-    addToWishlist({
-      name: listing.name,
-      category: 'Matric dance clothing',
-      subcategory: listing.subcategory,
-      sport: listing.sport,
-      school: listing.school,
-      size: listing.size,
-      gender: listing.gender,
-      notifyWhenAvailable: true
-    });
-    setToastMessage('Added to wishlist! You\'ll be notified when available.');
-    setToastColor('success');
-    setShowToast(true);
-  };
+  // Item details view (buyer: available listings, seller: form)
+  if (showItemDetails) {
+    return (
+      <div style={{ padding: '16px' }}>
+        <IonButton fill="clear" onClick={handleBackFromDetails}>← Back</IonButton>
 
-  const filterChipStyle = (active: boolean) => ({
-    padding: '6px 16px',
-    borderRadius: '20px',
-    border: active ? '2px solid #8E44AD' : '1px solid #ccc',
-    backgroundColor: active ? '#8E44AD' : 'transparent',
-    color: active ? '#fff' : '#666',
-    fontSize: '13px',
-    fontWeight: active ? 'bold' : 'normal' as const,
-    cursor: 'pointer'
-  });
+        <div style={{ textAlign: 'center', margin: '0 0 20px 0' }}>
+          <span style={{ fontSize: '20px', fontWeight: 'bold', color: '#666' }}>{selectedItem}</span>
+        </div>
 
-  const filteredListings = getFilteredItems();
-  const filters: GenderFilter[] = ['All', 'Girls', 'Boys', 'Accessories'];
+        {userType === 'buyer' ? (
+          <>
+            {getAvailableItems().length > 0 ? (
+              <div style={{ margin: '16px 0' }}>
+                <div style={{ marginBottom: '12px' }}>
+                  <h4 style={{ margin: '0', color: '#666', fontSize: '14px' }}>Available ({getAvailableItems().length})</h4>
+                </div>
+                {getAvailableItems().map(item => (
+                  <IonCard key={item.id} style={{ margin: '8px 0' }}>
+                    <IonCardContent style={{ padding: '12px' }}>
+                      <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                        <div style={{ display: 'flex', gap: '4px', flexShrink: 0 }}>
+                          <div
+                            style={{
+                              width: '40px', height: '50px', backgroundColor: item.frontPhoto ? 'transparent' : '#f0f0f0',
+                              border: '1px solid #ddd', borderRadius: '4px', display: 'flex', alignItems: 'center',
+                              justifyContent: 'center', fontSize: '8px', color: '#999', textAlign: 'center',
+                              lineHeight: '1.2', cursor: 'pointer',
+                              backgroundImage: item.frontPhoto ? `url(${item.frontPhoto})` : 'none',
+                              backgroundSize: 'cover', backgroundPosition: 'center'
+                            }}
+                            onClick={() => setPhotoViewer(item.frontPhoto)}
+                          >
+                            {!item.frontPhoto && 'Front'}
+                          </div>
+                          <div
+                            style={{
+                              width: '40px', height: '50px', backgroundColor: item.backPhoto ? 'transparent' : '#f0f0f0',
+                              border: '1px solid #ddd', borderRadius: '4px', display: 'flex', alignItems: 'center',
+                              justifyContent: 'center', fontSize: '8px', color: '#999', textAlign: 'center',
+                              lineHeight: '1.2', cursor: 'pointer',
+                              backgroundImage: item.backPhoto ? `url(${item.backPhoto})` : 'none',
+                              backgroundSize: 'cover', backgroundPosition: 'center'
+                            }}
+                            onClick={() => setPhotoViewer(item.backPhoto)}
+                          >
+                            {!item.backPhoto && 'Back'}
+                          </div>
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                            <span style={{ fontSize: '14px', fontWeight: 'bold' }}>{item.item}</span>
+                            {item.quantity === 0 ? (
+                              <IonBadge color="danger" style={{ fontSize: '9px' }}>
+                                <IonIcon icon={closeCircleOutline} style={{ marginRight: '2px', fontSize: '10px' }} />
+                                Sold Out
+                              </IonBadge>
+                            ) : (
+                              <IonBadge color="success" style={{ fontSize: '9px' }}>
+                                <IonIcon icon={checkmarkCircleOutline} style={{ marginRight: '2px', fontSize: '10px' }} />
+                                {item.quantity} left
+                              </IonBadge>
+                            )}
+                          </div>
+                          <div style={{ display: 'flex', gap: '12px', marginBottom: '6px', fontSize: '12px', color: '#666' }}>
+                            <span>Size: {item.size}</span>
+                            <span>{getConditionText(item.condition)}</span>
+                          </div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span style={{ fontSize: '16px', fontWeight: 'bold', color: '#3880ff' }}>R{item.price}</span>
+                            <IonButton
+                              size="small"
+                              onClick={(e) => {
+                                handleAddToCart(item, e);
+                                setAddedToCartId(item.id);
+                                setTimeout(() => setAddedToCartId(null), 2000);
+                              }}
+                              disabled={item.quantity === 0}
+                              style={{
+                                '--background': addedToCartId === item.id ? '#28a745' : '',
+                                '--color': addedToCartId === item.id ? 'white' : ''
+                              }}
+                            >
+                              <IonIcon icon={cartOutline} slot="start" />
+                              {item.quantity === 0 ? 'Sold Out' :
+                               addedToCartId === item.id ? '✓ Added!' : 'Add to Cart'}
+                            </IonButton>
+                          </div>
+                        </div>
+                      </div>
+                    </IonCardContent>
+                  </IonCard>
+                ))}
+              </div>
+            ) : (
+              <div style={{ padding: '16px', textAlign: 'center', color: '#666', backgroundColor: '#f8f9fa', borderRadius: '8px', margin: '16px 0' }}>
+                <p style={{ margin: '0' }}>No {selectedItem} available yet</p>
+              </div>
+            )}
+          </>
+        ) : (
+          <>
+            <IonItem>
+              <IonLabel position="stacked">Gender *</IonLabel>
+              <IonSelect value={selectedGender} onIonChange={e => setSelectedGender(e.detail.value)} placeholder="Select Gender">
+                <IonSelectOption value="Boy">Boy</IonSelectOption>
+                <IonSelectOption value="Girl">Girl</IonSelectOption>
+                <IonSelectOption value="Unisex">Unisex</IonSelectOption>
+              </IonSelect>
+            </IonItem>
 
+            <IonItem>
+              <IonLabel position="stacked">Size *</IonLabel>
+              <IonSelect value={size} onIonChange={e => setSize(e.detail.value)} placeholder="Select Size">
+                {getSizeOptions(selectedItem).map(s => (
+                  <IonSelectOption key={s} value={s}>{s}</IonSelectOption>
+                ))}
+              </IonSelect>
+            </IonItem>
+
+            <IonItem>
+              <IonLabel position="stacked">Condition Grade *</IonLabel>
+              <IonSelect value={condition} onIonChange={e => setCondition(parseInt(e.detail.value))}>
+                <IonSelectOption value={1}>1 - Brand new</IonSelectOption>
+                <IonSelectOption value={2}>2 - Like new</IonSelectOption>
+                <IonSelectOption value={3}>3 - Used but good</IonSelectOption>
+                <IonSelectOption value={4}>4 - Used and worn</IonSelectOption>
+              </IonSelect>
+            </IonItem>
+
+            <IonItem>
+              <IonInput
+                label="Price (ZAR) *"
+                labelPlacement="stacked"
+                type="number"
+                value={price}
+                onIonChange={e => setPrice(e.detail.value!)}
+                placeholder="Enter selling price"
+              />
+            </IonItem>
+
+            <div style={{ display: 'flex', gap: '16px', margin: '16px 0' }}>
+              <div style={{ textAlign: 'center' }}>
+                <div
+                  onClick={() => handlePhotoUpload('front')}
+                  style={{
+                    width: '120px', height: '150px', border: '2px dashed #ccc', borderRadius: '8px',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+                    backgroundImage: frontPhoto ? `url(${frontPhoto})` : 'none',
+                    backgroundSize: 'cover', backgroundPosition: 'center',
+                    backgroundColor: !frontPhoto ? '#f0f0f0' : 'transparent'
+                  }}
+                >
+                  {!frontPhoto && <IonIcon icon={imageOutline} size="large" />}
+                </div>
+                <p style={{ fontSize: '12px', margin: '4px 0' }}>Front Photo *</p>
+              </div>
+              <div style={{ textAlign: 'center' }}>
+                <div
+                  onClick={() => handlePhotoUpload('back')}
+                  style={{
+                    width: '120px', height: '150px', border: '2px dashed #ccc', borderRadius: '8px',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+                    backgroundImage: backPhoto ? `url(${backPhoto})` : 'none',
+                    backgroundSize: 'cover', backgroundPosition: 'center',
+                    backgroundColor: !backPhoto ? '#f0f0f0' : 'transparent'
+                  }}
+                >
+                  {!backPhoto && <IonIcon icon={imageOutline} size="large" />}
+                </div>
+                <p style={{ fontSize: '12px', margin: '4px 0' }}>Back Photo *</p>
+              </div>
+            </div>
+
+            <IonButton expand="full" onClick={handleSubmit} disabled={isSubmitting} style={{ marginTop: '16px' }}>
+              {isSubmitting ? 'Listing...' : 'List Item'}
+            </IonButton>
+          </>
+        )}
+
+        <IonToast
+          isOpen={showToast}
+          onDidDismiss={hideToast}
+          message={toastMessage}
+          duration={3000}
+          position="bottom"
+          color={toastColor}
+        />
+        {photoViewer && createPortal(
+          <div
+            style={{
+              position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
+              backgroundColor: 'rgba(0, 0, 0, 0.9)', zIndex: 1000,
+              display: 'flex', alignItems: 'center', justifyContent: 'center'
+            }}
+            onClick={() => setPhotoViewer(null)}
+          >
+            <div
+              style={{
+                backgroundColor: '#fff', borderRadius: '12px', padding: '20px',
+                maxWidth: '90%', maxHeight: '90%', position: 'relative',
+                display: 'flex', flexDirection: 'column', alignItems: 'center'
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                style={{
+                  position: 'absolute', top: '10px', right: '10px',
+                  background: 'none', border: 'none', fontSize: '24px',
+                  cursor: 'pointer', color: '#666', zIndex: 10
+                }}
+                onClick={() => setPhotoViewer(null)}
+              >
+                ×
+              </button>
+              <img
+                src={photoViewer}
+                alt="Zoomed view"
+                style={{
+                  maxWidth: '100%', maxHeight: '80vh', objectFit: 'contain',
+                  borderRadius: '8px', border: '1px solid #ddd'
+                }}
+              />
+            </div>
+          </div>,
+          document.body
+        )}
+      </div>
+    );
+  }
+
+  // Main view with accordions
   return (
     <div>
-      <h2 style={{ textAlign: 'center', marginBottom: '16px' }}>Matric Dance</h2>
-
-      {/* Gender filter chips */}
-      <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', marginBottom: '16px', flexWrap: 'wrap' }}>
-        {filters.map(f => (
-          <button key={f} style={filterChipStyle(genderFilter === f)} onClick={() => setGenderFilter(f)}>
-            {f}
-          </button>
-        ))}
+      <div style={{
+        marginBottom: '16px', textAlign: 'center',
+        backgroundColor: 'rgba(142, 68, 173, 0.1)', border: '2px solid #8E44AD',
+        borderRadius: '12px', padding: '16px'
+      }}>
+        <IonIcon icon={sparklesOutline} style={{ fontSize: '32px', color: '#8E44AD', marginBottom: '8px' }} />
+        <h2 style={{ margin: '0', color: '#8E44AD', fontSize: '18px', fontWeight: 'bold' }}>
+          Matric Dance
+        </h2>
+        <p style={{ margin: '4px 0 0 0', color: '#666', fontSize: '14px' }}>
+          Matric Dance Clothing & Accessories
+        </p>
       </div>
 
-      {filteredListings.length === 0 ? (
-        <div style={{ padding: '16px', textAlign: 'center', color: '#666', backgroundColor: '#f8f9fa', borderRadius: '8px', margin: '16px 0' }}>
-          <p style={{ margin: '0 0 12px 0' }}>No matric dance items available yet</p>
-          <IonButton
-            size="small"
-            fill="outline"
-            onClick={() => {
-              addToWishlist({
-                name: 'Matric dance clothing',
-                category: 'Matric dance clothing',
-                notifyWhenAvailable: true
-              });
-              setToastMessage('Added to wishlist! You\'ll be notified when available.');
-              setToastColor('success');
-              setShowToast(true);
-            }}
-          >
-            <IonIcon icon={heartOutline} slot="start" />
-            Add to Wishlist
-          </IonButton>
-        </div>
-      ) : (
-        <div style={{ margin: '16px 0' }}>
-          <div style={{ marginBottom: '12px', padding: '0 16px' }}>
-            <h4 style={{ margin: '0', color: '#666', fontSize: '14px' }}>Available ({filteredListings.length})</h4>
-          </div>
-
-          {filteredListings.map(listing => (
-            <IonCard key={listing.id} style={{ margin: '8px 16px' }}>
-              <IonCardContent style={{ padding: '12px' }}>
-                <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-                  {/* Photo thumbnails */}
-                  <div style={{ display: 'flex', gap: '4px', flexShrink: 0 }}>
-                    <div
-                      style={{
-                        width: '40px', height: '50px', backgroundColor: listing.frontPhoto ? 'transparent' : '#f0f0f0',
-                        border: '1px solid #ddd', borderRadius: '4px', display: 'flex', alignItems: 'center',
-                        justifyContent: 'center', fontSize: '8px', color: '#999', textAlign: 'center',
-                        lineHeight: '1.2', cursor: 'pointer',
-                        backgroundImage: listing.frontPhoto ? `url(${listing.frontPhoto})` : 'none',
-                        backgroundSize: 'cover', backgroundPosition: 'center'
-                      }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setPhotoModal({ isOpen: true, photo: listing.frontPhoto, title: `${listing.name} - Front Photo` });
-                      }}
-                    >
-                      {!listing.frontPhoto && 'Front'}
-                    </div>
-                    <div
-                      style={{
-                        width: '40px', height: '50px', backgroundColor: listing.backPhoto ? 'transparent' : '#f0f0f0',
-                        border: '1px solid #ddd', borderRadius: '4px', display: 'flex', alignItems: 'center',
-                        justifyContent: 'center', fontSize: '8px', color: '#999', textAlign: 'center',
-                        lineHeight: '1.2', cursor: 'pointer',
-                        backgroundImage: listing.backPhoto ? `url(${listing.backPhoto})` : 'none',
-                        backgroundSize: 'cover', backgroundPosition: 'center'
-                      }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setPhotoModal({ isOpen: true, photo: listing.backPhoto, title: `${listing.name} - Back Photo` });
-                      }}
-                    >
-                      {!listing.backPhoto && 'Back'}
-                    </div>
-                  </div>
-
-                  <div style={{ flex: 1 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-                      <span style={{ fontSize: '14px', fontWeight: 'bold' }}>{listing.name}</span>
-                      {listing.soldOut || listing.quantity === 0 ? (
-                        <IonBadge color="danger" style={{ fontSize: '9px' }}>
-                          <IonIcon icon={closeCircleOutline} style={{ marginRight: '2px', fontSize: '10px' }} />
-                          Sold Out
-                        </IonBadge>
-                      ) : (
-                        <IonBadge color="success" style={{ fontSize: '9px' }}>
-                          <IonIcon icon={checkmarkCircleOutline} style={{ marginRight: '2px', fontSize: '10px' }} />
-                          {listing.quantity} left
-                        </IonBadge>
-                      )}
-                    </div>
-
-                    <div style={{ display: 'flex', gap: '12px', marginBottom: '6px', fontSize: '12px', color: '#666' }}>
-                      <span>Size: {listing.size}</span>
-                      <span>{getConditionText(listing.condition)}</span>
-                    </div>
-
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontSize: '16px', fontWeight: 'bold', color: '#3880ff' }}>R{listing.price}</span>
-                      <div style={{ display: 'flex', gap: '8px' }}>
-                        {listing.soldOut || listing.quantity === 0 ? (
-                          <IonButton
-                            size="small"
-                            fill="outline"
-                            onClick={(e) => handleNotifyMe(listing, e)}
-                          >
-                            <IonIcon icon={notificationsOutline} slot="start" />
-                            Notify Me
-                          </IonButton>
-                        ) : (
-                          <IonButton
-                            size="small"
-                            onClick={(e) => handleAddToCart(listing, e)}
-                          >
-                            <IonIcon icon={cartOutline} slot="start" />
-                            Add to Cart
-                          </IonButton>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </IonCardContent>
-            </IonCard>
-          ))}
-        </div>
-      )}
-
-      {/* Photo Modal */}
-      <IonModal isOpen={photoModal.isOpen} onDidDismiss={() => setPhotoModal({ isOpen: false, photo: '', title: '' })}>
-        <IonHeader>
-          <IonToolbar>
-            <IonTitle>{photoModal.title}</IonTitle>
-            <IonButtons slot="end">
-              <IonButton onClick={() => setPhotoModal({ isOpen: false, photo: '', title: '' })}>
-                <IonIcon icon={closeOutline} />
-              </IonButton>
-            </IonButtons>
-          </IonToolbar>
-        </IonHeader>
-        <div style={{ padding: '20px', textAlign: 'center', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          {photoModal.photo ? (
-            <img
-              src={photoModal.photo}
-              alt={photoModal.title}
-              style={{
-                maxWidth: '100%',
-                maxHeight: '80vh',
-                objectFit: 'contain',
-                borderRadius: '8px',
-                border: '1px solid #ddd'
-              }}
-            />
-          ) : (
-            <div style={{
-              width: '300px', height: '400px', backgroundColor: '#f5f5f5', border: '2px solid #ddd',
-              borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: '16px', color: '#666'
-            }}>
-              Photo Preview
+      <IonAccordionGroup>
+        {Object.entries(matricDanceCategories).map(([category, categoryData]) => (
+          <IonAccordion key={category} value={category}>
+            <IonItem slot="header" style={{ '--background': 'transparent' }}>
+              <IonIcon
+                icon={categoryData.icon}
+                style={{ fontSize: '24px', color: categoryData.color, marginRight: '12px' }}
+              />
+              <IonLabel>
+                <h3 style={{ margin: '0', fontWeight: 'bold', color: categoryData.color, fontSize: '16px' }}>
+                  {category}
+                </h3>
+              </IonLabel>
+            </IonItem>
+            <div slot="content" style={{ padding: '8px' }}>
+              <IonGrid>
+                <IonRow>
+                  {categoryData.items.map((item: string, index: number) => (
+                    <IonCol size="6" key={index}>
+                      <IonCard button onClick={() => handleItemClick(item)} style={{ backgroundColor: 'transparent', border: '1px solid #444' }}>
+                        <IonCardContent style={{ textAlign: 'center', padding: '12px' }}>
+                          <IonIcon icon={imageOutline} size="large" style={{ marginBottom: '8px', opacity: 0.5 }} />
+                          <div style={{ fontSize: '13px', fontWeight: 'bold' }}>{item}</div>
+                          {userType === 'buyer' && getItemCount(item) > 0 && (
+                            <div style={{ fontSize: '11px', color: '#8E44AD', marginTop: '4px' }}>
+                              {getItemCount(item)} available
+                            </div>
+                          )}
+                        </IonCardContent>
+                      </IonCard>
+                    </IonCol>
+                  ))}
+                </IonRow>
+              </IonGrid>
             </div>
-          )}
-        </div>
-      </IonModal>
+          </IonAccordion>
+        ))}
+      </IonAccordionGroup>
 
       <IonToast
         isOpen={showToast}
-        onDidDismiss={() => setShowToast(false)}
+        onDidDismiss={hideToast}
         message={toastMessage}
-        duration={2000}
+        duration={3000}
         position="bottom"
         color={toastColor}
       />
