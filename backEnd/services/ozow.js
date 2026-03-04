@@ -16,6 +16,11 @@ class OzowService {
   }
 
   generatePaymentUrl(orderData) {
+    // Validate credentials
+    if (!this.siteCode || !this.privateKey) {
+      throw new Error('Ozow credentials not configured. Please set OZOW_SITE_CODE and OZOW_PRIVATE_KEY in .env');
+    }
+
     const { 
       amount, 
       transactionReference, 
@@ -42,6 +47,8 @@ class OzowService {
 
     const hashCheck = this.generateHash(payload);
     payload.HashCheck = hashCheck;
+
+    console.log('Ozow Payment Request:', { ...payload, HashCheck: hashCheck.substring(0, 20) + '...' });
 
     const params = new URLSearchParams(payload).toString();
     return `${this.baseUrl}/PostPaymentRequest?${params}`;

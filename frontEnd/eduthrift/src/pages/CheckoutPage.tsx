@@ -291,6 +291,7 @@ const CheckoutPage: React.FC = () => {
         const data = await response.json();
 
         if (data.success && data.paymentUrl) {
+          console.log('Ozow payment URL:', data.paymentUrl);
           // Use Ozow modal
           if (window.OzowCheckout) {
             window.OzowCheckout.open(data.paymentUrl);
@@ -299,7 +300,7 @@ const CheckoutPage: React.FC = () => {
             window.location.href = data.paymentUrl;
           }
         } else {
-          throw new Error(data.message || 'Failed to initiate payment');
+          throw new Error(data.message || data.error || 'Failed to initiate payment');
         }
       } catch (error: any) {
         console.error('Ozow payment error:', error);
