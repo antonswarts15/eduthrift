@@ -646,11 +646,7 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
     } else if (category === 'Sports equipment') {
       setCurrentLevel('sportEquipment');
     } else if (category === 'Matric dance clothing') {
-      if (userType === 'buyer') {
-        setShowMatricDance(true);
-      } else {
-        setShowItemDetails(true);
-      }
+      setShowMatricDance(true);
     } else if (['Training wear & shoes'].includes(category)) {
       setSelectedSubcategory(category);
       setShowItemDetails(true);
