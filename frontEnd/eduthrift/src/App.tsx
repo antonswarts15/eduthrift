@@ -22,6 +22,9 @@ import ListingsPage from './pages/ListingsPage';
 import CategoryPage from './pages/CategoryPage';
 import ItemPage from './pages/ItemPage';
 import CheckoutPage from './pages/CheckoutPage';
+import PaymentSuccess from './pages/PaymentSuccess';
+import PaymentCancel from './pages/PaymentCancel';
+import PaymentError from './pages/PaymentError';
 import WishlistPage from './pages/WishlistPage';
 import HowItWorksPage from './pages/HowItWorksPage';
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
@@ -145,6 +148,27 @@ const App: React.FC = () => {
             <ProtectedRoute>
               <MainLayout>
                 <CheckoutPage />
+              </MainLayout>
+            </ProtectedRoute>
+          </Route>
+          <Route exact path="/payment/success">
+            <ProtectedRoute>
+              <MainLayout>
+                <PaymentSuccess />
+              </MainLayout>
+            </ProtectedRoute>
+          </Route>
+          <Route exact path="/payment/cancel">
+            <ProtectedRoute>
+              <MainLayout>
+                <PaymentCancel />
+              </MainLayout>
+            </ProtectedRoute>
+          </Route>
+          <Route exact path="/payment/error">
+            <ProtectedRoute>
+              <MainLayout>
+                <PaymentError />
               </MainLayout>
             </ProtectedRoute>
           </Route>

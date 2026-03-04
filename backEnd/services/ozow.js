@@ -3,49 +3,23 @@ const crypto = require('crypto');
 
 class OzowService {
   constructor() {
-    this.apiKey = process.env.OZOW_API_KEY || 'test-api-key';
-    this.siteCode = process.env.OZOW_SITE_CODE || 'TST-MER-001';
-    this.privateKey = process.env.OZOW_PRIVATE_KEY || 'test-private-key';
-    this.isTest = process.env.NODE_ENV !== 'production';
+    this.apiKey = process.env.OZOW_API_KEY;
+    this.siteCode = process.env.OZOW_SITE_CODE;
+    this.privateKey = process.env.OZOW_PRIVATE_KEY;
+    this.isTest = process.env.OZOW_IS_TEST === 'true' || process.env.NODE_ENV !== 'production';
     this.baseUrl = this.isTest ? 'https://stagingapi.ozow.com' : 'https://api.ozow.com';
   }
 
   generateHash(data) {
-    let hashString = '';
-    
-    // Order of fields for hash generation as per Ozow documentation
-    const fields = [
-      'siteCode', 'countryCode', 'currencyCode', 'amount', 
-      'transactionReference', 'bankReference', 'optional1', 
-      'optional2', 'optional3', 'optional4', 'optional5', 
-      'customer', 'cancelUrl', 'errorUrl', 'successUrl', 
-      'notifyUrl', 'isTest', 'selectedBankId', 'bankAccountNumber', 
-      'branchCode', 'bankAccountName', 'payeeDisplayName', 
-      'expiryDateUtc', 'allowVariableAmount', 'variableAmountMin', 
-      'variableAmountMax', 'customerIdentifier', 'customerCellphoneNumber'
-    ];
-
-    for (const field of fields) {
-      if (data[field] !== undefined && data[field] !== null && data[field] !== '') {
-        // Convert boolean to lowercase string
-        let value = data[field];
-        if (typeof value === 'boolean') {
-          value = value.toString().toLowerCase();
-        }
-        hashString += value;
-      }
-    }
-
-    hashString += this.privateKey;
-    return crypto.createHash('sha512').update(hashString).digest('hex').toLowerCase();
+    const inputString = `${data.SiteCode}${data.CountryCode}${data.CurrencyCode}${data.Amount}${data.TransactionReference}${data.BankReference}${data.CancelUrl}${data.ErrorUrl}${data.SuccessUrl}${data.NotifyUrl}${data.IsTest}${this.privateKey}`;
+    return crypto.createHash('sha512').update(inputString.toLowerCase()).digest('hex');
   }
 
-  async createPaymentRequest(orderData) {
+  generatePaymentUrl(orderData) {
     const { 
       amount, 
       transactionReference, 
-      bankReference, 
-      customer,
+      bankReference,
       cancelUrl,
       errorUrl,
       successUrl,
@@ -53,42 +27,24 @@ class OzowService {
     } = orderData;
 
     const payload = {
-      siteCode: this.siteCode,
-      countryCode: 'ZA',
-      currencyCode: 'ZAR',
-      amount: parseFloat(amount),
-      transactionReference,
-      bankReference,
-      customer,
-      cancelUrl,
-      errorUrl,
-      successUrl,
-      notifyUrl,
-      isTest: this.isTest
+      SiteCode: this.siteCode,
+      CountryCode: 'ZA',
+      CurrencyCode: 'ZAR',
+      Amount: parseFloat(amount).toFixed(2),
+      TransactionReference: transactionReference,
+      BankReference: bankReference || transactionReference,
+      CancelUrl: cancelUrl,
+      ErrorUrl: errorUrl,
+      SuccessUrl: successUrl,
+      NotifyUrl: notifyUrl,
+      IsTest: this.isTest.toString()
     };
 
-    payload.hashCheck = this.generateHash(payload);
+    const hashCheck = this.generateHash(payload);
+    payload.HashCheck = hashCheck;
 
-    try {
-      // Use URLSearchParams for x-www-form-urlencoded request if JSON fails, 
-      // but Ozow API documentation says JSON is supported for /PostPaymentRequest.
-      // However, some endpoints might require specific headers.
-      
-      const response = await axios.post(`${this.baseUrl}/PostPaymentRequest`, payload, {
-        headers: {
-          'Content-Type': 'application/json',
-          'ApiKey': this.apiKey,
-          'Accept': 'application/json'
-        }
-      });
-
-      return response.data;
-    } catch (error) {
-      console.error('Ozow payment request error:', error.response?.data || error.message);
-      // Extract meaningful error message
-      const errorMessage = error.response?.data?.errorMessage || error.response?.data?.message || error.message;
-      throw new Error(errorMessage);
-    }
+    const params = new URLSearchParams(payload).toString();
+    return `${this.baseUrl}/PostPaymentRequest?${params}`;
   }
 
   verifyNotification(data) {

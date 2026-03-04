@@ -273,7 +273,6 @@ const CheckoutPage: React.FC = () => {
 
     if (paymentMethod === 'ozow') {
       try {
-        // Initiate Ozow payment via backend
         const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/payments/ozow/initiate`, {
           method: 'POST',
           headers: {
@@ -292,8 +291,13 @@ const CheckoutPage: React.FC = () => {
         const data = await response.json();
 
         if (data.success && data.paymentUrl) {
-          // Redirect to Ozow payment page
-          window.location.href = data.paymentUrl;
+          // Use Ozow modal
+          if (window.OzowCheckout) {
+            window.OzowCheckout.open(data.paymentUrl);
+          } else {
+            // Fallback to redirect
+            window.location.href = data.paymentUrl;
+          }
         } else {
           throw new Error(data.message || 'Failed to initiate payment');
         }

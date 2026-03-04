@@ -189,40 +189,37 @@ router.post('/paygate/return', async (req, res) => {
 });
 
 // Ozow payment route
-router.post('/ozow', async (req, res) => {
+router.post('/ozow/initiate', async (req, res) => {
   try {
-    const { amount, orderId, customerEmail, customerName } = req.body;
+    const { amount, orderId, customerEmail, customerName, description } = req.body;
 
-    // Validate input
-    if (!amount || !orderId || !customerEmail) {
+    if (!amount || !orderId) {
       return res.status(400).json({
         success: false,
-        message: 'Missing required fields'
+        message: 'Missing required fields: amount, orderId'
       });
     }
 
-    const result = await ozowService.createPaymentRequest({
+    const paymentUrl = ozowService.generatePaymentUrl({
       amount,
       transactionReference: orderId,
       bankReference: `EduThrift-${orderId}`,
-      customer: customerName || customerEmail,
-      cancelUrl: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/payment/cancel?orderId=${orderId}`,
-      errorUrl: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/payment/error?orderId=${orderId}`,
-      successUrl: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/payment/success?orderId=${orderId}`,
-      notifyUrl: `${process.env.BACKEND_URL || 'http://localhost:8080'}/payments/ozow/notify`
+      cancelUrl: `${process.env.FRONTEND_URL}/payment/cancel`,
+      errorUrl: `${process.env.FRONTEND_URL}/payment/error`,
+      successUrl: `${process.env.FRONTEND_URL}/payment/success`,
+      notifyUrl: `${process.env.BACKEND_URL}/payments/ozow/notify`
     });
 
     res.json({
       success: true,
-      paymentUrl: result.url,
-      paymentRequestId: result.paymentRequestId,
-      message: 'Ozow payment initiated'
+      paymentUrl,
+      message: 'Ozow payment URL generated'
     });
   } catch (error) {
     console.error('Ozow payment error:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to initiate Ozow payment',
+      message: 'Failed to generate Ozow payment URL',
       error: error.message
     });
   }
@@ -243,12 +240,18 @@ router.post('/ozow/notify', async (req, res) => {
 
     const status = data.Status;
     const orderId = data.TransactionReference;
+    const transactionId = data.TransactionId;
 
     if (status === 'Complete') {
-      console.log(`Ozow payment successful for order: ${orderId}`);
-      // TODO: Update database
-    } else {
-      console.log(`Ozow payment not complete for order: ${orderId}, status: ${status}`);
+      console.log(`Ozow payment successful for order: ${orderId}, transaction: ${transactionId}`);
+      // TODO: Update order status in database
+      // TODO: Release funds from escrow
+    } else if (status === 'Cancelled') {
+      console.log(`Ozow payment cancelled for order: ${orderId}`);
+      // TODO: Update order status
+    } else if (status === 'Error') {
+      console.log(`Ozow payment error for order: ${orderId}`);
+      // TODO: Update order status
     }
 
     res.status(200).send('OK');

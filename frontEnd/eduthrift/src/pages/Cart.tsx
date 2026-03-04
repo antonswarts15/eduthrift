@@ -35,12 +35,6 @@ const Cart: React.FC = () => {
   }, [history]);
   
   const [selectedCollectionPoint, setSelectedCollectionPoint] = useState('');
-  const [deliveryType, setDeliveryType] = useState<'standard' | 'express'>('standard');
-  
-  const PUDO_CHARGES = {
-    standard: 35,
-    express: 65
-  };
   
   const userAddress = {
     town: 'Johannesburg',
@@ -81,9 +75,7 @@ const Cart: React.FC = () => {
     }
   };
   
-  const itemsTotal = cartItems.reduce((sum, item) => sum + item.price, 0);
-  const pudoCharge = PUDO_CHARGES[deliveryType];
-  const totalAmount = itemsTotal + pudoCharge;
+  const totalAmount = cartItems.reduce((sum, item) => sum + item.price, 0);
   
   const handleCheckout = () => {
     if (!isLoggedIn()) {
@@ -168,17 +160,6 @@ const Cart: React.FC = () => {
                 </p>
                 
                 <IonItem style={{ marginBottom: '16px' }}>
-                  <IonLabel position="stacked">Delivery Type</IonLabel>
-                  <IonSelect 
-                    value={deliveryType} 
-                    onIonChange={e => setDeliveryType(e.detail.value)}
-                  >
-                    <IonSelectOption value="standard">Standard (3-5 days) - R{PUDO_CHARGES.standard}</IonSelectOption>
-                    <IonSelectOption value="express">Express (1-2 days) - R{PUDO_CHARGES.express}</IonSelectOption>
-                  </IonSelect>
-                </IonItem>
-                
-                <IonItem style={{ marginBottom: '16px' }}>
                   <IonLabel position="stacked">Select Collection Point</IonLabel>
                   <IonSelect 
                     value={selectedCollectionPoint} 
@@ -206,17 +187,18 @@ const Cart: React.FC = () => {
                 <h3 style={{ margin: '0 0 12px 0' }}>Order Summary</h3>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
                   <span>Items ({cartItems.length}):</span>
-                  <span>R{itemsTotal}</span>
+                  <span>R{totalAmount}</span>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                  <span>PUDO {deliveryType === 'express' ? 'Express' : 'Standard'} Delivery:</span>
-                  <span>R{pudoCharge}</span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', color: '#666' }}>
+                  <span>PUDO Delivery:</span>
+                  <span style={{ fontSize: '12px' }}>Calculated at checkout</span>
                 </div>
                 <hr style={{ margin: '12px 0' }} />
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '18px', fontWeight: 'bold' }}>
-                  <span>Total:</span>
+                  <span>Subtotal:</span>
                   <span style={{ color: '#27AE60' }}>R{totalAmount}</span>
                 </div>
+                <p style={{ fontSize: '12px', color: '#888', marginTop: '8px', marginBottom: '0' }}>Final total including shipping will be shown at checkout</p>
                 
                 <IonButton 
                   expand="full" 
