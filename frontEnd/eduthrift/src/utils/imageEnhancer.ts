@@ -123,16 +123,20 @@ export const getImageDimensions = (file: File): Promise<{ width: number; height:
 };
 
 export const validateImageFile = (file: File): { valid: boolean; error?: string } => {
-  const validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+  const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/heic', 'image/heif'];
   const maxSize = 10 * 1024 * 1024; // 10MB
-  
-  if (!validTypes.includes(file.type)) {
-    return { valid: false, error: 'Please upload only JPEG or PNG images' };
+
+  // Also check by file extension for cases where MIME type is not set correctly
+  const ext = file.name.toLowerCase().split('.').pop();
+  const validExtensions = ['jpg', 'jpeg', 'png', 'heic', 'heif'];
+
+  if (!validTypes.includes(file.type) && !validExtensions.includes(ext || '')) {
+    return { valid: false, error: 'Please upload a JPEG, PNG, or HEIC image' };
   }
-  
+
   if (file.size > maxSize) {
     return { valid: false, error: 'Image size must be less than 10MB' };
   }
-  
+
   return { valid: true };
 };

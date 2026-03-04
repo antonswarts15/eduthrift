@@ -26,6 +26,7 @@ import { cameraOutline, imageOutline, shirtOutline, bagOutline, peopleOutline, f
 import ClubSelector from '../ClubSelector';
 import { useCartStore } from '../../stores/cartStore';
 import { useListingsStore } from '../../stores/listingsStore';
+import { validateImageFile } from '../../utils/imageEnhancer';
 
 
 interface ClubClothingProps {
@@ -188,10 +189,16 @@ const ClubClothingComponent: React.FC<ClubClothingProps> = ({ userType, onItemSe
   const handlePhotoUpload = (type: 'front' | 'back') => {
     const input = document.createElement('input');
     input.type = 'file';
-    input.accept = 'image/*';
+    input.accept = 'image/jpeg,image/png,image/heic,image/heif,.jpg,.jpeg,.png,.heic,.heif';
     input.onchange = (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (file) {
+        const validation = validateImageFile(file);
+        if (!validation.valid) {
+          setToastMessage(validation.error || 'Invalid image file');
+          setShowToast(true);
+          return;
+        }
         const reader = new FileReader();
         reader.onload = (event) => {
           if (type === 'front') {
@@ -199,6 +206,10 @@ const ClubClothingComponent: React.FC<ClubClothingProps> = ({ userType, onItemSe
           } else {
             setBackPhoto(event.target?.result as string);
           }
+        };
+        reader.onerror = () => {
+          setToastMessage('Failed to read image file. Please try a different image.');
+          setShowToast(true);
         };
         reader.readAsDataURL(file);
       }

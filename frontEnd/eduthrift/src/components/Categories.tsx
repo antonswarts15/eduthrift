@@ -636,17 +636,9 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
     } else if (category === 'Club clothing') {
       setShowClubClothing(true);
     } else if (category === 'Belts, bags & shoes') {
-      if (userType === 'buyer') {
-        setShowBeltsBagsShoes(true);
-      } else {
-        setShowItemDetails(true);
-      }
+      setShowBeltsBagsShoes(true);
     } else if (category === 'Training wear') {
-      if (userType === 'buyer') {
-        setShowTrainingWear(true);
-      } else {
-        setShowItemDetails(true);
-      }
+      setShowTrainingWear(true);
     } else if (category === 'Textbooks') {
       setShowSchoolGrades(true);
     } else if (category === 'Stationery') {
@@ -1378,12 +1370,12 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
               </IonItem>
 
               <IonItem style={{ marginBottom: '16px' }}>
-                <IonLabel position="stacked">Front Photo * (JPEG/PNG only)</IonLabel>
+                <IonLabel position="stacked">Front Photo * (JPEG/PNG/HEIC)</IonLabel>
                 {!frontPhotoPreview ? (
                   <div style={{ marginTop: '8px' }}>
                     <input 
                       type="file" 
-                      accept="image/jpeg,image/png,image/jpg" 
+                      accept="image/jpeg,image/png,image/heic,image/heif,.jpg,.jpeg,.png,.heic,.heif" 
                       onChange={e => {
                         const file = e.target.files?.[0];
                         handleFileChange(file || null, setFrontPhoto, setFrontPhotoPreview, 'front');
@@ -1453,12 +1445,12 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
               </IonItem>
               
               <IonItem style={{ marginBottom: '16px' }}>
-                <IonLabel position="stacked">Back Photo * (JPEG/PNG only)</IonLabel>
+                <IonLabel position="stacked">Back Photo * (JPEG/PNG/HEIC)</IonLabel>
                 {!backPhotoPreview ? (
                   <div style={{ marginTop: '8px' }}>
                     <input 
                       type="file" 
-                      accept="image/jpeg,image/png,image/jpg" 
+                      accept="image/jpeg,image/png,image/heic,image/heif,.jpg,.jpeg,.png,.heic,.heif" 
                       onChange={e => {
                         const file = e.target.files?.[0];
                         handleFileChange(file || null, setBackPhoto, setBackPhotoPreview, 'back');

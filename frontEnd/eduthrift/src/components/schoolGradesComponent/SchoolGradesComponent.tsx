@@ -47,6 +47,7 @@ import { useListingsStore, Listing } from '../../stores/listingsStore';
 import { useNotificationStore } from '../../stores/notificationStore';
 import { useWishlistStore } from '../../stores/wishlistStore';
 import { useHistory } from 'react-router-dom';
+import { validateImageFile } from '../../utils/imageEnhancer';
 
 
 interface SchoolGradesComponentProps {
@@ -276,10 +277,17 @@ const SchoolGradesComponent: React.FC<SchoolGradesComponentProps> = ({
   const handlePhotoUpload = (type: 'front' | 'back') => {
     const input = document.createElement('input');
     input.type = 'file';
-    input.accept = 'image/*';
+    input.accept = 'image/jpeg,image/png,image/heic,image/heif,.jpg,.jpeg,.png,.heic,.heif';
     input.onchange = (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (file) {
+        const validation = validateImageFile(file);
+        if (!validation.valid) {
+          setToastMessage(validation.error || 'Invalid image file');
+          setToastColor('danger');
+          setShowToast(true);
+          return;
+        }
         const reader = new FileReader();
         reader.onload = (event) => {
           if (type === 'front') {
@@ -287,6 +295,11 @@ const SchoolGradesComponent: React.FC<SchoolGradesComponentProps> = ({
           } else {
             setBackPhoto(event.target?.result as string);
           }
+        };
+        reader.onerror = () => {
+          setToastMessage('Failed to read image file. Please try a different image.');
+          setToastColor('danger');
+          setShowToast(true);
         };
         reader.readAsDataURL(file);
       }

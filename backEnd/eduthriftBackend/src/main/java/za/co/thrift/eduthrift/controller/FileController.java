@@ -28,9 +28,18 @@ public class FileController {
 
             if (resource.exists() || resource.isReadable()) {
                 String contentType = "image/jpeg"; // Default
-                if (filename.toLowerCase().endsWith(".png")) {
+                String lowerFilename = filename.toLowerCase();
+                if (lowerFilename.endsWith(".png")) {
                     contentType = "image/png";
-                } else if (filename.toLowerCase().endsWith(".pdf")) {
+                } else if (lowerFilename.endsWith(".heic")) {
+                    contentType = "image/heic";
+                } else if (lowerFilename.endsWith(".heif")) {
+                    contentType = "image/heif";
+                } else if (lowerFilename.endsWith(".webp")) {
+                    contentType = "image/webp";
+                } else if (lowerFilename.endsWith(".gif")) {
+                    contentType = "image/gif";
+                } else if (lowerFilename.endsWith(".pdf")) {
                     contentType = "application/pdf";
                 }
 

@@ -18,6 +18,7 @@ import {
 } from '@ionic/react';
 import { pencilOutline, bookOutline, colorPaletteOutline, cutOutline, bagOutline, imageOutline } from 'ionicons/icons';
 import { useListingsStore } from '../../stores/listingsStore';
+import { validateImageFile } from '../../utils/imageEnhancer';
 
 const StationerySeller: React.FC = () => {
   const [selectedItem, setSelectedItem] = useState('');
@@ -73,10 +74,16 @@ const StationerySeller: React.FC = () => {
   const handlePhotoUpload = (type: 'front' | 'back') => {
     const input = document.createElement('input');
     input.type = 'file';
-    input.accept = 'image/*';
+    input.accept = 'image/jpeg,image/png,image/heic,image/heif,.jpg,.jpeg,.png,.heic,.heif';
     input.onchange = (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (file) {
+        const validation = validateImageFile(file);
+        if (!validation.valid) {
+          setToastMessage(validation.error || 'Invalid image file');
+          setShowToast(true);
+          return;
+        }
         const reader = new FileReader();
         reader.onload = (event) => {
           if (type === 'front') {
@@ -84,6 +91,10 @@ const StationerySeller: React.FC = () => {
           } else {
             setBackPhoto(event.target?.result as string);
           }
+        };
+        reader.onerror = () => {
+          setToastMessage('Failed to read image file. Please try a different image.');
+          setShowToast(true);
         };
         reader.readAsDataURL(file);
       }

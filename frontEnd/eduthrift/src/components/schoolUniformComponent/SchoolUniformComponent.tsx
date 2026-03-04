@@ -22,6 +22,7 @@ import { cameraOutline, imageOutline, shirtOutline, bagOutline, schoolOutline, p
 import SchoolSelector from '../SchoolSelector';
 import { useCartStore } from '../../stores/cartStore';
 import { useListingsStore, Listing } from '../../stores/listingsStore';
+import { validateImageFile } from '../../utils/imageEnhancer';
 
 
 interface SchoolUniformProps {
@@ -203,10 +204,16 @@ const SchoolUniformComponent: React.FC<SchoolUniformProps> = ({ userType, onItem
   const handlePhotoUpload = (type: 'front' | 'back') => {
     const input = document.createElement('input');
     input.type = 'file';
-    input.accept = 'image/*';
+    input.accept = 'image/jpeg,image/png,image/heic,image/heif,.jpg,.jpeg,.png,.heic,.heif';
     input.onchange = (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (file) {
+        const validation = validateImageFile(file);
+        if (!validation.valid) {
+          setToastMessage(validation.error || 'Invalid image file');
+          setShowToast(true);
+          return;
+        }
         const reader = new FileReader();
         reader.onload = (event) => {
           if (type === 'front') {
@@ -214,6 +221,10 @@ const SchoolUniformComponent: React.FC<SchoolUniformProps> = ({ userType, onItem
           } else {
             setBackPhoto(event.target?.result as string);
           }
+        };
+        reader.onerror = () => {
+          setToastMessage('Failed to read image file. Please try a different image.');
+          setShowToast(true);
         };
         reader.readAsDataURL(file);
       }
@@ -467,84 +478,173 @@ const SchoolUniformComponent: React.FC<SchoolUniformProps> = ({ userType, onItem
   }
 
   if (showItemDetails) {
+    const availableItems = getFilteredItems().filter(listing => listing.item === selectedItem);
+
     return (
       <div style={{ padding: '16px' }}>
         <IonButton fill="clear" onClick={() => setShowItemDetails(false)}>← Back</IonButton>
-        
+
         {/* Prominent School Header */}
         {schoolName && (
-          <div style={{ 
-            marginBottom: '20px', 
-            textAlign: 'center', 
-            backgroundColor: 'rgba(52, 152, 219, 0.1)', 
-            border: '2px solid #3498DB', 
-            borderRadius: '12px', 
-            padding: '16px' 
+          <div style={{
+            marginBottom: '20px',
+            textAlign: 'center',
+            backgroundColor: 'rgba(52, 152, 219, 0.1)',
+            border: '2px solid #3498DB',
+            borderRadius: '12px',
+            padding: '16px'
           }}>
-            <IonIcon 
-              icon={schoolOutline} 
-              style={{ 
-                fontSize: '32px', 
-                color: '#3498DB', 
-                marginBottom: '8px' 
-              }} 
+            <IonIcon
+              icon={schoolOutline}
+              style={{
+                fontSize: '32px',
+                color: '#3498DB',
+                marginBottom: '8px'
+              }}
             />
-            <h2 style={{ 
-              margin: '0', 
-              color: '#3498DB', 
-              fontSize: '18px', 
-              fontWeight: 'bold' 
+            <h2 style={{
+              margin: '0',
+              color: '#3498DB',
+              fontSize: '18px',
+              fontWeight: 'bold'
             }}>
               {schoolName}
             </h2>
-            <p style={{ 
-              margin: '4px 0 0 0', 
-              color: '#666', 
-              fontSize: '14px' 
+            <p style={{
+              margin: '4px 0 0 0',
+              color: '#666',
+              fontSize: '14px'
             }}>
               Selected School
             </p>
           </div>
         )}
-        
+
         <div style={{ textAlign: 'center', margin: '0 0 20px 0' }}>
-          <span style={{ 
-            fontSize: '20px', 
-            fontWeight: 'bold', 
-            color: '#666' 
+          <span style={{
+            fontSize: '20px',
+            fontWeight: 'bold',
+            color: '#666'
           }}>
             {selectedItem}
           </span>
         </div>
-        
-        <IonItem>
-          <IonLabel position="stacked">Size</IonLabel>
-          <IonSelect value={size} onIonChange={e => setSize(e.detail.value)} placeholder="Select Size">
-            {getSizeOptions(selectedItem).map(sizeOption => (
-              <IonSelectOption key={sizeOption} value={sizeOption}>{sizeOption}</IonSelectOption>
-            ))}
-          </IonSelect>
-        </IonItem>
-        
-        <IonItem>
-          <IonLabel position="stacked">Condition Grade</IonLabel>
-          <IonSelect value={condition} onIonChange={e => setCondition(parseInt(e.detail.value))}>
-            <IonSelectOption value={1}>1 - Brand new</IonSelectOption>
-            <IonSelectOption value={2}>2 - Like new</IonSelectOption>
-            <IonSelectOption value={3}>3 - Used but good</IonSelectOption>
-            <IonSelectOption value={4}>4 - Used and worn</IonSelectOption>
-          </IonSelect>
-        </IonItem>
 
-        {userType === 'seller' && (
+        {userType === 'buyer' ? (
           <>
+            {availableItems.length > 0 ? (
+              <div style={{ margin: '16px 0' }}>
+                <div style={{ marginBottom: '12px' }}>
+                  <h4 style={{ margin: '0', color: '#666', fontSize: '14px' }}>Available ({availableItems.length})</h4>
+                </div>
+                {availableItems.map(item => (
+                  <IonCard key={item.id} style={{ margin: '8px 0' }}>
+                    <IonCardContent style={{ padding: '12px' }}>
+                      <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                        <div style={{ display: 'flex', gap: '4px', flexShrink: 0 }}>
+                          <div
+                            style={{
+                              width: '40px', height: '50px', backgroundColor: item.frontPhoto ? 'transparent' : '#f0f0f0',
+                              border: '1px solid #ddd', borderRadius: '4px', display: 'flex', alignItems: 'center',
+                              justifyContent: 'center', fontSize: '8px', color: '#999', textAlign: 'center',
+                              lineHeight: '1.2', cursor: 'pointer',
+                              backgroundImage: item.frontPhoto ? `url(${item.frontPhoto})` : 'none',
+                              backgroundSize: 'cover', backgroundPosition: 'center'
+                            }}
+                            onClick={() => setPhotoViewer(item.frontPhoto)}
+                          >
+                            {!item.frontPhoto && 'Front'}
+                          </div>
+                          <div
+                            style={{
+                              width: '40px', height: '50px', backgroundColor: item.backPhoto ? 'transparent' : '#f0f0f0',
+                              border: '1px solid #ddd', borderRadius: '4px', display: 'flex', alignItems: 'center',
+                              justifyContent: 'center', fontSize: '8px', color: '#999', textAlign: 'center',
+                              lineHeight: '1.2', cursor: 'pointer',
+                              backgroundImage: item.backPhoto ? `url(${item.backPhoto})` : 'none',
+                              backgroundSize: 'cover', backgroundPosition: 'center'
+                            }}
+                            onClick={() => setPhotoViewer(item.backPhoto)}
+                          >
+                            {!item.backPhoto && 'Back'}
+                          </div>
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                            <span style={{ fontSize: '14px', fontWeight: 'bold' }}>{item.school}</span>
+                            {item.quantity === 0 ? (
+                              <IonBadge color="danger" style={{ fontSize: '9px' }}>
+                                <IonIcon icon={closeCircleOutline} style={{ marginRight: '2px', fontSize: '10px' }} />
+                                Sold Out
+                              </IonBadge>
+                            ) : (
+                              <IonBadge color="success" style={{ fontSize: '9px' }}>
+                                <IonIcon icon={checkmarkCircleOutline} style={{ marginRight: '2px', fontSize: '10px' }} />
+                                {item.quantity} left
+                              </IonBadge>
+                            )}
+                          </div>
+                          <div style={{ display: 'flex', gap: '12px', marginBottom: '6px', fontSize: '12px', color: '#666' }}>
+                            <span>Size: {item.size}</span>
+                            <span>{getConditionText(item.condition)}</span>
+                          </div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span style={{ fontSize: '16px', fontWeight: 'bold', color: '#3880ff' }}>R{item.price}</span>
+                            <IonButton
+                              size="small"
+                              onClick={() => {
+                                handleAddToCart(item);
+                              }}
+                              disabled={item.quantity === 0}
+                              style={{
+                                '--background': addedToCartId === item.id ? '#28a745' : '',
+                                '--color': addedToCartId === item.id ? 'white' : ''
+                              }}
+                            >
+                              {item.quantity === 0 ? 'Sold Out' :
+                               addedToCartId === item.id ? '✓ Added!' : 'Add to Cart'}
+                            </IonButton>
+                          </div>
+                        </div>
+                      </div>
+                    </IonCardContent>
+                  </IonCard>
+                ))}
+              </div>
+            ) : (
+              <div style={{ padding: '16px', textAlign: 'center', color: '#666', backgroundColor: '#f8f9fa', borderRadius: '8px', margin: '16px 0' }}>
+                <p style={{ margin: '0' }}>No {selectedItem} available yet</p>
+              </div>
+            )}
+          </>
+        ) : (
+          <>
+            <IonItem>
+              <IonLabel position="stacked">Size</IonLabel>
+              <IonSelect value={size} onIonChange={e => setSize(e.detail.value)} placeholder="Select Size">
+                {getSizeOptions(selectedItem).map(sizeOption => (
+                  <IonSelectOption key={sizeOption} value={sizeOption}>{sizeOption}</IonSelectOption>
+                ))}
+              </IonSelect>
+            </IonItem>
+
+            <IonItem>
+              <IonLabel position="stacked">Condition Grade</IonLabel>
+              <IonSelect value={condition} onIonChange={e => setCondition(parseInt(e.detail.value))}>
+                <IonSelectOption value={1}>1 - Brand new</IonSelectOption>
+                <IonSelectOption value={2}>2 - Like new</IonSelectOption>
+                <IonSelectOption value={3}>3 - Used but good</IonSelectOption>
+                <IonSelectOption value={4}>4 - Used and worn</IonSelectOption>
+              </IonSelect>
+            </IonItem>
+
             <IonItem>
               <IonInput label="Price (ZAR)" type="number" value={price} onIonChange={e => setPrice(e.detail.value!)} />
             </IonItem>
-            
+
             <div style={{ display: 'flex', gap: '16px', margin: '16px 0' }}>
               <div style={{ textAlign: 'center' }}>
-                <div 
+                <div
                   onClick={() => handlePhotoUpload('front')}
                   style={{
                     width: '120px', height: '150px', border: '2px dashed #ccc', borderRadius: '8px',
@@ -558,7 +658,7 @@ const SchoolUniformComponent: React.FC<SchoolUniformProps> = ({ userType, onItem
                 <p style={{ fontSize: '12px', margin: '4px 0' }}>Front Photo</p>
               </div>
               <div style={{ textAlign: 'center' }}>
-                <div 
+                <div
                   onClick={() => handlePhotoUpload('back')}
                   style={{
                     width: '120px', height: '150px', border: '2px dashed #ccc', borderRadius: '8px',
@@ -572,12 +672,13 @@ const SchoolUniformComponent: React.FC<SchoolUniformProps> = ({ userType, onItem
                 <p style={{ fontSize: '12px', margin: '4px 0' }}>Back Photo</p>
               </div>
             </div>
+
+            <IonButton expand="full" onClick={() => { console.log('Button clicked!'); handleSubmit(); }} disabled={isSubmitting} style={{ marginTop: '16px' }}>
+              {isSubmitting ? 'Listing...' : 'List Item'}
+            </IonButton>
           </>
         )}
-
-        <IonButton expand="full" onClick={() => { console.log('Button clicked!'); handleSubmit(); }} disabled={isSubmitting} style={{ marginTop: '16px' }}>
-          {userType === 'seller' ? (isSubmitting ? 'Listing...' : 'List Item') : 'Add to Cart'}
-        </IonButton>
+        {renderPhotoViewer()}
       </div>
     );
   }
@@ -635,156 +736,56 @@ const SchoolUniformComponent: React.FC<SchoolUniformProps> = ({ userType, onItem
 
       {/* Available Items Grid for Buyers or Category Selection for Sellers */}
       {userType === 'buyer' && schoolName ? (
-        <div>
-          <h3 style={{ margin: '16px 0', color: '#666' }}>Available Items from {schoolName}</h3>
-          
-          {/* Filters */}
-          <div style={{ backgroundColor: 'transparent', border: '1px solid #444', padding: '12px', borderRadius: '8px', marginBottom: '16px' }}>
-            <h4 style={{ margin: '0 0 12px 0', fontSize: '14px', color: '#666' }}>Filters</h4>
-            <IonGrid>
-              <IonRow>
-                <IonCol size="4">
-                  <IonInput 
-                    label="Size" 
-                    labelPlacement="stacked" 
-                    value={sizeFilter} 
-                    onIonChange={e => setSizeFilter(e.detail.value!)} 
-                    placeholder="e.g. L, M, 10"
-                    style={{ fontSize: '12px' }}
-                  />
-                </IonCol>
-                <IonCol size="4">
-                  <IonSelect 
-                    label="Condition" 
-                    labelPlacement="stacked" 
-                    value={conditionFilter} 
-                    onIonChange={e => setConditionFilter(e.detail.value)} 
-                    placeholder="Any"
-                  >
-                    <IonSelectOption value={undefined}>Any</IonSelectOption>
-                    <IonSelectOption value={1}>Brand new</IonSelectOption>
-                    <IonSelectOption value={2}>Like new</IonSelectOption>
-                    <IonSelectOption value={3}>Used but good</IonSelectOption>
-                    <IonSelectOption value={4}>Used and worn</IonSelectOption>
-                  </IonSelect>
-                </IonCol>
-                <IonCol size="4">
-                  <div style={{ display: 'flex', gap: '4px' }}>
-                    <IonInput 
-                      label="Min Price" 
-                      labelPlacement="stacked" 
-                      type="number" 
-                      value={priceRange.min} 
-                      onIonChange={e => setPriceRange({...priceRange, min: e.detail.value!})} 
-                      placeholder="0"
-                    />
-                    <IonInput 
-                      label="Max Price" 
-                      labelPlacement="stacked" 
-                      type="number" 
-                      value={priceRange.max} 
-                      onIonChange={e => setPriceRange({...priceRange, max: e.detail.value!})} 
-                      placeholder="999"
-                    />
-                  </div>
-                </IonCol>
-              </IonRow>
-            </IonGrid>
-          </div>
-
-          <IonAccordionGroup>
-            {Object.entries(getFilteredCategories()).map(([category, categoryData]) => {
-              const categoryItems = getFilteredItems().filter(item => {
-                if (category === 'Boys Uniform') {
-                  return categoryData.items.includes(item.item) && (item.gender === 'Boy' || item.gender === 'Unisex');
-                } else if (category === 'Girls Uniform') {
-                  return categoryData.items.includes(item.item) && (item.gender === 'Girl' || item.gender === 'Unisex');
-                } else if (category === 'Unisex Items') {
-                  return categoryData.items.includes(item.item);
-                }
-                return false;
-              });
-              
-              if (categoryItems.length === 0) return null;
-              
-              return (
-                <IonAccordion key={category} value={category}>
-                  <IonItem slot="header" style={{ '--background': 'transparent' }}>
-                    <IonIcon 
-                      icon={categoryData.icon} 
-                      style={{ 
-                        fontSize: '24px', 
-                        color: categoryData.color, 
-                        marginRight: '12px'
-                      }} 
-                    />
-                    <IonLabel>
-                      <h3 style={{ 
-                        margin: '0', 
-                        fontWeight: 'bold', 
-                        color: categoryData.color,
-                        fontSize: '16px'
-                      }}>
-                        {category} ({categoryItems.length})
-                      </h3>
-                    </IonLabel>
-                  </IonItem>
-                  <div slot="content" style={{ padding: '8px' }}>
-                    <IonGrid>
-                      <IonRow>
-                        {categoryItems.map((availableItem) => (
-                          <IonCol size="6" key={availableItem.id}>
-                            <IonCard button onClick={() => handleAvailableItemClick(availableItem)} style={{ backgroundColor: 'transparent', border: '1px solid #444' }}>
-                              <IonCardContent style={{ padding: '8px' }}>
-                                <div style={{ display: 'flex', gap: '4px', marginBottom: '8px' }}>
-                                  <div style={{
-                                    width: '50px', height: '60px', borderRadius: '4px',
-                                    backgroundImage: `url(${availableItem.frontPhoto})`,
-                                    backgroundSize: 'cover', backgroundPosition: 'center'
-                                  }} />
-                                  <div style={{
-                                    width: '50px', height: '60px', borderRadius: '4px',
-                                    backgroundImage: `url(${availableItem.backPhoto})`,
-                                    backgroundSize: 'cover', backgroundPosition: 'center'
-                                  }} />
+        <IonAccordionGroup>
+          {Object.entries(getFilteredCategories()).map(([category, categoryData]) => (
+            <IonAccordion key={category} value={category}>
+              <IonItem slot="header" style={{ '--background': 'transparent' }}>
+                <IonIcon
+                  icon={categoryData.icon}
+                  style={{
+                    fontSize: '24px',
+                    color: categoryData.color,
+                    marginRight: '12px'
+                  }}
+                />
+                <IonLabel>
+                  <h3 style={{
+                    margin: '0',
+                    fontWeight: 'bold',
+                    color: categoryData.color,
+                    fontSize: '16px'
+                  }}>
+                    {category}
+                  </h3>
+                </IonLabel>
+              </IonItem>
+              <div slot="content" style={{ padding: '8px' }}>
+                <IonGrid>
+                  <IonRow>
+                    {categoryData.items.map((item: string, index: number) => {
+                      const itemCount = getFilteredItems().filter(listing => listing.item === item).reduce((total: number, listing: any) => total + listing.quantity, 0);
+                      return (
+                        <IonCol size="6" key={index}>
+                          <IonCard button onClick={() => handleItemClick(item)} style={{ backgroundColor: 'transparent', border: '1px solid #444' }}>
+                            <IonCardContent style={{ textAlign: 'center', padding: '12px' }}>
+                              <IonIcon icon={imageOutline} size="large" style={{ marginBottom: '8px', opacity: 0.5 }} />
+                              <div style={{ fontSize: '13px', fontWeight: 'bold' }}>{item}</div>
+                              {itemCount > 0 && (
+                                <div style={{ fontSize: '11px', color: '#3498DB', marginTop: '4px' }}>
+                                  {itemCount} available
                                 </div>
-                                <div style={{ fontSize: '13px', fontWeight: 'bold', marginBottom: '4px' }}>
-                                  {availableItem.item}
-                                </div>
-                                <div style={{ fontSize: '11px', color: '#666', marginBottom: '2px' }}>
-                                  Size: {availableItem.size}
-                                </div>
-                                <div style={{ fontSize: '11px', color: '#666', marginBottom: '4px' }}>
-                                  Condition: {getConditionText(availableItem.condition)}
-                                </div>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                  <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#E74C3C' }}>
-                                    R{availableItem.price}
-                                  </div>
-                                  {availableItem.quantity > 0 ? (
-                                    <IonBadge color="success" style={{ fontSize: '9px' }}>
-                                      <IonIcon icon={checkmarkCircleOutline} style={{ marginRight: '2px', fontSize: '10px' }} />
-                                      {availableItem.quantity} available
-                                    </IonBadge>
-                                  ) : (
-                                    <IonBadge color="danger" style={{ fontSize: '9px' }}>
-                                      <IonIcon icon={closeCircleOutline} style={{ marginRight: '2px', fontSize: '10px' }} />
-                                      Sold Out
-                                    </IonBadge>
-                                  )}
-                                </div>
-                              </IonCardContent>
-                            </IonCard>
-                          </IonCol>
-                        ))}
-                      </IonRow>
-                    </IonGrid>
-                  </div>
-                </IonAccordion>
-              );
-            })}
-          </IonAccordionGroup>
-        </div>
+                              )}
+                            </IonCardContent>
+                          </IonCard>
+                        </IonCol>
+                      );
+                    })}
+                  </IonRow>
+                </IonGrid>
+              </div>
+            </IonAccordion>
+          ))}
+        </IonAccordionGroup>
       ) : categoryFilter === 'clothing' ? (
         <IonAccordionGroup disabled={!schoolName}>
           {Object.entries(getFilteredCategories()).map(([category, categoryData]) => (

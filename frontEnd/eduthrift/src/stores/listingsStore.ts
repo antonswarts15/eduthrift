@@ -150,15 +150,28 @@ export const useListingsStore = create<ListingsStore>((set, get) => ({
       if (listing.frontPhoto?.startsWith('data:') || listing.backPhoto?.startsWith('data:')) {
         const formData = new FormData();
 
+        const getFileFromDataUrl = async (dataUrl: string, defaultName: string) => {
+          const resp = await fetch(dataUrl);
+          const blob = await resp.blob();
+          // Extract MIME type from data URL (e.g. "data:image/png;base64,...")
+          const mimeMatch = dataUrl.match(/^data:([^;]+);/);
+          const mimeType = mimeMatch ? mimeMatch[1] : 'image/jpeg';
+          const extMap: Record<string, string> = {
+            'image/jpeg': '.jpg', 'image/png': '.png',
+            'image/heic': '.heic', 'image/heif': '.heif',
+            'image/webp': '.webp', 'image/gif': '.gif'
+          };
+          const ext = extMap[mimeType] || '.jpg';
+          return new File([blob], `${defaultName}${ext}`, { type: mimeType });
+        };
+
         if (listing.frontPhoto?.startsWith('data:')) {
-          const frontResp = await fetch(listing.frontPhoto);
-          const frontBlob = await frontResp.blob();
-          formData.append('images', new File([frontBlob], 'front.jpg', { type: 'image/jpeg' }));
+          const frontFile = await getFileFromDataUrl(listing.frontPhoto, 'front');
+          formData.append('images', frontFile);
         }
         if (listing.backPhoto?.startsWith('data:')) {
-          const backResp = await fetch(listing.backPhoto);
-          const backBlob = await backResp.blob();
-          formData.append('images', new File([backBlob], 'back.jpg', { type: 'image/jpeg' }));
+          const backFile = await getFileFromDataUrl(listing.backPhoto, 'back');
+          formData.append('images', backFile);
         }
 
         const uploadResponse = await api.post('/upload/images', formData, {

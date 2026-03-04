@@ -23,6 +23,7 @@ import SchoolSelector from '../SchoolSelector';
 import { useListingsStore } from '../../stores/listingsStore';
 import { useCartStore } from '../../stores/cartStore';
 import { useToast } from '../../hooks/useToast';
+import { validateImageFile } from '../../utils/imageEnhancer';
 
 interface GenericSportEquipmentProps {
   userType: 'seller' | 'buyer';
@@ -56,6 +57,7 @@ const GenericSportEquipmentComponent: React.FC<GenericSportEquipmentProps> = ({
   const { isOpen: showToast, message: toastMessage, color: toastColor, showToast: displayToast, hideToast } = useToast();
   const [photoViewer, setPhotoViewer] = useState<string | null>(null);
   const [addedToCartId, setAddedToCartId] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     fetchListings();
@@ -102,7 +104,13 @@ const GenericSportEquipmentComponent: React.FC<GenericSportEquipmentProps> = ({
             }
           };
         }
-        return {};
+        // Handle sports that already have Boys/Girls Clothing categories
+        const clothingFiltered: any = {};
+        if (sportCategories['Boys Clothing']) clothingFiltered['Boys Clothing'] = sportCategories['Boys Clothing'];
+        if (sportCategories['Girls Clothing']) clothingFiltered['Girls Clothing'] = sportCategories['Girls Clothing'];
+        if (Object.keys(clothingFiltered).length > 0) return clothingFiltered;
+        // No clothing categories - fall back to all available categories
+        return sportCategories;
       case 'footwear':
         return sportCategories['Footwear'] ? { 'Footwear': sportCategories['Footwear'] } : {};
       case 'equipment-protective-accessories': {
@@ -209,10 +217,15 @@ const GenericSportEquipmentComponent: React.FC<GenericSportEquipmentProps> = ({
   const handlePhotoUpload = (type: 'front' | 'back') => {
     const input = document.createElement('input');
     input.type = 'file';
-    input.accept = 'image/*';
+    input.accept = 'image/jpeg,image/png,image/heic,image/heif,.jpg,.jpeg,.png,.heic,.heif';
     input.onchange = (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (file) {
+        const validation = validateImageFile(file);
+        if (!validation.valid) {
+          displayToast(validation.error || 'Invalid image file', 'danger');
+          return;
+        }
         const reader = new FileReader();
         reader.onload = (event) => {
           if (type === 'front') {
@@ -220,6 +233,9 @@ const GenericSportEquipmentComponent: React.FC<GenericSportEquipmentProps> = ({
           } else {
             setBackPhoto(event.target?.result as string);
           }
+        };
+        reader.onerror = () => {
+          displayToast('Failed to read image file. Please try a different image.', 'danger');
         };
         reader.readAsDataURL(file);
       }
@@ -252,18 +268,20 @@ const GenericSportEquipmentComponent: React.FC<GenericSportEquipmentProps> = ({
       name: selectedItem,
       description: `${selectedItem} - Size: ${size}, Team: ${team}`,
       school: organizationType === 'school' ? schoolName : '',
-      gender: categoryFilter === 'clothing' ? selectedGender : 'Unisex',
+      gender: categoryFilter === 'clothing' ? (selectedGender || 'Unisex') : 'Unisex',
       size,
       condition: condition || 1,
       price: userType === 'seller' ? parseInt(price) : 0,
       frontPhoto: frontPhoto || '',
       backPhoto: backPhoto || '',
       category: `${sportName} Equipment`,
+      sport: sportName,
       dateCreated: new Date().toLocaleDateString(),
       quantity: 1
     };
 
     if (userType === 'seller') {
+      setIsSubmitting(true);
       try {
         await addListing(itemData);
         displayToast(`${selectedItem} listed successfully!`, 'success');
@@ -276,7 +294,9 @@ const GenericSportEquipmentComponent: React.FC<GenericSportEquipmentProps> = ({
         setFrontPhoto(null);
         setBackPhoto(null);
       } catch (error: any) {
-        displayToast(error.message || 'Failed to list item', 'danger');
+        displayToast(error.message || 'Failed to list item. Please check your connection and try again.', 'danger');
+      } finally {
+        setIsSubmitting(false);
       }
     }
   };
@@ -472,8 +492,8 @@ const GenericSportEquipmentComponent: React.FC<GenericSportEquipmentProps> = ({
               </div>
             </div>
 
-            <IonButton expand="full" onClick={handleSubmit} style={{ marginTop: '16px' }}>
-              List Item
+            <IonButton expand="full" onClick={handleSubmit} disabled={isSubmitting} style={{ marginTop: '16px' }}>
+              {isSubmitting ? 'Listing...' : 'List Item'}
             </IonButton>
           </>
         )}
@@ -684,7 +704,7 @@ const GenericSportEquipmentComponent: React.FC<GenericSportEquipmentProps> = ({
         </div>
       )}
 
-      {categoryFilter === 'clothing' ? (
+      {categoryFilter === 'clothing' && (getFilteredCategories()['Boys Clothing'] || getFilteredCategories()['Girls Clothing']) ? (
         <div>
           {(() => {
             const genderKey = selectedGender === 'Boy' ? 'Boys Clothing' : 'Girls Clothing';
