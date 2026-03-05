@@ -207,8 +207,8 @@ const HowItWorksPage: React.FC = () => {
               <IonItem lines="none">
                 <IonIcon icon={shieldCheckmarkOutline} slot="start" color="success" />
                 <IonLabel>
-                  <h3>Buyer Protection</h3>
-                  <p>Escrow payments and automatic refunds if items aren't delivered</p>
+                  <h3>Escrow Buyer Protection</h3>
+                  <p>Your payment is held in escrow — the same trusted system used by Alibaba, TradeSafe, and Trustap. Sellers only get paid once you receive your item.</p>
                 </IonLabel>
               </IonItem>
 
@@ -223,8 +223,8 @@ const HowItWorksPage: React.FC = () => {
               <IonItem lines="none">
                 <IonIcon icon={checkmarkCircleOutline} slot="start" color="secondary" />
                 <IonLabel>
-                  <h3>Verified Sellers</h3>
-                  <p>All sellers are verified with ID and proof of address</p>
+                  <h3>ID-Verified Sellers</h3>
+                  <p>Every seller must verify their identity with a valid SA ID and proof of address before listing — drastically reducing scams and fraud</p>
                 </IonLabel>
               </IonItem>
 
@@ -273,10 +273,10 @@ const HowItWorksPage: React.FC = () => {
               <IonCardTitle>Safety & Security</IonCardTitle>
             </IonCardHeader>
             <IonCardContent>
-              <p><strong>Escrow Protection:</strong> Your payment is held securely until you receive your items.</p>
-              <p><strong>Automatic Refunds:</strong> If items aren't delivered within 14 days, you get an automatic refund.</p>
+              <p><strong>Escrow Protection:</strong> Your payment is held securely in escrow — just like Alibaba, TradeSafe, and Trustap — until you receive your items. Sellers are only paid once delivery is confirmed.</p>
+              <p><strong>Automatic Refunds:</strong> If items aren't delivered within 14 days, you get an automatic refund from the escrow system.</p>
+              <p><strong>ID Verification:</strong> Every seller must submit a valid South African ID document and proof of address before they can list items. This mandatory verification makes it extremely difficult for scammers to operate on the platform, as every seller is a real, traceable individual.</p>
               <p><strong>Dispute Resolution:</strong> Our team investigates any issues and ensures fair outcomes.</p>
-              <p><strong>Verified Users:</strong> All sellers must verify their identity before listing items.</p>
             </IonCardContent>
           </IonCard>
 

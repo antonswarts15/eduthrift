@@ -45,7 +45,8 @@ import {
   searchOutline,
   heartOutline,
   shieldOutline,
-  logOutOutline
+  logOutOutline,
+  documentTextOutline
 } from 'ionicons/icons';
 
 interface MainLayoutProps {
@@ -55,6 +56,7 @@ interface MainLayoutProps {
 const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const [showListingSubmenu, setShowListingSubmenu] = useState(false);
   const [showOrdersSubmenu, setShowOrdersSubmenu] = useState(false);
+  const [showPoliciesSubmenu, setShowPoliciesSubmenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
@@ -176,6 +178,28 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
               <IonIcon icon={helpCircleOutline} slot="start" />
               <IonLabel>How does eduthrift work?</IonLabel>
             </IonItem>
+
+            <IonItem button onClick={() => setShowPoliciesSubmenu(!showPoliciesSubmenu)}>
+              <IonIcon icon={documentTextOutline} slot="start" />
+              <IonLabel>Policies</IonLabel>
+              <IonIcon icon={showPoliciesSubmenu ? chevronDownOutline : chevronForwardOutline} slot="end" />
+            </IonItem>
+            {showPoliciesSubmenu && (
+              <IonList inset>
+                <IonItem button onClick={() => history.push('/terms-and-conditions')}>
+                  <IonLabel>Terms & Conditions</IonLabel>
+                </IonItem>
+                <IonItem button onClick={() => history.push('/privacy-policy')}>
+                  <IonLabel>Privacy Policy</IonLabel>
+                </IonItem>
+                <IonItem button onClick={() => history.push('/refund-policy')}>
+                  <IonLabel>Refund & Returns Policy</IonLabel>
+                </IonItem>
+                <IonItem button onClick={() => history.push('/shipping-policy')}>
+                  <IonLabel>Shipping Policy</IonLabel>
+                </IonItem>
+              </IonList>
+            )}
 
             {userProfile?.userType === 'admin' && (
               <IonItem button onClick={() => history.push('/admin')}>

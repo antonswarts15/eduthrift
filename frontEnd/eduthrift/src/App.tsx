@@ -28,6 +28,9 @@ import PaymentError from './pages/PaymentError';
 import WishlistPage from './pages/WishlistPage';
 import HowItWorksPage from './pages/HowItWorksPage';
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
+import TermsAndConditionsPage from './pages/TermsAndConditionsPage';
+import RefundPolicyPage from './pages/RefundPolicyPage';
+import ShippingPolicyPage from './pages/ShippingPolicyPage';
 import AdminConsolePage from './pages/AdminConsolePage';
 import { useUserStore } from './stores/userStore';
 
@@ -237,6 +240,21 @@ const App: React.FC = () => {
           <Route exact path="/privacy-policy">
             <MainLayout>
               <PrivacyPolicyPage />
+            </MainLayout>
+          </Route>
+          <Route exact path="/terms-and-conditions">
+            <MainLayout>
+              <TermsAndConditionsPage />
+            </MainLayout>
+          </Route>
+          <Route exact path="/refund-policy">
+            <MainLayout>
+              <RefundPolicyPage />
+            </MainLayout>
+          </Route>
+          <Route exact path="/shipping-policy">
+            <MainLayout>
+              <ShippingPolicyPage />
             </MainLayout>
           </Route>
           <Route exact path="/item/:id">
