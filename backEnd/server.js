@@ -35,10 +35,13 @@ app.use(cors({
     'http://localhost:4173',  // Vite preview server
     'http://localhost:4174',  // Vite preview server (alternate)
     'http://localhost:8100',  // Ionic/Capacitor dev server
+    'https://localhost',      // Capacitor Android/iOS
+    'capacitor://localhost',  // Capacitor iOS
+    'ionic://localhost',      // Ionic iOS
     'http://frontend'  // Docker internal network
   ],
   credentials: true
-}));
+}));}
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 

@@ -305,8 +305,8 @@ const Home: React.FC = () => {
                   <div style={{ display: 'flex', alignItems: 'center', paddingLeft: '20px', padding: '8px' }}>
                     <IonIcon icon={locationOutline} style={{ fontSize: '24px', color: '#3498DB', marginRight: '12px' }} />
                     <div style={{ textAlign: 'left' }}>
-                      <h4 style={{ fontSize: '14px', margin: '0', color: '#2C3E50' }}>Pudo & Paxi Network</h4>
-                      <p style={{ fontSize: '12px', color: '#666', margin: '0' }}>2000+ lockers across South Africa</p>
+                      <h4 style={{ fontSize: '14px', margin: '0', color: '#2C3E50' }}>Pudo Network</h4>
+                      <p style={{ fontSize: '12px', color: '#666', margin: '0' }}>1400+ lockers across South Africa</p>
                     </div>
                   </div>
                 </IonCol>
@@ -314,8 +314,8 @@ const Home: React.FC = () => {
                   <div style={{ display: 'flex', alignItems: 'center', paddingLeft: '20px', padding: '8px' }}>
                     <IonIcon icon={cardOutline} style={{ fontSize: '24px', color: '#E74C3C', marginRight: '12px' }} />
                     <div style={{ textAlign: 'left' }}>
-                      <h4 style={{ fontSize: '14px', margin: '0', color: '#2C3E50' }}>Multiple Payments</h4>
-                      <p style={{ fontSize: '12px', color: '#666', margin: '0' }}>PayFast, Ozow, manual EFT</p>
+                      <h4 style={{ fontSize: '14px', margin: '0', color: '#2C3E50' }}>Electronic Payments</h4>
+                      <p style={{ fontSize: '12px', color: '#666', margin: '0' }}>Ozow</p>
                     </div>
                   </div>
                 </IonCol>

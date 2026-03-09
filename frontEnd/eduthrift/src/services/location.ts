@@ -1,3 +1,5 @@
+import { Geolocation } from '@capacitor/geolocation';
+
 export interface Location {
   lat: number;
   lng: number;
@@ -25,29 +27,20 @@ export interface Club {
 class LocationService {
   // Get user's current location
   async getCurrentLocation(): Promise<Location> {
-    return new Promise((resolve, reject) => {
-      if (!navigator.geolocation) {
-        reject(new Error('Geolocation not supported'));
-        return;
-      }
-
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          resolve({
-            lat: position.coords.latitude,
-            lng: position.coords.longitude
-          });
-        },
-        (error) => {
-          reject(new Error(`Location error: ${error.message}`));
-        },
-        {
-          enableHighAccuracy: true,
-          timeout: 10000,
-          maximumAge: 300000 // 5 minutes
-        }
-      );
-    });
+    try {
+      const position = await Geolocation.getCurrentPosition({
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 300000
+      });
+      
+      return {
+        lat: position.coords.latitude,
+        lng: position.coords.longitude
+      };
+    } catch (error: any) {
+      throw new Error(`Location error: ${error.message}`);
+    }
   }
 
   // Calculate distance between two points (Haversine formula)
