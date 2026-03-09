@@ -265,7 +265,8 @@ app.post('/auth/login', async (req, res) => {
         id: user.id, 
         email: user.email, 
         firstName: user.first_name, 
-        lastName: user.last_name 
+        lastName: user.last_name,
+        userType: user.user_type
       } 
     });
   } catch (error) {

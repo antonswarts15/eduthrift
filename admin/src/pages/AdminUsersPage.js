@@ -10,6 +10,8 @@ const AdminUsersPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [changingRole, setChangingRole] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
+  const [showCreateAdmin, setShowCreateAdmin] = useState(false);
+  const [newAdmin, setNewAdmin] = useState({ email: '', password: '', firstName: '', lastName: '', phone: '' });
 
   useEffect(() => {
     fetchUsers();
@@ -117,11 +119,49 @@ const AdminUsersPage = () => {
     }
   };
 
+  const handleCreateAdmin = async (e) => {
+    e.preventDefault();
+    const loadingToast = toast.loading('Creating admin user...');
+    try {
+      await api.post('/auth/register', {
+        ...newAdmin,
+        userType: 'admin',
+        suburb: 'N/A',
+        town: 'N/A',
+        province: 'N/A'
+      });
+      toast.dismiss(loadingToast);
+      toast.success('Admin user created successfully');
+      setShowCreateAdmin(false);
+      setNewAdmin({ email: '', password: '', firstName: '', lastName: '', phone: '' });
+      fetchUsers();
+    } catch (error) {
+      toast.dismiss(loadingToast);
+      console.error('Error creating admin:', error);
+      toast.error(error.response?.data?.error || 'Failed to create admin user');
+    }
+  };
+
   return (
     <div>
       <Toaster position="top-right" />
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
         <h1>User Management</h1>
+        <button
+          onClick={() => setShowCreateAdmin(true)}
+          style={{
+            backgroundColor: '#27ae60',
+            color: 'white',
+            border: 'none',
+            padding: '10px 20px',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontSize: '14px',
+            fontWeight: 'bold'
+          }}
+        >
+          + Create Admin
+        </button>
       </div>
 
       <div style={{ backgroundColor: 'white', padding: '20px', borderRadius: '8px', marginBottom: '20px', display: 'flex', gap: '20px', alignItems: 'center', flexWrap: 'wrap' }}>
@@ -291,6 +331,115 @@ const AdminUsersPage = () => {
           user={selectedUser}
           onClose={() => setSelectedUser(null)}
         />
+      )}
+
+      {showCreateAdmin && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            padding: '30px',
+            borderRadius: '8px',
+            maxWidth: '500px',
+            width: '90%'
+          }}>
+            <h2 style={{ marginTop: 0 }}>Create New Admin User</h2>
+            <form onSubmit={handleCreateAdmin}>
+              <div style={{ marginBottom: '15px' }}>
+                <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Email *</label>
+                <input
+                  type="email"
+                  required
+                  value={newAdmin.email}
+                  onChange={(e) => setNewAdmin({ ...newAdmin, email: e.target.value })}
+                  style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }}
+                />
+              </div>
+              <div style={{ marginBottom: '15px' }}>
+                <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Password *</label>
+                <input
+                  type="password"
+                  required
+                  minLength="6"
+                  value={newAdmin.password}
+                  onChange={(e) => setNewAdmin({ ...newAdmin, password: e.target.value })}
+                  style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }}
+                />
+              </div>
+              <div style={{ marginBottom: '15px' }}>
+                <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>First Name *</label>
+                <input
+                  type="text"
+                  required
+                  value={newAdmin.firstName}
+                  onChange={(e) => setNewAdmin({ ...newAdmin, firstName: e.target.value })}
+                  style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }}
+                />
+              </div>
+              <div style={{ marginBottom: '15px' }}>
+                <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Last Name</label>
+                <input
+                  type="text"
+                  value={newAdmin.lastName}
+                  onChange={(e) => setNewAdmin({ ...newAdmin, lastName: e.target.value })}
+                  style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }}
+                />
+              </div>
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Phone *</label>
+                <input
+                  type="tel"
+                  required
+                  value={newAdmin.phone}
+                  onChange={(e) => setNewAdmin({ ...newAdmin, phone: e.target.value })}
+                  style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }}
+                />
+              </div>
+              <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowCreateAdmin(false);
+                    setNewAdmin({ email: '', password: '', firstName: '', lastName: '', phone: '' });
+                  }}
+                  style={{
+                    padding: '10px 20px',
+                    borderRadius: '4px',
+                    border: '1px solid #ddd',
+                    backgroundColor: 'white',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  style={{
+                    padding: '10px 20px',
+                    borderRadius: '4px',
+                    border: 'none',
+                    backgroundColor: '#27ae60',
+                    color: 'white',
+                    cursor: 'pointer',
+                    fontWeight: 'bold'
+                  }}
+                >
+                  Create Admin
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
     </div>
   );

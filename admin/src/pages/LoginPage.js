@@ -12,19 +12,14 @@ const LoginPage = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      // Use the api service which respects REACT_APP_API_URL
       const response = await api.post('/auth/login', { email, password });
 
-      if (response.data.token) {
-        // Check if the user is an admin
-        // The backend should ideally return the user role in the response
-        // For now, we'll fetch the profile to check the role
-        const profileResponse = await api.get('/auth/profile', {
-          headers: { Authorization: `Bearer ${response.data.token}` }
-        });
-
-        if (profileResponse.data.userType?.toUpperCase() === 'ADMIN') {
+      if (response.data.token && response.data.user) {
+        const userType = response.data.user.userType;
+        
+        if (userType === 'admin') {
           localStorage.setItem('adminToken', response.data.token);
+          localStorage.setItem('adminUser', JSON.stringify(response.data.user));
           navigate('/dashboard');
         } else {
           setError('Access denied. You must be an administrator to log in here.');
