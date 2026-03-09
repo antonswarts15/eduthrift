@@ -1,4 +1,4 @@
-FROM node:18-alpine as build
+FROM node:18-alpine AS build
 
 WORKDIR /app
 
@@ -13,8 +13,7 @@ ENV VITE_PAYSTACK_PUBLIC_KEY=$VITE_PAYSTACK_PUBLIC_KEY
 ENV NODE_ENV=$NODE_ENV
 
 COPY eduthrift/package*.json ./
-# Install all dependencies including devDependencies to ensure tsc is available
-RUN npm install --legacy-peer-deps --include=dev
+RUN npm install --legacy-peer-deps
 
 COPY eduthrift/ .
 RUN npm run build
