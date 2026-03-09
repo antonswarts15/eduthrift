@@ -12,8 +12,13 @@ ENV VITE_API_URL=$VITE_API_URL
 ENV VITE_PAYSTACK_PUBLIC_KEY=$VITE_PAYSTACK_PUBLIC_KEY
 ENV NODE_ENV=$NODE_ENV
 
+# Configure npm for better reliability
+RUN npm config set fetch-retry-maxtimeout 120000 && \
+    npm config set fetch-retry-mintimeout 10000 && \
+    npm config set fetch-timeout 300000
+
 COPY eduthrift/package*.json ./
-RUN npm install --legacy-peer-deps
+RUN npm ci --legacy-peer-deps --prefer-offline --no-audit
 
 COPY eduthrift/ .
 RUN npm run build

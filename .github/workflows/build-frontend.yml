@@ -20,6 +20,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
       - name: Login to GHCR
         uses: docker/login-action@v3
         with:
@@ -28,13 +31,15 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and Push Frontend Image
-        run: |
-          IMAGE=ghcr.io/antonswarts15/eduthrift-frontend
-          TAG=${GITHUB_SHA}
-
-          # Build both latest and commit SHA tags
-          docker build --build-arg VITE_API_URL=https://api.eduthrift.co.za -t $IMAGE:latest -t $IMAGE:$TAG -f frontEnd/Dockerfile.frontend frontEnd
-
-          # Push both tags
-          docker push $IMAGE:latest
-          docker push $IMAGE:$TAG
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontEnd
+          file: ./frontEnd/Dockerfile.frontend
+          push: true
+          tags: |
+            ghcr.io/antonswarts15/eduthrift-frontend:latest
+            ghcr.io/antonswarts15/eduthrift-frontend:${{ github.sha }}
+          build-args: |
+            VITE_API_URL=https://api.eduthrift.co.za
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
