@@ -47,5 +47,4 @@ const AdminConsolePage: React.FC = () => {
     </IonPage>
   );
 };
-
 export default AdminConsolePage;
