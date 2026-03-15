@@ -5,11 +5,13 @@ import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 
 // https://vitejs.dev/config/
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [
     react(),
     legacy()
   ],
+  // Strip all console.log/console.error/debugger calls in production
+  esbuild: mode === 'production' ? { drop: ['console', 'debugger'] } : {},
   server: {
     proxy: {
       '/api': {
@@ -31,4 +33,4 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: './src/setupTests.ts',
   }
-})
+}))

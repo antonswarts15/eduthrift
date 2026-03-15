@@ -60,61 +60,47 @@ class LocationService {
     return deg * (Math.PI/180);
   }
 
-  // Search nearby schools using multiple APIs for better coverage
+  // Search nearby schools using Overpass API (OpenStreetMap)
   async searchNearbySchools(location: Location, radius: number = 10): Promise<School[]> {
     try {
-      const allSchools: School[] = [];
-      
-      // Search with multiple queries for better results
-      const queries = [
-        'primary school',
-        'high school', 
-        'secondary school',
-        'college',
-        'academy'
-      ];
-      
-      for (const query of queries) {
-        const response = await fetch(
-          `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&lat=${location.lat}&lon=${location.lng}&bounded=1&viewbox=${location.lng-0.05},${location.lat+0.05},${location.lng+0.05},${location.lat-0.05}&limit=10&countrycodes=za`
+      const radiusMeters = radius * 1000;
+      const query = `
+        [out:json][timeout:10];
+        (
+          nwr["amenity"="school"](around:${radiusMeters},${location.lat},${location.lng});
         );
-        
-        const data = await response.json();
-        
-        const schools = data
-          .filter((place: any) => {
-            const name = place.display_name.toLowerCase();
-            return name.includes('school') || name.includes('college') || name.includes('academy');
-          })
-          .map((place: any) => {
-            const distance = this.calculateDistance(
-              location.lat, location.lng,
-              parseFloat(place.lat), parseFloat(place.lon)
-            );
-            
-            return {
-              id: place.place_id.toString(),
-              name: this.cleanSchoolName(place.display_name.split(',')[0]),
-              address: place.display_name,
-              lat: parseFloat(place.lat),
-              lng: parseFloat(place.lon),
-              distance: Math.round(distance * 10) / 10
-            };
-          })
-          .filter((school: School) => school.distance! <= radius);
-          
-        allSchools.push(...schools);
-      }
-      
-      // Remove duplicates and sort by distance
-      const uniqueSchools = allSchools.filter((school, index, self) => 
-        index === self.findIndex(s => s.name === school.name)
-      );
-      
-      return uniqueSchools
+        out center;
+      `;
+
+      const response = await fetch('https://overpass-api.de/api/interpreter', {
+        method: 'POST',
+        body: `data=${encodeURIComponent(query)}`,
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+      });
+
+      const data = await response.json();
+
+      const schools: School[] = data.elements
+        .filter((el: any) => el.tags?.name)
+        .map((el: any) => {
+          const lat = el.lat ?? el.center?.lat;
+          const lng = el.lon ?? el.center?.lon;
+          const distance = this.calculateDistance(location.lat, location.lng, lat, lng);
+
+          return {
+            id: el.id.toString(),
+            name: el.tags.name,
+            address: [el.tags['addr:street'], el.tags['addr:suburb'], el.tags['addr:city']].filter(Boolean).join(', ') || `${distance.toFixed(1)}km away`,
+            lat,
+            lng,
+            distance: Math.round(distance * 10) / 10
+          };
+        });
+
+      return schools
         .sort((a: School, b: School) => a.distance! - b.distance!)
-        .slice(0, 15);
-        
+        .slice(0, 20);
+
     } catch (error) {
       console.error('Error searching schools:', error);
       return [];

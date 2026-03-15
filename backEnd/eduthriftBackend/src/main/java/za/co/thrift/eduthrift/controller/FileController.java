@@ -8,9 +8,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.MalformedURLException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/uploads")
@@ -20,13 +20,27 @@ public class FileController {
     @Value("${file.upload.dir:./uploads}")
     private String uploadDir;
 
+    private static final Set<String> ALLOWED_TYPES = Set.of("items", "id-documents", "proof-of-residence");
+
     @GetMapping("/{type}/{filename:.+}")
     public ResponseEntity<Resource> serveFile(@PathVariable String type, @PathVariable String filename) {
+        if (!ALLOWED_TYPES.contains(type)) {
+            return ResponseEntity.badRequest().build();
+        }
+        // Reject any path traversal attempts in the filename
+        if (filename.contains("..") || filename.contains("/") || filename.contains("\\")) {
+            return ResponseEntity.badRequest().build();
+        }
         try {
-            Path file = Paths.get(uploadDir).resolve(type).resolve(filename);
+            Path baseDir = Paths.get(uploadDir).toAbsolutePath().normalize();
+            Path file = baseDir.resolve(type).resolve(filename).normalize();
+            // Ensure resolved path is still inside the base upload directory
+            if (!file.startsWith(baseDir)) {
+                return ResponseEntity.badRequest().build();
+            }
             Resource resource = new UrlResource(file.toUri());
 
-            if (resource.exists() || resource.isReadable()) {
+            if (resource.exists() && resource.isReadable()) {
                 String contentType = "image/jpeg"; // Default
                 String lowerFilename = filename.toLowerCase();
                 if (lowerFilename.endsWith(".png")) {
@@ -47,13 +61,9 @@ public class FileController {
                         .contentType(MediaType.parseMediaType(contentType))
                         .body(resource);
             } else {
-                System.err.println("File not found: " + file.toAbsolutePath());
-                System.err.println("Upload dir: " + uploadDir);
-                System.err.println("File exists: " + Files.exists(file));
                 return ResponseEntity.notFound().build();
             }
         } catch (MalformedURLException e) {
-            System.err.println("Malformed URL for file: " + type + "/" + filename);
             return ResponseEntity.badRequest().build();
         }
     }

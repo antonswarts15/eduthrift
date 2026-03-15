@@ -38,8 +38,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             try {
                 email = jwtUtil.extractEmail(jwt);
             } catch (Exception e) {
-                // Invalid token, continue without authentication
-                System.out.println("Invalid JWT token: " + e.getMessage());
+                // Invalid token - continue without authentication
             }
         }
 
@@ -54,7 +53,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     SecurityContextHolder.getContext().setAuthentication(authToken);
                 }
             } catch (Exception e) {
-                System.out.println("Could not set user authentication: " + e.getMessage());
+                // Authentication failed - continue as unauthenticated
             }
         }
 

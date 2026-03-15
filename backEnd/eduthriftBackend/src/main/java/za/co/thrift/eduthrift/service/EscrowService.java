@@ -23,7 +23,6 @@ public class EscrowService {
         order.setPaymentStatus(Order.PaymentStatus.CAPTURED);
         order.setOrderStatus(Order.OrderStatus.PAYMENT_CONFIRMED);
         orderRepository.save(order);
-        System.out.println("Funds held in escrow for order: " + order.getOrderNumber());
     }
 
     @Transactional
@@ -49,8 +48,6 @@ public class EscrowService {
         orderRepository.save(order);
 
         processPayout(order);
-        
-        System.out.println("Funds released to seller for order: " + orderNumber);
     }
 
     @Transactional
@@ -73,7 +70,5 @@ public class EscrowService {
         order.setPayoutStatus(Order.PayoutStatus.COMPLETED);
         order.setPayoutDate(LocalDateTime.now());
         orderRepository.save(order);
-        
-        System.out.println("Payout processed: R" + order.getSellerPayout() + " to seller account");
     }
 }

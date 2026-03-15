@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { CartItem } from './cartStore';
+import api from '../services/api';
 
 export interface Order {
   id: string;
@@ -19,6 +20,7 @@ export interface Order {
 interface OrdersStore {
   orders: Order[];
   addOrder: (order: Omit<Order, 'id' | 'orderDate'>) => string;
+  fetchOrders: () => Promise<void>;
   updateOrderStatus: (orderId: string, status: Order['status']) => void;
   updatePaymentStatus: (orderId: string, paymentStatus: Order['paymentStatus']) => void;
   updateTrackingInfo: (orderId: string, trackingNumber: string, provider: 'pudo' | 'courierguy') => void;
@@ -31,15 +33,39 @@ export const useOrdersStore = create<OrdersStore>()(
       orders: [],
 
   addOrder: (orderData: Omit<Order, 'id' | 'orderDate'>) => {
+    // Generate a temporary local ID; the real order number comes from the backend
     const orderId = `ORD-${Date.now()}`;
     const newOrder: Order = {
       ...orderData,
       id: orderId,
       orderDate: new Date().toISOString()
     };
-
     set((state) => ({ orders: [newOrder, ...state.orders] }));
     return orderId;
+  },
+
+  fetchOrders: async () => {
+    try {
+      const response = await api.get('/orders');
+      const data = response.data;
+      const backendOrders: Order[] = [
+        ...(data.buyerOrders || []),
+        ...(data.sellerOrders || [])
+      ].map((o: any) => ({
+        id: o.orderNumber,
+        items: [],
+        totalAmount: parseFloat(o.totalAmount),
+        status: (o.orderStatus?.toLowerCase() || 'pending_payment') as Order['status'],
+        paymentMethod: 'ozow',
+        paymentStatus: (o.paymentStatus?.toLowerCase() === 'captured' ? 'completed' : o.paymentStatus?.toLowerCase() === 'failed' ? 'failed' : 'pending') as Order['paymentStatus'],
+        orderDate: o.createdAt || new Date().toISOString(),
+        pickupPoint: o.pickupPoint,
+        trackingNumber: o.trackingNumber
+      }));
+      set({ orders: backendOrders });
+    } catch {
+      // Keep existing local orders if fetch fails
+    }
   },
 
   updateOrderStatus: (orderId: string, status: Order['status']) => {

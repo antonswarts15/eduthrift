@@ -30,7 +30,6 @@ public class DataInitializer implements CommandLineRunner {
                 antons.setStatus("active");
                 antons.setVerificationStatus("verified");
                 userRepository.save(antons);
-                System.out.println("Updated antons@eduthrift.co.za to ADMIN role.");
             }
         }
 
@@ -46,12 +45,7 @@ public class DataInitializer implements CommandLineRunner {
         createUserIfNotExists("susan@seller.co.za", "password123", "Susan", "Seller",
                 "0829876543", User.UserType.SELLER, "Stellenbosch", "Cape Town", "Western Cape");
 
-        System.out.println("============================================");
-        System.out.println("  SEED USERS READY:");
-        System.out.println("  Admin:  admin@eduthrift.co.za / admin123");
-        System.out.println("  Buyer:  pieter@buyer.co.za / password123");
-        System.out.println("  Seller: susan@seller.co.za / password123");
-        System.out.println("============================================");
+        // Seed users initialised (credentials are not logged in production)
     }
 
     private void createUserIfNotExists(String email, String password, String firstName, String lastName,
@@ -72,7 +66,6 @@ public class DataInitializer implements CommandLineRunner {
             user.setTown(town);
             user.setProvince(province);
             userRepository.save(user);
-            System.out.println("Created user: " + email + " (" + userType + ")");
         }
     }
 }

@@ -4,7 +4,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import za.co.thrift.eduthrift.entity.Order;
 import za.co.thrift.eduthrift.entity.User;
+import za.co.thrift.eduthrift.repository.OrderRepository;
 import za.co.thrift.eduthrift.repository.UserRepository;
 
 import java.util.*;
@@ -24,9 +26,11 @@ public class PaymentController {
     private String appBaseUrl;
 
     private final UserRepository userRepository;
+    private final OrderRepository orderRepository;
 
-    public PaymentController(UserRepository userRepository) {
+    public PaymentController(UserRepository userRepository, OrderRepository orderRepository) {
         this.userRepository = userRepository;
+        this.orderRepository = orderRepository;
     }
 
     @PostMapping("/ozow/initiate")
@@ -81,8 +85,7 @@ public class PaymentController {
             ));
 
         } catch (Exception e) {
-            System.err.println("Payment initiation failed: " + e.getMessage());
-            return ResponseEntity.status(500).body(Map.of("error", "Failed to initiate payment: " + e.getMessage()));
+            return ResponseEntity.status(500).body(Map.of("error", "Failed to initiate payment"));
         }
     }
 
@@ -107,18 +110,47 @@ public class PaymentController {
     @PostMapping("/ozow/webhook")
     public ResponseEntity<?> handleOzowWebhook(@RequestBody Map<String, Object> notification) {
         try {
-            System.out.println("Received Ozow webhook: " + notification);
-            
-            // Extract payment details
             String status = (String) notification.get("status");
             String merchantPaymentCode = (String) notification.get("merchant_payment_code");
-            
-            // TODO: Update order status based on payment status
-            // CO = Confirmed, CA = Cancelled, PE = Pending
-            
+            String hash = (String) notification.get("hash");
+
+            if (merchantPaymentCode == null || status == null) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Missing required fields"));
+            }
+
+            Optional<Order> orderOpt = orderRepository.findByOrderNumber(merchantPaymentCode);
+            if (orderOpt.isEmpty()) {
+                // Try by payment hash as fallback
+                List<Order> byHash = hash != null ? orderRepository.findByPaymentHash(hash) : List.of();
+                if (byHash.isEmpty()) {
+                    return ResponseEntity.ok(Map.of("received", true));
+                }
+                orderOpt = Optional.of(byHash.get(0));
+            }
+
+            Order order = orderOpt.get();
+
+            switch (status) {
+                case "CO": // Confirmed / Complete
+                    order.setPaymentStatus(Order.PaymentStatus.CAPTURED);
+                    order.setOrderStatus(Order.OrderStatus.PAYMENT_CONFIRMED);
+                    order.setEscrowStatus(Order.EscrowStatus.HELD);
+                    if (hash != null) order.setPaymentHash(hash);
+                    break;
+                case "CA": // Cancelled
+                    order.setPaymentStatus(Order.PaymentStatus.FAILED);
+                    order.setOrderStatus(Order.OrderStatus.CANCELLED);
+                    break;
+                case "PE": // Pending
+                    order.setPaymentStatus(Order.PaymentStatus.AUTHORIZED);
+                    break;
+                default:
+                    break;
+            }
+
+            orderRepository.save(order);
             return ResponseEntity.ok(Map.of("received", true));
         } catch (Exception e) {
-            System.err.println("Webhook processing failed: " + e.getMessage());
             return ResponseEntity.status(500).body(Map.of("error", "Webhook processing failed"));
         }
     }

@@ -88,7 +88,7 @@ public class SecurityConfig {
                         .requestMatchers("/items/**").permitAll()
                         .requestMatchers("/item-types/**").permitAll()
                         .requestMatchers("/uploads/**").permitAll()
-                        .requestMatchers("/upload/**").permitAll()
+                        .requestMatchers("/upload/**").authenticated()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )

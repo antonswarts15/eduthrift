@@ -157,10 +157,9 @@ public class AdminController {
         user.setPasswordHash(passwordEncoder.encode(tempPassword));
         userRepository.save(user);
 
-        return ResponseEntity.ok(Map.of(
-                "message", "Password reset successful",
-                "tempPassword", tempPassword
-        ));
+        // Note: in production, send the temp password via email to the user.
+        // It is intentionally NOT returned in the response body for security.
+        return ResponseEntity.ok(Map.of("message", "Password reset successful. User must contact support to receive their temporary password."));
     }
 
     @PutMapping("/users/{id}/suspend")
@@ -175,6 +174,16 @@ public class AdminController {
         userRepository.save(user);
 
         return ResponseEntity.ok(Map.of("message", "User suspended"));
+    }
+
+    @DeleteMapping("/users/{id}")
+    public ResponseEntity<?> deleteUser(@PathVariable Long id) {
+        Optional<User> userOpt = userRepository.findById(id);
+        if (!userOpt.isPresent()) {
+            return ResponseEntity.status(404).body(Map.of("error", "User not found"));
+        }
+        userRepository.deleteById(id);
+        return ResponseEntity.ok(Map.of("message", "User deleted"));
     }
 
     @PutMapping("/users/{id}/reactivate")

@@ -43,6 +43,7 @@ const LoginRegisterPage: React.FC = () => {
   const [registerSuburb, setRegisterSuburb] = useState('');
   const [registerTown, setRegisterTown] = useState('');
   const [registerProvince, setRegisterProvince] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [toastColor, setToastColor] = useState<'success' | 'danger'>('success');
@@ -71,12 +72,13 @@ const LoginRegisterPage: React.FC = () => {
       setShowToast(true);
       return;
     }
+    if (isLoading) return;
 
+    setIsLoading(true);
     try {
       const response = await userApi.login(loginEmail, loginPassword);
       if (response.data.token) {
         authLogin(response.data.token);
-        // Fetch user profile immediately after login
         await fetchUserProfile();
         setToastMessage('Login successful!');
         setToastColor('success');
@@ -86,18 +88,26 @@ const LoginRegisterPage: React.FC = () => {
         throw new Error('No token received');
       }
     } catch (error: any) {
-      console.error('Login error:', error);
       const errorMessage = error.response?.data?.error || 'Login failed. Please check your credentials.';
       setToastMessage(errorMessage);
       setToastColor('danger');
       setShowToast(true);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleRegister = async () => {
-    if (!registerName || !registerEmail || !registerPassword || !registerConfirmPassword || 
+    if (!registerName || !registerEmail || !registerPassword || !registerConfirmPassword ||
         !registerPhone || !registerSuburb || !registerTown || !registerProvince) {
       setToastMessage('Please fill in all fields including your location details');
+      setToastColor('danger');
+      setShowToast(true);
+      return;
+    }
+
+    if (registerPassword.length < 8) {
+      setToastMessage('Password must be at least 8 characters');
       setToastColor('danger');
       setShowToast(true);
       return;
@@ -110,6 +120,8 @@ const LoginRegisterPage: React.FC = () => {
       return;
     }
 
+    if (isLoading) return;
+    setIsLoading(true);
     try {
       const response = await userApi.register({
         firstName: registerName.split(' ')[0],
@@ -134,11 +146,12 @@ const LoginRegisterPage: React.FC = () => {
         throw new Error('No token received');
       }
     } catch (error: any) {
-      console.error('Registration error:', error);
       const errorMessage = error.response?.data?.error || 'Registration failed. Please try again.';
       setToastMessage(errorMessage);
       setToastColor('danger');
       setShowToast(true);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -204,8 +217,8 @@ const LoginRegisterPage: React.FC = () => {
                               <IonIcon icon={showLoginPassword ? eyeOffOutline : eyeOutline} />
                             </IonButton>
                           </IonItem>
-                          <IonButton expand="block" className="ion-margin-top" onClick={handleLogin}>
-                            Login
+                          <IonButton expand="block" className="ion-margin-top" onClick={handleLogin} disabled={isLoading}>
+                            {isLoading ? 'Logging in...' : 'Login'}
                           </IonButton>
                         </>
                     ) : (
@@ -300,8 +313,8 @@ const LoginRegisterPage: React.FC = () => {
                               <IonIcon icon={showConfirmPassword ? eyeOffOutline : eyeOutline} />
                             </IonButton>
                           </IonItem>
-                          <IonButton expand="block" className="ion-margin-top" onClick={handleRegister}>
-                            Create Account
+                          <IonButton expand="block" className="ion-margin-top" onClick={handleRegister} disabled={isLoading}>
+                            {isLoading ? 'Creating Account...' : 'Create Account'}
                           </IonButton>
                         </>
                     )}

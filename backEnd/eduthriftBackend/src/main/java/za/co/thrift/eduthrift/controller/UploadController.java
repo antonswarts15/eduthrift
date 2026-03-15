@@ -12,6 +12,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.*;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/upload")
@@ -20,6 +21,13 @@ public class UploadController {
 
     @Value("${file.upload.dir:./uploads}")
     private String uploadDir;
+
+    private static final Set<String> ALLOWED_CONTENT_TYPES = Set.of(
+        "image/jpeg", "image/png", "image/webp", "image/heic", "image/heif", "image/gif"
+    );
+    private static final Set<String> ALLOWED_EXTENSIONS = Set.of(
+        ".jpg", ".jpeg", ".png", ".webp", ".heic", ".heif", ".gif"
+    );
 
     @PostMapping("/images")
     public ResponseEntity<?> uploadImages(
@@ -38,17 +46,20 @@ public class UploadController {
             for (MultipartFile image : images) {
                 if (image.isEmpty()) continue;
 
-                // Validate file type
+                // Validate content type against explicit whitelist
                 String contentType = image.getContentType();
-                if (contentType == null || !contentType.startsWith("image/")) {
-                    return ResponseEntity.badRequest().body(Map.of("error", "Only image files are allowed"));
+                if (contentType == null || !ALLOWED_CONTENT_TYPES.contains(contentType.toLowerCase())) {
+                    return ResponseEntity.badRequest().body(Map.of("error", "Only image files are allowed (jpg, png, webp, heic, gif)"));
                 }
 
-                // Generate unique filename
+                // Generate unique filename preserving only whitelisted extensions
                 String originalFilename = image.getOriginalFilename();
-                String extension = "";
+                String extension = ".jpg"; // safe default
                 if (originalFilename != null && originalFilename.contains(".")) {
-                    extension = originalFilename.substring(originalFilename.lastIndexOf("."));
+                    String ext = originalFilename.substring(originalFilename.lastIndexOf(".")).toLowerCase();
+                    if (ALLOWED_EXTENSIONS.contains(ext)) {
+                        extension = ext;
+                    }
                 }
                 String uniqueFilename = UUID.randomUUID().toString() + extension;
 
@@ -65,7 +76,7 @@ public class UploadController {
 
             return ResponseEntity.ok(Map.of("files", uploadedFiles));
         } catch (IOException e) {
-            return ResponseEntity.status(500).body(Map.of("error", "Failed to upload images: " + e.getMessage()));
+            return ResponseEntity.status(500).body(Map.of("error", "Failed to upload images. Please try again."));
         }
     }
 }

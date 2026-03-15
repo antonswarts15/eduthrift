@@ -48,8 +48,6 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
         try {
-            System.out.println("Login attempt for: " + request.getEmail());
-
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
                             request.getEmail(),
@@ -79,11 +77,9 @@ public class AuthController {
             // Generate real JWT token
             String token = jwtUtil.generateToken(user.getEmail(), typeName);
 
-            System.out.println("Login successful for: " + user.getEmail());
             return ResponseEntity.ok(new LoginResponse(token, typeName));
 
         } catch (Exception e) {
-            System.out.println("Authentication failed: " + e.getMessage());
             return ResponseEntity.status(401).body("Invalid credentials");
         }
     }
@@ -91,6 +87,13 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
         try {
+            // Validate inputs
+            if (request.getEmail() == null || !request.getEmail().contains("@")) {
+                return ResponseEntity.badRequest().body(new ErrorResponse("Valid email is required"));
+            }
+            if (request.getPassword() == null || request.getPassword().length() < 8) {
+                return ResponseEntity.badRequest().body(new ErrorResponse("Password must be at least 8 characters"));
+            }
             // Check if email already exists
             if (userRepository.findByEmail(request.getEmail()).isPresent()) {
                 return ResponseEntity.status(400).body(new ErrorResponse("Email already registered"));
@@ -125,11 +128,9 @@ public class AuthController {
             String typeName = user.getUserType().name();
             String token = jwtUtil.generateToken(user.getEmail(), typeName);
 
-            System.out.println("Registration successful for: " + user.getEmail());
             return ResponseEntity.ok(new LoginResponse(token, typeName));
 
         } catch (Exception e) {
-            System.out.println("Registration failed: " + e.getMessage());
             return ResponseEntity.status(500).body(new ErrorResponse("Registration failed. Please try again."));
         }
     }
@@ -181,9 +182,7 @@ public class AuthController {
             userRepository.save(user);
             return ResponseEntity.ok(new ProfileResponse(user));
         } catch (Exception e) {
-            System.err.println("Profile update failed: " + e.getMessage());
-            e.printStackTrace();
-            return ResponseEntity.status(500).body(new ErrorResponse("Failed to update profile: " + e.getMessage()));
+            return ResponseEntity.status(500).body(new ErrorResponse("Failed to update profile. Please try again."));
         }
     }
 
@@ -213,7 +212,6 @@ public class AuthController {
                     "path", savedPath
             ));
         } catch (IOException e) {
-            System.out.println("File upload failed: " + e.getMessage());
             return ResponseEntity.status(500).body(new ErrorResponse("Failed to upload file"));
         }
     }
@@ -244,7 +242,6 @@ public class AuthController {
                     "path", savedPath
             ));
         } catch (IOException e) {
-            System.out.println("File upload failed: " + e.getMessage());
             return ResponseEntity.status(500).body(new ErrorResponse("Failed to upload file"));
         }
     }

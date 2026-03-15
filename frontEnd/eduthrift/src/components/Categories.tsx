@@ -421,8 +421,7 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
         setShowCropModal(true);
       };
       reader.readAsDataURL(file);
-    } catch (error) {
-      console.error('Image processing failed:', error);
+    } catch {
       alert('Failed to process image. Please try again.');
     }
   };
@@ -484,8 +483,7 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
             }
           };
           reader.readAsDataURL(file);
-        } catch (error) {
-          console.error('Document upload failed:', error);
+        } catch {
           alert('Failed to upload document. Please try again.');
         }
       }
@@ -1567,8 +1565,7 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
                 
                 const sizeMB = (finalFile.size / (1024 * 1024)).toFixed(2);
                 displayToast(`Image cropped & optimized! Size: ${sizeMB}MB`, 'success');
-              } catch (error) {
-                console.error('Failed to process cropped image:', error);
+              } catch {
                 alert('Failed to process cropped image. Please try again.');
                 // Reset loading state
                 if (currentPhotoType === 'front') {
@@ -1606,16 +1603,15 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
               categoryFilter = 'equipment-protective-accessories';
             }
             
-            return Component ? <Component userType={userType} onItemSelect={(item: any) => console.log('Selected:', typeof item === 'string' ? item.replace(/[\r\n\t]/g, '').substring(0, 100) : 'item')} categoryFilter={categoryFilter} schoolName={schoolName} hideSchoolClubSelection={selectedCategory === 'Sports equipment'} /> : <div style={{ padding: '20px', color: 'red' }}>Component not found</div>;
+            return Component ? <Component userType={userType} categoryFilter={categoryFilter} schoolName={schoolName} hideSchoolClubSelection={selectedCategory === 'Sports equipment'} /> : <div style={{ padding: '20px', color: 'red' }}>Component not found</div>;
           })()}
         </div>
       ) : showClubClothing ? (
         <div style={{ padding: '16px' }}>
           {clubName ? (
-            <ClubClothingComponent 
-              userType={userType} 
-              onItemSelect={(item: any) => console.log('Selected:', typeof item === 'string' ? item.replace(/[\r\n\t]/g, '').substring(0, 100) : 'item')} 
-              categoryFilter='clothing' 
+            <ClubClothingComponent
+              userType={userType}
+              categoryFilter='clothing'
               clubName={clubName}
             />
           ) : (
@@ -1632,7 +1628,6 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
         <div style={{ padding: '16px' }}>
           <BeltsBagsShoesComponent
             userType={userType}
-            onItemSelect={(item: any) => console.log('Selected:', typeof item === 'string' ? item.replace(/[\r\n\t]/g, '').substring(0, 100) : 'item')}
             categoryFilter='all'
           />
         </div>
@@ -1640,7 +1635,6 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
         <div style={{ padding: '16px' }}>
           <TrainingWearComponent
             userType={userType}
-            onItemSelect={(item: any) => console.log('Selected:', typeof item === 'string' ? item.replace(/[\r\n\t]/g, '').substring(0, 100) : 'item')}
             categoryFilter='all'
           />
         </div>
@@ -1648,7 +1642,6 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
         <div style={{ padding: '16px' }}>
           <MatricDanceComponent
             userType={userType}
-            onItemSelect={(item: any) => console.log('Selected:', typeof item === 'string' ? item.replace(/[\r\n\t]/g, '').substring(0, 100) : 'item')}
             categoryFilter='all'
           />
         </div>
@@ -1656,7 +1649,6 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
         <div style={{ padding: '16px' }}>
           <SchoolGradesComponent
             userType={userType}
-            onCategorySelect={(phase: string, subject: string) => console.log('Selected:', phase?.replace(/[\r\n\t]/g, '').substring(0, 50), subject?.replace(/[\r\n\t]/g, '').substring(0, 50))}
           />
         </div>
       ) : showLocationSearch ? (
@@ -1764,9 +1756,8 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
           {userType === 'seller' ? (
             <StationerySeller />
           ) : (
-            <Stationery 
-              userType={userType} 
-              onItemSelect={(item: any) => console.log('Selected:', typeof item === 'string' ? item.replace(/[\r\n\t]/g, '').substring(0, 100) : 'item')} 
+            <Stationery
+              userType={userType}
               categoryFilter='all'
             />
           )}
@@ -2009,11 +2000,10 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
             </IonAccordionGroup>
           )}
           {currentLevel === 'schoolItems' && (
-            <SchoolUniformComponent 
-              userType={userType} 
-              onItemSelect={(item: any) => console.log('Selected:', item)} 
-              categoryFilter='clothing' 
-              schoolName={schoolName} 
+            <SchoolUniformComponent
+              userType={userType}
+              categoryFilter='clothing'
+              schoolName={schoolName}
             />
           )}
         </>

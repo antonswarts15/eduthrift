@@ -67,8 +67,11 @@ const CheckoutPage: React.FC = () => {
 
   // Set up webhook callbacks
   useEffect(() => {
-    const handleOrderStatusUpdate = (orderId: string, status: string) => { // Use string for status
-      updateOrderStatus(orderId, status as Order['status']); // Cast to Order['status'] when calling the store
+    const validStatuses: Order['status'][] = ['processing', 'paid', 'shipped', 'delivered', 'cancelled', 'pending_payment', 'awaiting_eft'];
+    const handleOrderStatusUpdate = (orderId: string, status: string) => {
+      if (validStatuses.includes(status as Order['status'])) {
+        updateOrderStatus(orderId, status as Order['status']);
+      }
     };
     ShippingWebhookService.setCallbacks(addNotification, handleOrderStatusUpdate);
   }, [addNotification, updateOrderStatus]);
@@ -112,27 +115,17 @@ const CheckoutPage: React.FC = () => {
   };
 
   const loadNearbyPickupPoints = async () => {
-    console.log('Loading pickup points... User profile:', userProfile);
-
     if (!userProfile?.suburb && !userProfile?.town) {
-      console.log('No address data available yet');
-      // Don't show error toast immediately, just log it
-      console.log('Address not found in profile');
       return;
     }
 
     try {
       setLoading(true);
-      // Build full address string for geocoding
-      const fullAddress = `${userProfile.suburb || ''}, ${userProfile.town || ''}, ${userProfile.province || ''}`.trim();
-      console.log('Full address for geocoding:', fullAddress);
-
       const coords = getCoordinatesFromAddress({
         suburb: userProfile.suburb || '',
         city: userProfile.town || '',
         province: userProfile.province || ''
       });
-      console.log('Coordinates:', coords);
 
       const points = await ShippingService.getPickupPoints({
         type: 'locker',
@@ -141,14 +134,10 @@ const CheckoutPage: React.FC = () => {
         order_closest: true
       });
 
-      console.log('Pickup points received:', points);
-
       if (Array.isArray(points) && points.length > 0) {
         setPickupPoints(points);
         setSelectedPickupPoint(points[0].pickup_point_id);
-        console.log('Pickup points loaded successfully:', points.length);
       } else {
-        console.error('No pickup points returned');
         setPickupPoints([]);
         setToastMessage('No pickup points available in your area');
         setShowToast(true);
@@ -291,19 +280,16 @@ const CheckoutPage: React.FC = () => {
         const data = await response.json();
 
         if (data.success && data.paymentUrl) {
-          console.log('Ozow payment URL:', data.paymentUrl);
-          // Use Ozow modal
+          // Keep loading=true during redirect to prevent double-submission
           if (window.OzowCheckout) {
             window.OzowCheckout.open(data.paymentUrl);
           } else {
-            // Fallback to redirect
             window.location.href = data.paymentUrl;
           }
         } else {
           throw new Error(data.message || data.error || 'Failed to initiate payment');
         }
       } catch (error: any) {
-        console.error('Ozow payment error:', error);
         setToastMessage(`Payment failed: ${error.message}`);
         setShowToast(true);
         setLoading(false);

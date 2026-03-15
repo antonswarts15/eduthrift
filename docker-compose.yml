@@ -68,6 +68,12 @@ services:
       - backend_uploads:/app/uploads
     networks:
       - eduthrift-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
 
   # Frontend (Mobile App)
   frontend:
@@ -83,7 +89,8 @@ services:
     ports:
       - "${FRONTEND_PORT:-3000}:80"
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     networks:
       - eduthrift-network
 
@@ -99,7 +106,8 @@ services:
     ports:
       - "${ADMIN_PORT:-3001}:80"
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     networks:
       - eduthrift-network
 

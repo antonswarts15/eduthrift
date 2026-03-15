@@ -91,6 +91,40 @@ public class OrderController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/{orderNumber}")
+    public ResponseEntity<?> getOrderByNumber(@PathVariable String orderNumber, Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(401).body(Map.of("error", "Not authenticated"));
+        }
+        String email = authentication.getName();
+        return orderRepository.findByOrderNumber(orderNumber)
+            .filter(o -> o.getBuyer().getEmail().equals(email) || o.getSeller().getEmail().equals(email))
+            .map(o -> ResponseEntity.ok(toResponse(o)))
+            .orElse(ResponseEntity.status(404).body(null));
+    }
+
+    @PutMapping("/{orderNumber}/status")
+    public ResponseEntity<?> updateOrderStatus(@PathVariable String orderNumber,
+                                               @RequestBody Map<String, String> body,
+                                               Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(401).body(Map.of("error", "Not authenticated"));
+        }
+        String status = body.get("status");
+        if (status == null) {
+            return ResponseEntity.badRequest().body(Map.of("error", "status is required"));
+        }
+        return orderRepository.findByOrderNumber(orderNumber).map(order -> {
+            try {
+                order.setOrderStatus(Order.OrderStatus.valueOf(status.toUpperCase()));
+                orderRepository.save(order);
+                return ResponseEntity.ok(toResponse(order));
+            } catch (IllegalArgumentException e) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Invalid status: " + status));
+            }
+        }).orElse(ResponseEntity.status(404).body(null));
+    }
+
     @PostMapping("/{orderNumber}/confirm-delivery")
     public ResponseEntity<?> confirmDelivery(@PathVariable String orderNumber, Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated()) {

@@ -117,20 +117,10 @@ class ShippingService {
 
   // Create shipment
   async createShipment(shipmentData: any) {
-    try {
-      return await this.request('/shipping/create-shipment', {
-        method: 'POST',
-        body: JSON.stringify(shipmentData),
-      });
-    } catch (error) {
-      // Return mock success if API fails
-      return {
-        success: true,
-        shipment_id: `SHP-${Date.now()}`,
-        tracking_reference: `TRK-${Date.now()}`,
-        message: 'Shipment created successfully'
-      };
-    }
+    return this.request('/shipping/create-shipment', {
+      method: 'POST',
+      body: JSON.stringify(shipmentData),
+    });
   }
 
   // ==================== PUDO API METHODS ====================
@@ -144,38 +134,18 @@ class ShippingService {
     radius?: number;
     limit?: number;
   }): Promise<any> {
-    try {
-      const queryParams = new URLSearchParams({
-        latitude: params.latitude.toString(),
-        longitude: params.longitude.toString(),
-        ...(params.radius && { radius: params.radius.toString() }),
-        ...(params.limit && { limit: params.limit.toString() })
-      });
+    const queryParams = new URLSearchParams({
+      latitude: params.latitude.toString(),
+      longitude: params.longitude.toString(),
+      ...(params.radius && { radius: params.radius.toString() }),
+      ...(params.limit && { limit: params.limit.toString() })
+    });
 
-      const response = await fetch(`${API_BASE_URL}/pudo/pickup-points?${queryParams}`);
-
-      if (!response.ok) {
-        throw new Error(`Pudo API Error: ${response.status}`);
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error('Error fetching Pudo pickup points:', error);
-      // Return mock data on error
-      return [
-        {
-          id: 'PUDO001',
-          name: 'Pudo Locker - Sandton City',
-          address: 'Sandton City Mall, 83 Rivonia Rd, Sandhurst',
-          city: 'Johannesburg',
-          province: 'Gauteng',
-          latitude: -26.1076,
-          longitude: 28.0567,
-          available: true,
-          type: 'locker'
-        }
-      ];
+    const response = await fetch(`${API_BASE_URL}/pudo/pickup-points?${queryParams}`);
+    if (!response.ok) {
+      throw new Error(`Pudo pickup points unavailable (${response.status})`);
     }
+    return response.json();
   }
 
   /**
@@ -191,29 +161,15 @@ class ShippingService {
       height: number;
     };
   }): Promise<any> {
-    try {
-      const response = await fetch(`${API_BASE_URL}/pudo/rates`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(params)
-      });
-
-      if (!response.ok) {
-        throw new Error(`Pudo API Error: ${response.status}`);
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error('Error fetching Pudo rates:', error);
-      // Return mock rate on error
-      return {
-        rate: 55.00,
-        currency: 'ZAR',
-        estimated_delivery_days: 2
-      };
+    const response = await fetch(`${API_BASE_URL}/pudo/rates`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(params)
+    });
+    if (!response.ok) {
+      throw new Error(`Pudo rates unavailable (${response.status})`);
     }
+    return response.json();
   }
 
   /**
@@ -244,77 +200,41 @@ class ShippingService {
     reference: string;
     service_type?: string;
   }): Promise<any> {
-    try {
-      const token = localStorage.getItem('authToken');
-      const response = await fetch(`${API_BASE_URL}/pudo/create-shipment`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(shipmentData)
-      });
-
-      if (!response.ok) {
-        throw new Error(`Pudo API Error: ${response.status}`);
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error('Error creating Pudo shipment:', error);
-      // Return mock success on error
-      return {
-        success: true,
-        shipment_id: `PUDO-${Date.now()}`,
-        tracking_number: `PUD${Date.now()}`,
-        waybill_url: null,
-        message: 'Pudo shipment created successfully'
-      };
+    const token = localStorage.getItem('authToken');
+    const response = await fetch(`${API_BASE_URL}/pudo/create-shipment`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token && { Authorization: `Bearer ${token}` })
+      },
+      body: JSON.stringify(shipmentData)
+    });
+    if (!response.ok) {
+      throw new Error(`Failed to create Pudo shipment (${response.status})`);
     }
+    return response.json();
   }
 
   /**
    * Track a Pudo shipment
    */
   async trackPudoShipment(trackingNumber: string): Promise<any> {
-    try {
-      const response = await fetch(`${API_BASE_URL}/pudo/track/${trackingNumber}`);
-
-      if (!response.ok) {
-        throw new Error(`Pudo API Error: ${response.status}`);
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error('Error tracking Pudo shipment:', error);
-      return {
-        tracking_number: trackingNumber,
-        status: 'in_transit',
-        message: 'Shipment is in transit'
-      };
+    const response = await fetch(`${API_BASE_URL}/pudo/track/${trackingNumber}`);
+    if (!response.ok) {
+      throw new Error(`Tracking unavailable for ${trackingNumber} (${response.status})`);
     }
+    return response.json();
   }
 
   /**
    * Check Pudo locker availability
    */
   async getPudoLockerAvailability(lockerId: string): Promise<any> {
-    try {
-      const response = await fetch(`${API_BASE_URL}/pudo/locker/${lockerId}/availability`);
-
-      if (!response.ok) {
-        throw new Error(`Pudo API Error: ${response.status}`);
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error('Error checking Pudo locker availability:', error);
-      return {
-        locker_id: lockerId,
-        available: true,
-        capacity: 80
-      };
+    const response = await fetch(`${API_BASE_URL}/pudo/locker/${lockerId}/availability`);
+    if (!response.ok) {
+      throw new Error(`Locker availability unavailable (${response.status})`);
     }
+    return response.json();
   }
 }
 

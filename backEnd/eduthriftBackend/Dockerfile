@@ -15,9 +15,11 @@ RUN ./mvnw clean package -DskipTests
 FROM eclipse-temurin:17-jre
 WORKDIR /app
 
-COPY --from=builder /app/target/*.jar app.jar
+RUN apt-get update && apt-get install -y --no-install-recommends wget && rm -rf /var/lib/apt/lists/*
 
-RUN mkdir -p /app/uploads/id-documents /app/uploads/proof-of-residence
+COPY --from=builder /app/target/*.jar app.jar
+COPY entrypoint.sh entrypoint.sh
+RUN chmod +x entrypoint.sh
 
 EXPOSE 8080
-ENTRYPOINT ["java","-jar","/app/app.jar"]
+ENTRYPOINT ["/app/entrypoint.sh"]

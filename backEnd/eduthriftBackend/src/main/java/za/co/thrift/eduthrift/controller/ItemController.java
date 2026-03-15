@@ -58,10 +58,17 @@ public class ItemController {
             item.setQuantity(request.quantity != null ? request.quantity : 1);
             item.setStatus(Item.ItemStatus.AVAILABLE);
 
-            if (request.price != null) {
-                item.setPrice(BigDecimal.valueOf(request.price));
-            } else {
+            if (request.price == null) {
                 return ResponseEntity.badRequest().body(Map.of("error", "Price is required"));
+            }
+            if (request.price <= 0) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Price must be greater than zero"));
+            }
+            item.setPrice(BigDecimal.valueOf(request.price));
+
+            String itemName = request.itemName != null ? request.itemName : request.name;
+            if (itemName == null || itemName.isBlank()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Item name is required"));
             }
 
             if (request.conditionGrade != null) {
@@ -88,17 +95,15 @@ public class ItemController {
                     defaultType.setSlug("general-" + UUID.randomUUID().toString());
                     ItemType savedType = itemTypeRepository.save(defaultType);
                     item.setItemType(savedType);
-                } catch (Exception e) {
-                    System.err.println("Failed to create default ItemType: " + e.getMessage());
-                    // If this fails, we can't do much, but at least we tried
+                } catch (Exception ignored) {
+                    // If this fails the item save will propagate the error
                 }
             }
 
             Item saved = itemRepository.save(item);
             return ResponseEntity.ok(toResponse(saved, user));
         } catch (Exception e) {
-            e.printStackTrace(); // Log the full stack trace
-            return ResponseEntity.status(500).body(Map.of("error", "Failed to create item: " + e.getMessage()));
+            return ResponseEntity.status(500).body(Map.of("error", "Failed to create item. Please try again."));
         }
     }
 
@@ -116,7 +121,7 @@ public class ItemController {
             }
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return ResponseEntity.status(500).body(Map.of("error", "Failed to fetch items: " + e.getMessage()));
+            return ResponseEntity.status(500).body(Map.of("error", "Failed to fetch items"));
         }
     }
 
@@ -182,7 +187,17 @@ public class ItemController {
         if (updates.containsKey("price")) {
             Object priceObj = updates.get("price");
             if (priceObj instanceof Number) {
-                item.setPrice(BigDecimal.valueOf(((Number) priceObj).doubleValue()));
+                double price = ((Number) priceObj).doubleValue();
+                if (price <= 0) {
+                    return ResponseEntity.badRequest().body(Map.of("error", "Price must be greater than zero"));
+                }
+                item.setPrice(BigDecimal.valueOf(price));
+            }
+        }
+        if (updates.containsKey("quantity")) {
+            Object qtyObj = updates.get("quantity");
+            if (qtyObj instanceof Number && ((Number) qtyObj).intValue() < 0) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Quantity cannot be negative"));
             }
         }
         if (updates.containsKey("gender")) {
