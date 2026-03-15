@@ -8,6 +8,9 @@ const PaymentSuccess: React.FC = () => {
   const history = useHistory();
   const { clearCart } = useCartStore();
 
+  const params = new URLSearchParams(window.location.search);
+  const reference = params.get('reference');
+
   useEffect(() => {
     clearCart();
   }, [clearCart]);
@@ -16,15 +19,18 @@ const PaymentSuccess: React.FC = () => {
     <IonPage>
       <IonContent>
         <div style={{ padding: '16px', paddingTop: '60px', textAlign: 'center' }}>
-          <IonIcon 
-            icon={checkmarkCircleOutline} 
-            style={{ fontSize: '100px', color: '#27AE60', marginBottom: '20px' }} 
+          <IonIcon
+            icon={checkmarkCircleOutline}
+            style={{ fontSize: '100px', color: '#27AE60', marginBottom: '20px' }}
           />
-          <h2>Payment Successful!</h2>
+          <h2>Payment Submitted!</h2>
           <IonCard>
             <IonCardContent>
-              <p>Your payment has been processed successfully.</p>
-              <p>You will receive a confirmation email shortly.</p>
+              {reference && (
+                <p style={{ fontWeight: 'bold', marginBottom: '8px' }}>Order: {reference}</p>
+              )}
+              <p>Your funds are now held in TradeSafe escrow.</p>
+              <p>They will be released to the seller once you confirm delivery.</p>
               <IonButton expand="block" onClick={() => history.push('/orders')} style={{ marginTop: '20px' }}>
                 View Orders
               </IonButton>

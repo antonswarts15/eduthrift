@@ -89,6 +89,12 @@ export const itemsApi = {
   getMyItems: (params?: Record<string, string>) => api.get('/items/mine', { params }),
 };
 
+// Payments API
+export const paymentsApi = {
+  initiateTradeSafe: (orderNumber: string) =>
+    api.post('/payments/tradesafe/initiate', { orderNumber }),
+};
+
 // Orders API
 export const ordersApi = {
   createOrder: (order: any) => api.post('/orders', order),

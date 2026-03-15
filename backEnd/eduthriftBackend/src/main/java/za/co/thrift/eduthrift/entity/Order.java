@@ -74,6 +74,9 @@ public class Order {
     @Column(name = "payout_date")
     private LocalDateTime payoutDate;
 
+    @Column(name = "tradesafe_transaction_id")
+    private String tradeSafeTransactionId;
+
     @Column(name = "tracking_number")
     private String trackingNumber;
 

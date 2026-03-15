@@ -55,10 +55,15 @@ services:
       # ShipLogic
       SHIPLOGIC_API_KEY: ${SHIPLOGIC_API_KEY}
 
-      # EBANX/Ozow
+      # EBANX/Ozow (legacy)
       EBANX_INTEGRATION_KEY: ${EBANX_INTEGRATION_KEY}
       EBANX_API_URL: ${EBANX_API_URL:-https://sandbox.ebanx.com}
       APP_BASE_URL: ${APP_BASE_URL:-http://localhost:3000}
+
+      # TradeSafe
+      TRADESAFE_CLIENT_ID: ${TRADESAFE_CLIENT_ID}
+      TRADESAFE_CLIENT_SECRET: ${TRADESAFE_CLIENT_SECRET}
+      TRADESAFE_API_URL: ${TRADESAFE_API_URL:-https://api.tradesafe.dev}
     ports:
       - "${BACKEND_PORT:-8080}:8080"
     depends_on:

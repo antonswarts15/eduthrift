@@ -5,6 +5,8 @@ import { alertCircleOutline } from 'ionicons/icons';
 
 const PaymentError: React.FC = () => {
   const history = useHistory();
+  const params = new URLSearchParams(window.location.search);
+  const reference = params.get('reference');
 
   return (
     <IonPage>
@@ -17,6 +19,9 @@ const PaymentError: React.FC = () => {
           <h2>Payment Error</h2>
           <IonCard>
             <IonCardContent>
+              {reference && (
+                <p style={{ fontWeight: 'bold', marginBottom: '8px' }}>Order: {reference}</p>
+              )}
               <p>There was an error processing your payment.</p>
               <p>Please try again or contact support if the problem persists.</p>
               <IonButton expand="block" onClick={() => history.push('/cart')} style={{ marginTop: '20px' }}>

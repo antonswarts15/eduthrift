@@ -74,6 +74,9 @@ public class User {
     @Column(name = "bank_branch_code")
     private String bankBranchCode;
 
+    @Column(name = "tradesafe_token")
+    private String tradeSafeToken;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
     

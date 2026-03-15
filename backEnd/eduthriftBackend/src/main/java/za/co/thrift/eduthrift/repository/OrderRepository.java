@@ -14,4 +14,5 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     List<Order> findByBuyerOrderByCreatedAtDesc(User buyer);
     List<Order> findBySellerOrderByCreatedAtDesc(User seller);
     List<Order> findByPaymentHash(String paymentHash);
+    Optional<Order> findByTradeSafeTransactionId(String tradeSafeTransactionId);
 }

@@ -38,7 +38,7 @@ import { useNotificationStore } from '../stores/notificationStore';
 import ShippingWebhookService from '../services/shipping-webhook';
 import { getCoordinatesFromAddress } from '../utils/geocoding';
 import FeeStructureInfo from '../components/FeeStructureInfo';
-import { userApi } from '../services/api';
+import { userApi, ordersApi, paymentsApi } from '../services/api';
 import AddressModal, { AddressData } from '../components/AddressModal';
 
 const CheckoutPage: React.FC = () => {
@@ -85,7 +85,7 @@ const CheckoutPage: React.FC = () => {
   const [shippingRates, setShippingRates] = useState<ShippingRate[]>([]);
 
   const [selectedRate, setSelectedRate] = useState<string>('');
-  const [paymentMethod, setPaymentMethod] = useState<'ozow' | ''>('');
+  const [paymentMethod, setPaymentMethod] = useState<'tradesafe' | ''>('');
   
   const [loading, setLoading] = useState(false);
   const [showToast, setShowToast] = useState(false);
@@ -260,37 +260,31 @@ const CheckoutPage: React.FC = () => {
     });
     addNotification('Order Created', `Your order ${orderId} is pending payment.`);
 
-    if (paymentMethod === 'ozow') {
+    if (paymentMethod === 'tradesafe') {
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/payments/ozow/initiate`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-          },
-          body: JSON.stringify({
-            amount: finalAmount,
-            orderId: orderId,
-            customerEmail: userProfile.email,
-            customerName: userProfile.name || `${userProfile.firstName} ${userProfile.lastName}`,
-            description: `Order ${orderId}`
-          })
+        // Step 1: Create the backend order to get a server-side order number
+        const firstItem = items[0];
+        const orderResponse = await ordersApi.createOrder({
+          itemId: firstItem.id,
+          quantity: 1,
+          shippingCost: shippingCost,
+          pickupPoint: pickupPoints.find(p => p.pickup_point_id === selectedPickupPoint)?.name || selectedPickupPoint
         });
+        const backendOrderNumber = orderResponse.data.orderNumber;
 
-        const data = await response.json();
+        // Step 2: Create TradeSafe escrow transaction and get deposit URL
+        const paymentResponse = await paymentsApi.initiateTradeSafe(backendOrderNumber);
+        const { depositUrl } = paymentResponse.data;
 
-        if (data.success && data.paymentUrl) {
-          // Keep loading=true during redirect to prevent double-submission
-          if (window.OzowCheckout) {
-            window.OzowCheckout.open(data.paymentUrl);
-          } else {
-            window.location.href = data.paymentUrl;
-          }
-        } else {
-          throw new Error(data.message || data.error || 'Failed to initiate payment');
+        if (!depositUrl) {
+          throw new Error('No deposit URL returned from TradeSafe');
         }
+
+        // Step 3: Redirect buyer to TradeSafe to fund the escrow
+        window.location.href = depositUrl;
+
       } catch (error: any) {
-        setToastMessage(`Payment failed: ${error.message}`);
+        setToastMessage(`Payment failed: ${error.response?.data?.error || error.message}`);
         setShowToast(true);
         setLoading(false);
       }
@@ -409,10 +403,10 @@ const CheckoutPage: React.FC = () => {
             <IonRadioGroup value={paymentMethod} onIonChange={e => setPaymentMethod(e.detail.value)}>
               <IonItem>
                 <IonLabel>
-                  <h3>Ozow Instant EFT</h3>
-                  <p>Secure instant bank transfer</p>
+                  <h3>TradeSafe Escrow</h3>
+                  <p>Secure escrow — funds held until delivery confirmed</p>
                 </IonLabel>
-                <IonRadio slot="end" value="ozow" />
+                <IonRadio slot="end" value="tradesafe" />
               </IonItem>
             </IonRadioGroup>
           </IonCardContent>
@@ -428,13 +422,13 @@ const CheckoutPage: React.FC = () => {
             style={{ margin: '16px 0' }}
           >
             <IonIcon icon={cashOutline} slot="start" />
-            Pay with Ozow
+            Pay with TradeSafe
           </IonButton>
-          
-          {paymentMethod === 'ozow' && selectedRate && (
+
+          {paymentMethod === 'tradesafe' && selectedRate && (
             <div style={{ padding: '12px', backgroundColor: '#e8f5e8', borderRadius: '8px', marginBottom: '16px' }}>
               <p style={{ margin: '0', fontSize: '12px', color: '#2d5a2d' }}>
-                🛡️ <strong>Escrow Protection:</strong> Payment held until {selectedRate.includes('pudo') ? 'Pudo collection' : 'CourierGuy delivery'} confirmed.
+                <strong>Escrow Protection:</strong> Payment held by TradeSafe until delivery confirmed. Funds released to seller only after you accept the item.
               </p>
             </div>
           )}
