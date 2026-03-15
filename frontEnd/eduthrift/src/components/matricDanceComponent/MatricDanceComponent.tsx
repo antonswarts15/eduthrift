@@ -32,7 +32,7 @@ interface MatricDanceProps {
 
 const matricDanceCategories: Record<string, { items: string[]; icon: string; color: string }> = {
   'Girls Matric Dance': {
-    items: ['Matric dance dress', 'Evening gown', 'Cocktail dress', 'Cover-up / Shawl', 'Clutch bag', 'Heels', 'Jewellery set'],
+    items: ['Matric dance dress', 'Evening gown', 'Cocktail dress', 'Cover-up / Shawl', 'Clutch bag', 'Heels', 'shoes'],
     icon: diamondOutline,
     color: '#E74C3C'
   },
@@ -42,7 +42,7 @@ const matricDanceCategories: Record<string, { items: string[]; icon: string; col
     color: '#3498DB'
   },
   'Accessories': {
-    items: ['Corsage', 'Boutonniere', 'Hair accessories', 'Belt', 'Pocket square', 'Suspenders'],
+    items: ['Corsage', 'Boutonniere', 'Hair accessories', 'Belt', 'Pocket square', 'Suspenders', 'Jewellery'],
     icon: sparklesOutline,
     color: '#8E44AD'
   }

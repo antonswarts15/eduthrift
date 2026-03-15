@@ -83,6 +83,12 @@ const GenericSportEquipmentComponent: React.FC<GenericSportEquipmentProps> = ({
     if (item.toLowerCase().includes('jersey') || item.toLowerCase().includes('shorts') || item.toLowerCase().includes('shirt')) {
       return ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL'];
     }
+     if (item.toLowerCase().includes('mountainbike')) {
+      return ['XS(13-14")', 'S(15–16")', 'M(17–18")', 'L(19–20")', 'XL(21–22")', 'XXL(23"+)'];
+    }
+    if (item.toLowerCase().includes('roadbike')) {
+      return ['48–50 cm', '50–52 cm', '52–54 cm', '54–56 cm', '56–58 cm', '58–60 cm', '60+ cm'];
+    }
     return ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
   };
 
