@@ -198,6 +198,9 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                 <IonItem button onClick={() => history.push('/shipping-policy')}>
                   <IonLabel>Shipping Policy</IonLabel>
                 </IonItem>
+                <IonItem button onClick={() => history.push('/delete-account')}>
+                  <IonLabel>Account Deletion</IonLabel>
+                </IonItem>
               </IonList>
             )}
 

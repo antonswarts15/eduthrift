@@ -32,6 +32,7 @@ import TermsAndConditionsPage from './pages/TermsAndConditionsPage';
 import RefundPolicyPage from './pages/RefundPolicyPage';
 import ShippingPolicyPage from './pages/ShippingPolicyPage';
 import AdminConsolePage from './pages/AdminConsolePage';
+import DeleteAccountPage from './pages/DeleteAccountPage';
 import { useUserStore } from './stores/userStore';
 
 /* Core CSS required for Ionic components to work properly */
@@ -255,6 +256,11 @@ const App: React.FC = () => {
           <Route exact path="/shipping-policy">
             <MainLayout>
               <ShippingPolicyPage />
+            </MainLayout>
+          </Route>
+            <Route exact path="/delete-account">
+            <MainLayout>
+              <DeleteAccountPage />
             </MainLayout>
           </Route>
           <Route exact path="/item/:id">
