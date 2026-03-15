@@ -3,6 +3,38 @@ import api, { itemsApi } from '../services/api';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
+// Resize and compress an image data URL to JPEG before uploading.
+// Keeps the image within maxWidth px and targets ~200 KB at quality 0.82.
+const compressImage = (dataUrl: string, maxWidth = 1200, quality = 0.82): Promise<string> =>
+  new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      let { width, height } = img;
+      if (width > maxWidth) {
+        height = Math.round(height * (maxWidth / width));
+        width = maxWidth;
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      canvas.getContext('2d')!.drawImage(img, 0, 0, width, height);
+      resolve(canvas.toDataURL('image/jpeg', quality));
+    };
+    img.src = dataUrl;
+  });
+
+const compressFile = async (file: File): Promise<File> => {
+  const dataUrl = await new Promise<string>((resolve) => {
+    const reader = new FileReader();
+    reader.onload = (e) => resolve(e.target!.result as string);
+    reader.readAsDataURL(file);
+  });
+  const compressed = await compressImage(dataUrl);
+  const resp = await fetch(compressed);
+  const blob = await resp.blob();
+  return new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), { type: 'image/jpeg' });
+};
+
 export interface Listing {
   id: string;
   name: string;
@@ -151,18 +183,10 @@ export const useListingsStore = create<ListingsStore>((set, get) => ({
         const formData = new FormData();
 
         const getFileFromDataUrl = async (dataUrl: string, defaultName: string) => {
-          const resp = await fetch(dataUrl);
+          const compressed = await compressImage(dataUrl);
+          const resp = await fetch(compressed);
           const blob = await resp.blob();
-          // Extract MIME type from data URL (e.g. "data:image/png;base64,...")
-          const mimeMatch = dataUrl.match(/^data:([^;]+);/);
-          const mimeType = mimeMatch ? mimeMatch[1] : 'image/jpeg';
-          const extMap: Record<string, string> = {
-            'image/jpeg': '.jpg', 'image/png': '.png',
-            'image/heic': '.heic', 'image/heif': '.heif',
-            'image/webp': '.webp', 'image/gif': '.gif'
-          };
-          const ext = extMap[mimeType] || '.jpg';
-          return new File([blob], `${defaultName}${ext}`, { type: mimeType });
+          return new File([blob], `${defaultName}.jpg`, { type: 'image/jpeg' });
         };
 
         if (listing.frontPhoto?.startsWith('data:')) {
@@ -252,10 +276,10 @@ export const useListingsStore = create<ListingsStore>((set, get) => ({
       if (newPhotos?.frontPhoto || newPhotos?.backPhoto) {
         const formData = new FormData();
         if (newPhotos.frontPhoto) {
-          formData.append('images', newPhotos.frontPhoto);
+          formData.append('images', await compressFile(newPhotos.frontPhoto));
         }
         if (newPhotos.backPhoto) {
-          formData.append('images', newPhotos.backPhoto);
+          formData.append('images', await compressFile(newPhotos.backPhoto));
         }
 
         const uploadResponse = await api.post('/upload/images', formData, {
