@@ -4,16 +4,14 @@ import {
   IonCardContent,
   IonCardHeader,
   IonCardTitle,
-  IonItem,
-  IonLabel,
   IonButton,
   IonIcon,
   IonToast,
   IonLoading,
   IonBadge
 } from '@ionic/react';
-import { downloadOutline, checkmarkCircleOutline, locationOutline, timeOutline } from 'ionicons/icons';
-import EscrowService from '../services/escrow';
+import { checkmarkCircleOutline, locationOutline, timeOutline } from 'ionicons/icons';
+import api from '../services/api';
 
 const SellerShippingPage: React.FC = () => {
   const [orders, setOrders] = useState<any[]>([]);
@@ -26,51 +24,34 @@ const SellerShippingPage: React.FC = () => {
   }, []);
 
   const loadPendingOrders = async () => {
-    // Mock orders that need shipping
-    setOrders([
-      {
-        orderId: 'ORD-1234567890',
-        buyerName: 'John Doe',
-        items: [
-          { name: 'School Uniform Long Sleeve Shirt', price: 85 },
-          { name: 'School Blazer', price: 150 }
-        ],
-        total: 270, // Including shipping
-        status: 'payment_held',
-        pickupPoint: {
-          name: 'PudoLocker - Sandton City',
-          address: 'Sandton City Mall, 83 Rivonia Rd, Sandhurst',
-          id: 'PL001'
-        },
-        shippingLabel: 'https://pudo.co.za/labels/SHIP_1234567890.pdf',
-        trackingNumber: 'PUD1234567890',
-        createdAt: new Date().toISOString()
-      }
-    ]);
-  };
-
-  const downloadShippingLabel = (labelUrl: string, orderId: string) => {
-    // In real implementation, this would download the PDF
-    window.open(labelUrl, '_blank');
-    setToastMessage('Shipping label downloaded. Print and attach to package.');
-    setShowToast(true);
-  };
-
-  const confirmShipped = async (orderId: string, trackingNumber: string) => {
     try {
       setLoading(true);
-      
-      // Update order status
-      setOrders(prev => prev.map(order => 
-        order.orderId === orderId 
-          ? { ...order, status: 'shipped' }
-          : order
-      ));
-      
-      setToastMessage('Shipment confirmed! Buyer will be notified when item arrives at locker.');
+      const response = await api.get('/orders');
+      const sellerOrders = (response.data.sellerOrders || []).filter(
+        (o: any) => o.orderStatus === 'PAYMENT_CONFIRMED' || o.orderStatus === 'PROCESSING' || o.orderStatus === 'SHIPPED'
+      );
+      setOrders(sellerOrders);
+    } catch {
+      setToastMessage('Failed to load orders. Please try again.');
       setShowToast(true);
-    } catch (error) {
-      setToastMessage('Failed to confirm shipment');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const confirmShipped = async (orderNumber: string) => {
+    try {
+      setLoading(true);
+      await api.put(`/orders/${orderNumber}/status`, { status: 'SHIPPED' });
+      setOrders(prev =>
+        prev.map(order =>
+          order.orderNumber === orderNumber ? { ...order, orderStatus: 'SHIPPED' } : order
+        )
+      );
+      setToastMessage('Shipment confirmed. Buyer will be notified.');
+      setShowToast(true);
+    } catch {
+      setToastMessage('Failed to confirm shipment. Please try again.');
       setShowToast(true);
     } finally {
       setLoading(false);
@@ -79,20 +60,20 @@ const SellerShippingPage: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'payment_held': return 'warning';
-      case 'shipped': return 'primary';
-      case 'delivered': return 'success';
-      case 'collected': return 'success';
+      case 'PAYMENT_CONFIRMED': return 'warning';
+      case 'PROCESSING': return 'warning';
+      case 'SHIPPED': return 'primary';
+      case 'DELIVERED': return 'success';
       default: return 'medium';
     }
   };
 
   const getStatusText = (status: string) => {
     switch (status) {
-      case 'payment_held': return 'Ready to Ship';
-      case 'shipped': return 'In Transit';
-      case 'delivered': return 'At Locker';
-      case 'collected': return 'Completed';
+      case 'PAYMENT_CONFIRMED': return 'Ready to Ship';
+      case 'PROCESSING': return 'Preparing';
+      case 'SHIPPED': return 'In Transit';
+      case 'DELIVERED': return 'Delivered';
       default: return status;
     }
   };
@@ -101,84 +82,65 @@ const SellerShippingPage: React.FC = () => {
     <div style={{ padding: '16px', paddingTop: '60px' }}>
       <h2>Orders to Ship</h2>
       <p style={{ color: '#666', fontSize: '14px', marginBottom: '20px' }}>
-        Payment is held in escrow until buyer collects items from Pudo locker.
+        Payment is held in TradeSafe escrow until the buyer receives their items.
       </p>
 
       {orders.map((order) => (
-        <IonCard key={order.orderId}>
+        <IonCard key={order.orderNumber}>
           <IonCardHeader>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <IonCardTitle>Order #{order.orderId.slice(-6)}</IonCardTitle>
-              <IonBadge color={getStatusColor(order.status)}>
-                {getStatusText(order.status)}
+              <IonCardTitle>Order #{order.orderNumber?.slice(-6)}</IonCardTitle>
+              <IonBadge color={getStatusColor(order.orderStatus)}>
+                {getStatusText(order.orderStatus)}
               </IonBadge>
             </div>
           </IonCardHeader>
           <IonCardContent>
-            {/* Order Details */}
             <div style={{ marginBottom: '16px' }}>
-              <p><strong>Buyer:</strong> {order.buyerName}</p>
-              <p><strong>Total:</strong> R{order.total} (held in escrow)</p>
-              <p><strong>Items:</strong></p>
-              <ul style={{ margin: '8px 0', paddingLeft: '20px' }}>
-                {order.items.map((item: any, index: number) => (
-                  <li key={index}>{item.name} - R{item.price}</li>
-                ))}
-              </ul>
+              <p><strong>Item:</strong> {order.itemName}</p>
+              <p><strong>Quantity:</strong> {order.quantity}</p>
+              <p><strong>Total (held in escrow):</strong> R{order.totalAmount}</p>
             </div>
 
-            {/* Shipping Instructions */}
-            <IonCard style={{ margin: '0', backgroundColor: '#f8f9fa' }}>
-              <IonCardContent>
-                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
-                  <IonIcon icon={locationOutline} style={{ marginRight: '8px', color: '#007bff' }} />
-                  <strong>Ship to Pudo Locker:</strong>
-                </div>
-                <p style={{ margin: '0 0 8px 24px' }}>{order.pickupPoint.name}</p>
-                <p style={{ margin: '0 0 16px 24px', fontSize: '14px', color: '#666' }}>
-                  {order.pickupPoint.address}
-                </p>
-                
-                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
-                  <IonIcon icon={timeOutline} style={{ marginRight: '8px', color: '#28a745' }} />
-                  <strong>Tracking:</strong> {order.trackingNumber}
-                </div>
-              </IonCardContent>
-            </IonCard>
+            {order.pickupPoint && (
+              <IonCard style={{ margin: '0', backgroundColor: '#f8f9fa' }}>
+                <IonCardContent>
+                  <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
+                    <IonIcon icon={locationOutline} style={{ marginRight: '8px', color: '#007bff' }} />
+                    <strong>Deliver to:</strong>
+                  </div>
+                  <p style={{ margin: '0 0 8px 24px' }}>{order.pickupPoint}</p>
+                  {order.trackingNumber && (
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                      <IonIcon icon={timeOutline} style={{ marginRight: '8px', color: '#28a745' }} />
+                      <strong>Tracking:</strong>&nbsp;{order.trackingNumber}
+                    </div>
+                  )}
+                </IonCardContent>
+              </IonCard>
+            )}
 
-            {/* Action Buttons */}
-            <div style={{ marginTop: '16px', display: 'flex', gap: '8px', flexDirection: 'column' }}>
-              {order.status === 'payment_held' && (
-                <>
-                  <IonButton 
-                    expand="block" 
-                    fill="outline"
-                    onClick={() => downloadShippingLabel(order.shippingLabel, order.orderId)}
-                  >
-                    <IonIcon icon={downloadOutline} slot="start" />
-                    Download Shipping Label
-                  </IonButton>
-                  
-                  <IonButton 
-                    expand="block" 
-                    color="success"
-                    onClick={() => confirmShipped(order.orderId, order.trackingNumber)}
-                  >
-                    <IonIcon icon={checkmarkCircleOutline} slot="start" />
-                    Confirm Item Shipped
-                  </IonButton>
-                </>
+            <div style={{ marginTop: '16px' }}>
+              {(order.orderStatus === 'PAYMENT_CONFIRMED' || order.orderStatus === 'PROCESSING') && (
+                <IonButton
+                  expand="block"
+                  color="success"
+                  onClick={() => confirmShipped(order.orderNumber)}
+                >
+                  <IonIcon icon={checkmarkCircleOutline} slot="start" />
+                  Confirm Item Shipped
+                </IonButton>
               )}
-              
-              {order.status === 'shipped' && (
-                <div style={{ 
-                  padding: '12px', 
-                  backgroundColor: '#e3f2fd', 
+
+              {order.orderStatus === 'SHIPPED' && (
+                <div style={{
+                  padding: '12px',
+                  backgroundColor: '#e3f2fd',
                   borderRadius: '8px',
                   textAlign: 'center'
                 }}>
                   <p style={{ margin: 0, color: '#1976d2' }}>
-                    ✓ Item shipped! Payment will be released when buyer collects from locker.
+                    Item shipped. Payment will be released once the buyer confirms delivery.
                   </p>
                 </div>
               )}
@@ -187,7 +149,7 @@ const SellerShippingPage: React.FC = () => {
         </IonCard>
       ))}
 
-      {orders.length === 0 && (
+      {!loading && orders.length === 0 && (
         <IonCard>
           <IonCardContent style={{ textAlign: 'center', padding: '40px' }}>
             <p>No orders pending shipment</p>
@@ -195,7 +157,7 @@ const SellerShippingPage: React.FC = () => {
         </IonCard>
       )}
 
-      <IonLoading isOpen={loading} message="Processing..." />
+      <IonLoading isOpen={loading} message="Loading..." />
       <IonToast
         isOpen={showToast}
         message={toastMessage}

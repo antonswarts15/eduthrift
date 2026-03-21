@@ -10,6 +10,7 @@ import za.co.thrift.eduthrift.repository.ItemRepository;
 import za.co.thrift.eduthrift.repository.OrderRepository;
 import za.co.thrift.eduthrift.repository.UserRepository;
 import za.co.thrift.eduthrift.service.EscrowService;
+import za.co.thrift.eduthrift.service.TradeSafeService;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -23,13 +24,16 @@ public class OrderController {
     private final UserRepository userRepository;
     private final ItemRepository itemRepository;
     private final EscrowService escrowService;
+    private final TradeSafeService tradeSafeService;
 
-    public OrderController(OrderRepository orderRepository, UserRepository userRepository, 
-                          ItemRepository itemRepository, EscrowService escrowService) {
+    public OrderController(OrderRepository orderRepository, UserRepository userRepository,
+                           ItemRepository itemRepository, EscrowService escrowService,
+                           TradeSafeService tradeSafeService) {
         this.orderRepository = orderRepository;
         this.userRepository = userRepository;
         this.itemRepository = itemRepository;
         this.escrowService = escrowService;
+        this.tradeSafeService = tradeSafeService;
     }
 
     @PostMapping
@@ -116,8 +120,20 @@ public class OrderController {
         }
         return orderRepository.findByOrderNumber(orderNumber).map(order -> {
             try {
-                order.setOrderStatus(Order.OrderStatus.valueOf(status.toUpperCase()));
+                Order.OrderStatus newStatus = Order.OrderStatus.valueOf(status.toUpperCase());
+                order.setOrderStatus(newStatus);
                 orderRepository.save(order);
+
+                // When seller marks as shipped, tell TradeSafe delivery has started
+                if (newStatus == Order.OrderStatus.SHIPPED
+                        && order.getTradeSafeAllocationId() != null) {
+                    try {
+                        tradeSafeService.startDelivery(order.getTradeSafeAllocationId());
+                    } catch (Exception ignored) {
+                        // Non-fatal: order is still marked shipped; TradeSafe will be retried via callback
+                    }
+                }
+
                 return ResponseEntity.ok(toResponse(order));
             } catch (IllegalArgumentException e) {
                 return ResponseEntity.badRequest().body(Map.of("error", "Invalid status: " + status));
@@ -135,7 +151,7 @@ public class OrderController {
             escrowService.confirmDelivery(orderNumber);
             return ResponseEntity.ok(Map.of("message", "Delivery confirmed, funds released to seller"));
         } catch (Exception e) {
-            return ResponseEntity.status(400).body(Map.of("error", e.getMessage()));
+            return ResponseEntity.status(400).body(Map.of("error", "Could not confirm delivery"));
         }
     }
 
@@ -151,6 +167,8 @@ public class OrderController {
         map.put("sellerPayout", order.getSellerPayout());
         map.put("platformFee", order.getPlatformFee());
         map.put("deliveryConfirmed", order.getDeliveryConfirmed());
+        map.put("pickupPoint", order.getPickupPoint());
+        map.put("trackingNumber", order.getTrackingNumber());
         map.put("createdAt", order.getCreatedAt().toString());
         return map;
     }

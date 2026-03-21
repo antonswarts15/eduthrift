@@ -27,7 +27,9 @@ import PaymentCancel from './pages/PaymentCancel';
 import PaymentError from './pages/PaymentError';
 import WishlistPage from './pages/WishlistPage';
 import HowItWorksPage from './pages/HowItWorksPage';
+import SupportPage from './pages/SupportPage';
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
+import TermsOfServicePage from './pages/TermsOfServicePage';
 import TermsAndConditionsPage from './pages/TermsAndConditionsPage';
 import RefundPolicyPage from './pages/RefundPolicyPage';
 import ShippingPolicyPage from './pages/ShippingPolicyPage';
@@ -238,9 +240,19 @@ const App: React.FC = () => {
               <HowItWorksPage />
             </MainLayout>
           </Route>
+          <Route exact path="/support">
+            <MainLayout>
+              <SupportPage />
+            </MainLayout>
+          </Route>
           <Route exact path="/privacy-policy">
             <MainLayout>
               <PrivacyPolicyPage />
+            </MainLayout>
+          </Route>
+          <Route exact path="/terms-of-service">
+            <MainLayout>
+              <TermsOfServicePage />
             </MainLayout>
           </Route>
           <Route exact path="/terms-and-conditions">

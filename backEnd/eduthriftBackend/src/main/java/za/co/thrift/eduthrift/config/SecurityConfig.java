@@ -89,6 +89,7 @@ public class SecurityConfig {
                         .requestMatchers("/item-types/**").permitAll()
                         .requestMatchers("/uploads/**").permitAll()
                         .requestMatchers("/tradesafe/callback").permitAll()
+                        .requestMatchers("/webhooks/**").permitAll()
                         .requestMatchers("/upload/**").authenticated()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()

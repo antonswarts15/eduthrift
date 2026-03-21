@@ -19,9 +19,8 @@ import {
   IonToolbar,
   IonTitle
 } from '@ionic/react';
-import { trainOutline as trackingOutline, closeOutline, warningOutline, refreshOutline } from 'ionicons/icons';
+import { trainOutline as trackingOutline, closeOutline } from 'ionicons/icons';
 import { useOrdersStore } from '../stores/ordersStore';
-import EscrowService from '../services/escrow';
 
 const OrdersPage: React.FC = () => {
   const [selectedTab, setSelectedTab] = useState('current');
@@ -50,11 +49,6 @@ const OrdersPage: React.FC = () => {
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString();
-  };
-
-  const getEscrowStatus = (orderId: string) => {
-    const escrow = EscrowService.getEscrowByOrderId(orderId);
-    return escrow;
   };
 
   const openTracking = (order: any) => {
@@ -136,19 +130,11 @@ const OrdersPage: React.FC = () => {
                       <IonGrid>
                         <IonRow>
                           <IonCol size="6">
-                            <p style={{ margin: '0', fontSize: '12px' }}><strong>Payment:</strong> {order.paymentMethod}</p>
+                            <p style={{ margin: '0', fontSize: '12px' }}><strong>Payment:</strong> TradeSafe Escrow</p>
                             <p style={{ margin: '0', fontSize: '12px' }}><strong>Status:</strong> {order.paymentStatus}</p>
-                            {order.paymentMethod === 'paystack' && (
-                              <p style={{ margin: '4px 0 0 0', fontSize: '10px', color: '#666' }}>
-                                🛡️ Escrow: {getEscrowStatus(order.id)?.shippingProvider === 'pudo' ? 'Release on collection' : 'Release on delivery'}
-                              </p>
-                            )}
                           </IonCol>
                           <IonCol size="6" style={{ textAlign: 'right' }}>
                             <p style={{ margin: '0', fontSize: '16px', fontWeight: 'bold', color: '#27AE60' }}>Total: R{order.totalAmount}</p>
-                            {order.paymentMethod === 'paystack' && getEscrowStatus(order.id)?.status === 'released' && (
-                              <p style={{ margin: '4px 0 0 0', fontSize: '10px', color: '#27AE60' }}>✓ Payment released</p>
-                            )}
                             {order.trackingNumber && (
                               <IonButton size="small" fill="outline" onClick={() => openTracking(order)} style={{ marginTop: '4px' }}>
                                 <IonIcon icon={trackingOutline} slot="start" />

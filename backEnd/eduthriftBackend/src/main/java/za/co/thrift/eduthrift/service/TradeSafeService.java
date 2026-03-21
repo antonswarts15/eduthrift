@@ -27,11 +27,8 @@ public class TradeSafeService {
     @Value("${tradesafe.client.secret}")
     private String clientSecret;
 
-    @Value("${tradesafe.api.url:https://api.tradesafe.co.za}")
+    @Value("${tradesafe.api.url:https://api.tradesafe.dev}")
     private String apiUrl;
-
-    @Value("${app.base.url:http://localhost:3000}")
-    private String appBaseUrl;
 
     private final RestTemplate restTemplate = new RestTemplate();
     private final UserRepository userRepository;
@@ -117,25 +114,39 @@ public class TradeSafeService {
         }
 
         String mutation = """
-                mutation TokenCreate($input: TokenInput!) {
-                    tokenCreate(input: $input) {
+                mutation tokenCreate(
+                    $givenName: String,
+                    $familyName: String,
+                    $email: Email,
+                    $mobile: String,
+                    $idNumber: String
+                ) {
+                    tokenCreate(input: {
+                        user: {
+                            givenName: $givenName
+                            familyName: $familyName
+                            email: $email
+                            mobile: $mobile
+                            idNumber: $idNumber
+                        }
+                    }) {
                         id
                     }
                 }
                 """;
 
-        Map<String, Object> input = new HashMap<>();
-        input.put("firstName", user.getFirstName());
-        input.put("lastName", user.getLastName());
-        input.put("email", user.getEmail());
+        Map<String, Object> variables = new HashMap<>();
+        variables.put("givenName", user.getFirstName());
+        variables.put("familyName", user.getLastName());
+        variables.put("email", user.getEmail());
         if (user.getPhone() != null && !user.getPhone().isEmpty()) {
-            input.put("mobileNumber", user.getPhone());
+            variables.put("mobile", user.getPhone());
         }
         if (user.getIdNumber() != null && !user.getIdNumber().isEmpty()) {
-            input.put("idNumber", user.getIdNumber());
+            variables.put("idNumber", user.getIdNumber());
         }
 
-        Map<String, Object> result = executeGraphQL(mutation, Map.of("input", input));
+        Map<String, Object> result = executeGraphQL(mutation, variables);
         Map<String, Object> data = (Map<String, Object>) result.get("data");
         Map<String, Object> tokenCreate = (Map<String, Object>) data.get("tokenCreate");
         String tradeSafeToken = (String) tokenCreate.get("id");
@@ -152,54 +163,127 @@ public class TradeSafeService {
      */
     @SuppressWarnings("unchecked")
     public TradeSafeTransaction createTransaction(Order order, String buyerToken, String sellerToken) {
-        String mutation = """
-                mutation TransactionCreate($input: TransactionInput!) {
-                    transactionCreate(input: $input) {
+        // Step 1: Create the transaction
+        String transactionMutation = """
+                mutation transactionCreate(
+                    $title: String!,
+                    $description: String!,
+                    $industry: Industry!,
+                    $workflow: TransactionWorkflow!,
+                    $value: Float,
+                    $buyerToken: String,
+                    $sellerToken: String
+                ) {
+                    transactionCreate(input: {
+                        title: $title
+                        description: $description
+                        industry: $industry
+                        currency: ZAR
+                        feeAllocation: SELLER
+                        workflow: $workflow
+                        allocations: {
+                            create: [
+                                {
+                                    title: $title
+                                    description: $description
+                                    value: $value
+                                    daysToDeliver: 7
+                                    daysToInspect: 3
+                                }
+                            ]
+                        }
+                        parties: {
+                            create: [
+                                {
+                                    token: $buyerToken
+                                    role: BUYER
+                                }
+                                {
+                                    token: $sellerToken
+                                    role: SELLER
+                                }
+                            ]
+                        }
+                    }) {
                         id
-                        state
-                        depositFunds {
-                            url
+                        createdAt
+                        allocations {
+                            id
                         }
                     }
                 }
                 """;
 
-        Map<String, Object> input = new HashMap<>();
-        input.put("title", "Eduthrift Order " + order.getOrderNumber());
-        input.put("description", "Second-hand school item: " + order.getItem().getItemName());
-        input.put("industry", "GENERAL_GOODS_SERVICES");
-        input.put("currency", "ZAR");
-        input.put("feeAllocation", "SELLER");
-        input.put("completionDays", 7);
-        input.put("inspectionDays", 3);
-        input.put("deliveryRequired", true);
-        input.put("reference", order.getOrderNumber());
-        input.put("returnUrl", appBaseUrl + "/payment/success?reference=" + order.getOrderNumber());
-        input.put("errorUrl", appBaseUrl + "/payment/error?reference=" + order.getOrderNumber());
+        double value = order.getItemPrice()
+                .multiply(new java.math.BigDecimal(order.getQuantity()))
+                .doubleValue();
 
-        List<Map<String, Object>> parties = new ArrayList<>();
-        parties.add(Map.of("token", buyerToken, "role", "BUYER"));
-        parties.add(Map.of("token", sellerToken, "role", "SELLER"));
-        input.put("parties", parties);
+        Map<String, Object> variables = new HashMap<>();
+        variables.put("title", "Eduthrift Order " + order.getOrderNumber());
+        variables.put("description", "Second-hand school item: " + order.getItem().getItemName());
+        variables.put("industry", "GENERAL_GOODS_SERVICES");
+        variables.put("workflow", "GOODS_INSPECTION");
+        variables.put("value", value);
+        variables.put("buyerToken", buyerToken);
+        variables.put("sellerToken", sellerToken);
 
-        List<Map<String, Object>> allocations = new ArrayList<>();
-        allocations.add(Map.of(
-                "title", order.getItem().getItemName(),
-                "units", order.getQuantity(),
-                "unitCost", order.getItemPrice().doubleValue()
-        ));
-        input.put("allocations", allocations);
-
-        Map<String, Object> result = executeGraphQL(mutation, Map.of("input", input));
+        Map<String, Object> result = executeGraphQL(transactionMutation, variables);
         Map<String, Object> data = (Map<String, Object>) result.get("data");
         Map<String, Object> transactionCreate = (Map<String, Object>) data.get("transactionCreate");
-
         String transactionId = (String) transactionCreate.get("id");
-        Map<String, Object> depositFunds = (Map<String, Object>) transactionCreate.get("depositFunds");
-        String depositUrl = depositFunds != null ? (String) depositFunds.get("url") : null;
 
-        return new TradeSafeTransaction(transactionId, depositUrl);
+        // Extract the first allocation ID — needed to start/accept delivery later
+        List<Map<String, Object>> allocations = (List<Map<String, Object>>) transactionCreate.get("allocations");
+        String allocationId = (allocations != null && !allocations.isEmpty())
+                ? (String) allocations.get(0).get("id")
+                : null;
+
+        // Step 2: Get the checkout link (separate mutation per TradeSafe docs)
+        String checkoutMutation = """
+                mutation checkoutLink($id: ID!) {
+                    checkoutLink(transactionId: $id)
+                }
+                """;
+
+        Map<String, Object> checkoutResult = executeGraphQL(checkoutMutation, Map.of("id", transactionId));
+        Map<String, Object> checkoutData = (Map<String, Object>) checkoutResult.get("data");
+        String depositUrl = (String) checkoutData.get("checkoutLink");
+
+        return new TradeSafeTransaction(transactionId, allocationId, depositUrl);
     }
 
-    public record TradeSafeTransaction(String transactionId, String depositUrl) {}
+    /**
+     * Called when the seller ships the item — transitions TradeSafe allocation to INITIATED.
+     */
+    @SuppressWarnings("unchecked")
+    public void startDelivery(String allocationId) {
+        String mutation = """
+                mutation allocationStartDelivery($id: ID!) {
+                    allocationStartDelivery(id: $id) {
+                        id
+                        state
+                    }
+                }
+                """;
+        executeGraphQL(mutation, Map.of("id", allocationId));
+    }
+
+    /**
+     * Called when the buyer collects from the Pudo locker (or confirms delivery).
+     * Transitions TradeSafe allocation to DELIVERED — triggers fund release to seller.
+     */
+    @SuppressWarnings("unchecked")
+    public void acceptDelivery(String allocationId) {
+        String mutation = """
+                mutation allocationAcceptDelivery($id: ID!) {
+                    allocationAcceptDelivery(id: $id) {
+                        id
+                        state
+                    }
+                }
+                """;
+        executeGraphQL(mutation, Map.of("id", allocationId));
+    }
+
+    public record TradeSafeTransaction(String transactionId, String allocationId, String depositUrl) {}
 }

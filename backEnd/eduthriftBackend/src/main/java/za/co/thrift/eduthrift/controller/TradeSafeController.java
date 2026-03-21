@@ -135,6 +135,7 @@ public class TradeSafeController {
                     tradeSafeService.createTransaction(order, buyerToken, sellerToken);
 
             order.setTradeSafeTransactionId(transaction.transactionId());
+            order.setTradeSafeAllocationId(transaction.allocationId());
             orderRepository.save(order);
 
             return ResponseEntity.ok(Map.of(

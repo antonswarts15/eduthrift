@@ -47,7 +47,7 @@ const PaymentAccountingTab: React.FC = () => {
         platformFee: 25, // 10%
         sellerAmount: 225,
         status: 'held',
-        paymentMethod: 'paystack',
+        paymentMethod: 'tradesafe',
         createdAt: '2024-01-20T10:30:00Z'
       },
       {
@@ -59,7 +59,7 @@ const PaymentAccountingTab: React.FC = () => {
         platformFee: 18,
         sellerAmount: 162,
         status: 'completed',
-        paymentMethod: 'paystack',
+        paymentMethod: 'tradesafe',
         createdAt: '2024-01-19T14:20:00Z',
         releasedAt: '2024-01-20T09:15:00Z'
       },

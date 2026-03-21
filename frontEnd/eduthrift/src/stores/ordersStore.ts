@@ -56,7 +56,7 @@ export const useOrdersStore = create<OrdersStore>()(
         items: [],
         totalAmount: parseFloat(o.totalAmount),
         status: (o.orderStatus?.toLowerCase() || 'pending_payment') as Order['status'],
-        paymentMethod: 'ozow',
+        paymentMethod: 'tradesafe',
         paymentStatus: (o.paymentStatus?.toLowerCase() === 'captured' ? 'completed' : o.paymentStatus?.toLowerCase() === 'failed' ? 'failed' : 'pending') as Order['paymentStatus'],
         orderDate: o.createdAt || new Date().toISOString(),
         pickupPoint: o.pickupPoint,

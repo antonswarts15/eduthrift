@@ -48,9 +48,6 @@ public class Order {
     @Column(name = "payment_status", nullable = false)
     private PaymentStatus paymentStatus = PaymentStatus.PENDING;
 
-    @Column(name = "payment_hash")
-    private String paymentHash;
-
     @Column(name = "escrow_status")
     @Enumerated(EnumType.STRING)
     private EscrowStatus escrowStatus = EscrowStatus.PENDING;
@@ -76,6 +73,9 @@ public class Order {
 
     @Column(name = "tradesafe_transaction_id")
     private String tradeSafeTransactionId;
+
+    @Column(name = "tradesafe_allocation_id")
+    private String tradeSafeAllocationId;
 
     @Column(name = "tracking_number")
     private String trackingNumber;

@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'ionic.eduthrift',
+  appId: 'co.za.eduthrift.app',
   appName: 'eduthrift',
   webDir: 'dist'
 };

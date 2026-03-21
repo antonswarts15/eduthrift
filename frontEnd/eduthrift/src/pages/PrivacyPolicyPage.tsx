@@ -135,14 +135,32 @@ const PrivacyPolicyPage: React.FC = () => {
               <li><strong>Right to Lodge a Complaint:</strong> Lodge a complaint with the Information Regulator of South Africa.</li>
             </ul>
 
-            <h3>10. Cookies and Tracking</h3>
+            <h3>10. User-Generated Content</h3>
+            <p>
+              The Eduthrift marketplace displays content uploaded by users, including item photographs,
+              descriptions, pricing, school affiliation, and condition details ("User Content"). This User
+              Content is third-party content created by our users, not by Eduthrift.
+            </p>
+            <p>
+              By submitting User Content to the Platform, you grant Eduthrift a non-exclusive, royalty-free
+              licence to store, display, and distribute that content to other users solely for the purpose
+              of operating the marketplace. You warrant that you own or have the necessary rights to the
+              content you submit. Eduthrift does not endorse User Content and is not responsible for its
+              accuracy or legality.
+            </p>
+            <p>
+              Eduthrift reserves the right to remove any User Content that violates our Terms of Service
+              or applicable law. For questions about content removal, contact support@eduthrift.co.za.
+            </p>
+
+            <h3>11. Cookies and Tracking</h3>
             <p>
               Our Platform may use cookies and similar technologies to improve your experience and gather
               usage analytics. You can manage cookie preferences through your browser settings. Essential
               cookies required for Platform functionality cannot be disabled.
             </p>
 
-            <h3>11. Children's Privacy</h3>
+            <h3>12. Children's Privacy</h3>
             <p>
               Our Platform is not intended for use by children under the age of 18 without parental or
               guardian consent. We do not knowingly collect personal information from children under 18
@@ -150,14 +168,14 @@ const PrivacyPolicyPage: React.FC = () => {
               appropriate consent, we will take steps to delete it promptly.
             </p>
 
-            <h3>12. Changes to This Policy</h3>
+            <h3>13. Changes to This Policy</h3>
             <p>
               We may update this Privacy Policy from time to time. Any changes will be posted on this page
               with an updated "Last Updated" date. We encourage you to review this policy periodically.
               Continued use of the Platform after changes constitutes acceptance of the updated policy.
             </p>
 
-            <h3>13. Information Regulator</h3>
+            <h3>14. Information Regulator</h3>
             <p>
               If you are not satisfied with how we handle your personal information, you have the right to
               lodge a complaint with the Information Regulator of South Africa:
@@ -167,7 +185,7 @@ const PrivacyPolicyPage: React.FC = () => {
               <li><strong>Email:</strong> enquiries@inforegulator.org.za</li>
             </ul>
 
-            <h3>14. Contact Us</h3>
+            <h3>15. Contact Us</h3>
             <p>
               If you have any questions about this Privacy Policy, wish to exercise your rights, or have
               concerns about how your data is processed, please contact us at:

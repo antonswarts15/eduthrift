@@ -95,8 +95,8 @@ export const useUserStore = create<UserStore>((set, get) => ({
         bankBranchCode: profileData.bankBranchCode,
       };
       set({ userProfile: profile });
-    } catch (error) {
-      console.error('Failed to fetch user profile:', error);
+    } catch {
+      // Profile fetch failed silently — user remains unauthenticated
     }
   }
 }));

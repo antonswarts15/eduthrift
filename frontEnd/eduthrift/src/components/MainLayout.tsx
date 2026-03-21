@@ -46,7 +46,8 @@ import {
   heartOutline,
   shieldOutline,
   logOutOutline,
-  documentTextOutline
+  documentTextOutline,
+  chatbubbleOutline
 } from 'ionicons/icons';
 
 interface MainLayoutProps {
@@ -179,6 +180,11 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
               <IonLabel>How does eduthrift work?</IonLabel>
             </IonItem>
 
+            <IonItem button onClick={() => history.push('/support')}>
+              <IonIcon icon={chatbubbleOutline} slot="start" />
+              <IonLabel>Support</IonLabel>
+            </IonItem>
+
             <IonItem button onClick={() => setShowPoliciesSubmenu(!showPoliciesSubmenu)}>
               <IonIcon icon={documentTextOutline} slot="start" />
               <IonLabel>Policies</IonLabel>
@@ -191,6 +197,9 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                 </IonItem>
                 <IonItem button onClick={() => history.push('/privacy-policy')}>
                   <IonLabel>Privacy Policy</IonLabel>
+                </IonItem>
+                <IonItem button onClick={() => history.push('/terms-of-service')}>
+                  <IonLabel>Terms of Service</IonLabel>
                 </IonItem>
                 <IonItem button onClick={() => history.push('/refund-policy')}>
                   <IonLabel>Refund & Returns Policy</IonLabel>

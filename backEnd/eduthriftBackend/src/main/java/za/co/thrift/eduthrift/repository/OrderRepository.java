@@ -13,6 +13,6 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     Optional<Order> findByOrderNumber(String orderNumber);
     List<Order> findByBuyerOrderByCreatedAtDesc(User buyer);
     List<Order> findBySellerOrderByCreatedAtDesc(User seller);
-    List<Order> findByPaymentHash(String paymentHash);
     Optional<Order> findByTradeSafeTransactionId(String tradeSafeTransactionId);
+    Optional<Order> findByTrackingNumber(String trackingNumber);
 }

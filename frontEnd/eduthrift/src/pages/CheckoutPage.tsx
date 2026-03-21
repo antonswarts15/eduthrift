@@ -29,7 +29,6 @@ import {
 import { locationOutline, timeOutline, cashOutline } from 'ionicons/icons';
 import { useHistory, useLocation } from 'react-router-dom';
 import ShippingService, { PickupPoint, ShippingRate, Parcel } from '../services/shipping';
-import EscrowService from '../services/escrow';
 import { useCartStore } from '../stores/cartStore';
 import { useUserStore } from '../stores/userStore';
 import { useOrdersStore, Order } from '../stores/ordersStore'; // Import Order type
@@ -105,9 +104,8 @@ const CheckoutPage: React.FC = () => {
       setShowAddressModal(false);
       setToastMessage('Address saved successfully');
       setShowToast(true);
-    } catch (error) {
-      console.error('Failed to save address:', error);
-      setToastMessage('Failed to save address');
+    } catch {
+      setToastMessage('Failed to save address. Please try again.');
       setShowToast(true);
     } finally {
       setLoading(false);
@@ -142,34 +140,10 @@ const CheckoutPage: React.FC = () => {
         setToastMessage('No pickup points available in your area');
         setShowToast(true);
       }
-    } catch (error) {
-      console.error('Error loading pickup points:', error);
+    } catch {
       setPickupPoints([]);
-      setToastMessage('Failed to load pickup points. Using mock data.');
+      setToastMessage('Could not load pickup points for your area. Please check your address and try again.');
       setShowToast(true);
-
-      // Set fallback mock data
-      setPickupPoints([
-        {
-          pickup_point_id: 'PL001',
-          name: 'PudoLocker - Sandton City',
-          address: 'Sandton City Mall, Johannesburg',
-          lat: -26.1076,
-          lng: 28.0567,
-          type: 'locker',
-          provider: 'pudo'
-        },
-        {
-          pickup_point_id: 'PL002',
-          name: 'PudoLocker - Rosebank',
-          address: 'Rosebank Mall, Johannesburg',
-          lat: -26.1448,
-          lng: 28.0436,
-          type: 'locker',
-          provider: 'pudo'
-        }
-      ]);
-      setSelectedPickupPoint('PL001');
     } finally {
       setLoading(false);
     }
@@ -223,8 +197,8 @@ const CheckoutPage: React.FC = () => {
         console.error('Invalid shipping rates response:', rates);
         setShippingRates([]);
       }
-    } catch (error) {
-      setToastMessage('Failed to calculate shipping rates');
+    } catch {
+      setToastMessage('Failed to calculate shipping rates. Please try again.');
       setShowToast(true);
     } finally {
       setLoading(false);

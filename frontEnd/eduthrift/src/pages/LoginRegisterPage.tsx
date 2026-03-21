@@ -316,6 +316,12 @@ const LoginRegisterPage: React.FC = () => {
                           <IonButton expand="block" className="ion-margin-top" onClick={handleRegister} disabled={isLoading}>
                             {isLoading ? 'Creating Account...' : 'Create Account'}
                           </IonButton>
+                          <p style={{ fontSize: '12px', color: '#666', textAlign: 'center', marginTop: '12px' }}>
+                            By creating an account you agree to our{' '}
+                            <a href="/terms-of-service" style={{ color: '#3880ff' }}>Terms of Service</a>
+                            {' '}and{' '}
+                            <a href="/privacy-policy" style={{ color: '#3880ff' }}>Privacy Policy</a>.
+                          </p>
                         </>
                     )}
                   </IonCardContent>

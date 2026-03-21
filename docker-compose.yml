@@ -41,24 +41,12 @@ services:
       SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
       JWT_SECRET: ${JWT_SECRET}
       FILE_UPLOAD_DIR: /app/uploads
-
-      # PayFast
-      PAYFAST_MERCHANT_ID: ${PAYFAST_MERCHANT_ID}
-      PAYFAST_MERCHANT_KEY: ${PAYFAST_MERCHANT_KEY}
-      PAYFAST_PASSPHRASE: ${PAYFAST_PASSPHRASE}
-      PAYFAST_URL: ${PAYFAST_URL}
+      APP_BASE_URL: ${APP_BASE_URL:-http://localhost:3000}
 
       # PUDO
       PUDO_API_KEY: ${PUDO_API_KEY}
-      PUDO_API_URL: ${PUDO_API_URL}
-
-      # ShipLogic
-      SHIPLOGIC_API_KEY: ${SHIPLOGIC_API_KEY}
-
-      # EBANX/Ozow (legacy)
-      EBANX_INTEGRATION_KEY: ${EBANX_INTEGRATION_KEY}
-      EBANX_API_URL: ${EBANX_API_URL:-https://sandbox.ebanx.com}
-      APP_BASE_URL: ${APP_BASE_URL:-http://localhost:3000}
+      PUDO_API_URL: ${PUDO_API_URL:-https://sandbox.pudo.co.za}
+      PUDO_WEBHOOK_SECRET: ${PUDO_WEBHOOK_SECRET}
 
       # TradeSafe
       TRADESAFE_CLIENT_ID: ${TRADESAFE_CLIENT_ID}
@@ -87,7 +75,6 @@ services:
       dockerfile: Dockerfile.frontend
       args:
         VITE_API_URL: ${FRONTEND_API_URL}
-        VITE_PAYSTACK_PUBLIC_KEY: ${PAYSTACK_PUBLIC_KEY}
         NODE_ENV: ${NODE_ENV:-production}
     container_name: ${COMPOSE_PROJECT_NAME:-eduthrift}-frontend
     restart: unless-stopped
