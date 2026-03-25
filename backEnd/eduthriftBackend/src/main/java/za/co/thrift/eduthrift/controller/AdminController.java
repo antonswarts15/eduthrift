@@ -12,7 +12,6 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/admin")
-@CrossOrigin(origins = {"https://www.eduthrift.co.za", "https://eduthrift.co.za", "https://admin.eduthrift.co.za", "https://www.admin.eduthrift.co.za", "http://154.65.107.50:3000", "http://154.65.107.50:3001", "http://localhost:3000", "http://localhost:3001"}, allowCredentials = "true")
 public class AdminController {
 
     private final UserRepository userRepository;

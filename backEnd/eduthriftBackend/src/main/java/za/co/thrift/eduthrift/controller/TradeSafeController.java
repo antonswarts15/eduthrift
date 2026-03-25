@@ -14,7 +14,6 @@ import java.util.Map;
 import java.util.Optional;
 
 @RestController
-@CrossOrigin(origins = {"https://www.eduthrift.co.za", "https://eduthrift.co.za", "http://localhost:3000", "http://localhost:3001", "http://localhost:5173"}, allowCredentials = "true")
 public class TradeSafeController {
 
     private final TradeSafeService tradeSafeService;

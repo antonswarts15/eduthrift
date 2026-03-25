@@ -16,7 +16,6 @@ import java.util.Set;
 
 @RestController
 @RequestMapping("/upload")
-@CrossOrigin(origins = {"https://www.eduthrift.co.za", "https://eduthrift.co.za", "https://admin.eduthrift.co.za", "http://localhost:3000", "http://localhost:3001", "http://localhost:5173"}, allowCredentials = "true")
 public class UploadController {
 
     @Value("${file.upload.dir:./uploads}")

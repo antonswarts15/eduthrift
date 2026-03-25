@@ -16,7 +16,6 @@ import java.util.*;
 
 @RestController
 @RequestMapping("/items")
-@CrossOrigin(origins = {"https://www.eduthrift.co.za", "https://eduthrift.co.za", "https://admin.eduthrift.co.za", "http://localhost:3000", "http://localhost:3001", "http://localhost:5173"}, allowCredentials = "true")
 public class ItemController {
 
     private final ItemRepository itemRepository;
