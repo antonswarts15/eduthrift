@@ -83,6 +83,18 @@ public class Order {
     @Column(name = "pickup_point")
     private String pickupPoint;
 
+    // The TCG locker ID the buyer selected for delivery (e.g. "CG01")
+    @Column(name = "delivery_locker_id")
+    private String deliveryLockerId;
+
+    // TCG service level code chosen at checkout (e.g. "ECO")
+    @Column(name = "service_level_code")
+    private String serviceLevelCode;
+
+    // TCG shipment ID returned after shipment creation
+    @Column(name = "tcg_shipment_id")
+    private String tcgShipmentId;
+
     @Column(name = "delivery_confirmed")
     private Boolean deliveryConfirmed = false;
 

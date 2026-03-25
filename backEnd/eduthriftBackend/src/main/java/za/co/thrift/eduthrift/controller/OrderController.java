@@ -67,6 +67,8 @@ public class OrderController {
         order.setTotalAmount(item.getPrice().multiply(BigDecimal.valueOf(request.quantity))
                 .add(BigDecimal.valueOf(request.shippingCost)));
         order.setPickupPoint(request.pickupPoint);
+        order.setDeliveryLockerId(request.deliveryLockerId);
+        order.setServiceLevelCode(request.serviceLevelCode);
 
         Order saved = orderRepository.save(order);
         return ResponseEntity.ok(toResponse(saved));
@@ -178,5 +180,7 @@ public class OrderController {
         public Integer quantity;
         public Double shippingCost;
         public String pickupPoint;
+        public String deliveryLockerId;
+        public String serviceLevelCode;
     }
 }

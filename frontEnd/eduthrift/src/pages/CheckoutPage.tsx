@@ -28,7 +28,7 @@ import {
 } from '@ionic/react';
 import { locationOutline, timeOutline, cashOutline } from 'ionicons/icons';
 import { useHistory, useLocation } from 'react-router-dom';
-import ShippingService, { PickupPoint, ShippingRate, Parcel } from '../services/shipping';
+import ShippingService, { PickupPoint, ShippingRate } from '../services/shipping';
 import { useCartStore } from '../stores/cartStore';
 import { useUserStore } from '../stores/userStore';
 import { useOrdersStore, Order } from '../stores/ordersStore'; // Import Order type
@@ -84,7 +84,7 @@ const CheckoutPage: React.FC = () => {
   const [shippingRates, setShippingRates] = useState<ShippingRate[]>([]);
 
   const [selectedRate, setSelectedRate] = useState<string>('');
-  const [paymentMethod, setPaymentMethod] = useState<'tradesafe' | ''>('');
+  const [paymentMethod] = useState<'tradesafe'>('tradesafe');
   
   const [loading, setLoading] = useState(false);
   const [showToast, setShowToast] = useState(false);
@@ -173,22 +173,9 @@ const CheckoutPage: React.FC = () => {
     if (!items.length) return;
     try {
       setLoading(true);
-      const parcel: Parcel = {
-        parcel_description: `Educational items (${cartItems.length} items)`,
-        submitted_length_cm: 40,
-        submitted_width_cm: 30,
-        submitted_height_cm: 10,
-        submitted_weight_kg: Math.max(1, items.length * 0.5),
-        packaging: 'Standard flyer'
-      };
       const rateRequest = {
-        parcels: [parcel],
-        collection_min_date: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        delivery_min_date: new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString().split('T')[0],
-        collection_pickup_point_id: 'CG0000',
-        collection_pickup_point_provider: 'tcg-locker',
         delivery_pickup_point_id: selectedPickupPoint,
-        delivery_pickup_point_provider: 'tcg-locker'
+        item_id: items[0]?.id
       };
       const rates = await ShippingService.getRates(rateRequest);
       if (Array.isArray(rates)) {
@@ -242,7 +229,9 @@ const CheckoutPage: React.FC = () => {
           itemId: firstItem.id,
           quantity: 1,
           shippingCost: shippingCost,
-          pickupPoint: pickupPoints.find(p => p.pickup_point_id === selectedPickupPoint)?.name || selectedPickupPoint
+          pickupPoint: pickupPoints.find(p => p.pickup_point_id === selectedPickupPoint)?.name || selectedPickupPoint,
+          deliveryLockerId: selectedPickupPoint,
+          serviceLevelCode: selectedRate
         });
         const backendOrderNumber = orderResponse.data.orderNumber;
 
@@ -318,7 +307,7 @@ const CheckoutPage: React.FC = () => {
           {pickupPoints.length > 0 ? (
             <IonRadioGroup value={selectedPickupPoint} onIonChange={e => setSelectedPickupPoint(e.detail.value)}>
               {pickupPoints.map((point, index) => (
-                <IonItem key={point.pickup_point_id}>
+                <IonItem key={point.pickup_point_id} button onClick={() => setSelectedPickupPoint(point.pickup_point_id)}>
                   <IonIcon icon={locationOutline} slot="start" />
                   <IonLabel>
                     <h3>{point.name} {index === 0 ? '(Nearest)' : ''}</h3>
@@ -351,7 +340,7 @@ const CheckoutPage: React.FC = () => {
           <IonCardContent>
             <IonRadioGroup value={selectedRate} onIonChange={e => setSelectedRate(e.detail.value)}>
               {shippingRates.map(rate => (
-                <IonItem key={rate.service_level_code}>
+                <IonItem key={rate.service_level_code} button onClick={() => setSelectedRate(rate.service_level_code)}>
                   <IonIcon icon={timeOutline} slot="start" />
                   <IonLabel>
                     <h3>{rate.service_level_name}</h3>
@@ -369,28 +358,23 @@ const CheckoutPage: React.FC = () => {
       )}
 
       {selectedRate && (
-        <IonCard>
-          <IonCardHeader>
-            <IonCardTitle>Payment Method</IonCardTitle>
-          </IonCardHeader>
-          <IonCardContent>
-            <IonRadioGroup value={paymentMethod} onIonChange={e => setPaymentMethod(e.detail.value)}>
-              <IonItem>
-                <IonLabel>
-                  <h3>TradeSafe Escrow</h3>
-                  <p>Secure escrow — funds held until delivery confirmed</p>
-                </IonLabel>
-                <IonRadio slot="end" value="tradesafe" />
-              </IonItem>
-            </IonRadioGroup>
-          </IonCardContent>
-        </IonCard>
-      )}
-
-      {selectedRate && paymentMethod && (
         <>
-          <IonButton 
-            expand="block" 
+          <IonCard>
+            <IonCardHeader>
+              <IonCardTitle>Payment Method</IonCardTitle>
+            </IonCardHeader>
+            <IonCardContent>
+              <div style={{ padding: '12px', backgroundColor: '#e8f5e8', borderRadius: '8px' }}>
+                <p style={{ margin: '0 0 4px 0', fontSize: '15px', fontWeight: '600', color: '#2d5a2d' }}>TradeSafe Escrow</p>
+                <p style={{ margin: '0', fontSize: '12px', color: '#2d5a2d' }}>
+                  <strong>Escrow Protection:</strong> Payment held by TradeSafe until delivery confirmed. Funds released to seller only after you accept the item.
+                </p>
+              </div>
+            </IonCardContent>
+          </IonCard>
+
+          <IonButton
+            expand="block"
             color="success"
             onClick={processOrder}
             style={{ margin: '16px 0' }}
@@ -398,14 +382,6 @@ const CheckoutPage: React.FC = () => {
             <IonIcon icon={cashOutline} slot="start" />
             Pay with TradeSafe
           </IonButton>
-
-          {paymentMethod === 'tradesafe' && selectedRate && (
-            <div style={{ padding: '12px', backgroundColor: '#e8f5e8', borderRadius: '8px', marginBottom: '16px' }}>
-              <p style={{ margin: '0', fontSize: '12px', color: '#2d5a2d' }}>
-                <strong>Escrow Protection:</strong> Payment held by TradeSafe until delivery confirmed. Funds released to seller only after you accept the item.
-              </p>
-            </div>
-          )}
         </>
       )}
 

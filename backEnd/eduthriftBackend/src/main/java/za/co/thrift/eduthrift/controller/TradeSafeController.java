@@ -7,6 +7,7 @@ import za.co.thrift.eduthrift.entity.Order;
 import za.co.thrift.eduthrift.entity.User;
 import za.co.thrift.eduthrift.repository.OrderRepository;
 import za.co.thrift.eduthrift.repository.UserRepository;
+import za.co.thrift.eduthrift.service.TCGShippingService;
 import za.co.thrift.eduthrift.service.TradeSafeService;
 
 import java.util.Map;
@@ -17,13 +18,16 @@ import java.util.Optional;
 public class TradeSafeController {
 
     private final TradeSafeService tradeSafeService;
+    private final TCGShippingService tcgShippingService;
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
 
     public TradeSafeController(TradeSafeService tradeSafeService,
+                                TCGShippingService tcgShippingService,
                                 OrderRepository orderRepository,
                                 UserRepository userRepository) {
         this.tradeSafeService = tradeSafeService;
+        this.tcgShippingService = tcgShippingService;
         this.orderRepository = orderRepository;
         this.userRepository = userRepository;
     }
@@ -62,6 +66,27 @@ public class TradeSafeController {
                     order.setPaymentStatus(Order.PaymentStatus.CAPTURED);
                     order.setOrderStatus(Order.OrderStatus.PAYMENT_CONFIRMED);
                     order.setEscrowStatus(Order.EscrowStatus.HELD);
+
+                    // Create TCG shipment now that funds are secured in escrow
+                    if (order.getDeliveryLockerId() != null && order.getServiceLevelCode() != null) {
+                        try {
+                            Map<String, Object> shipment = tcgShippingService.createShipment(
+                                    order, order.getSeller(), order.getBuyer());
+                            Object trackingRef = shipment.get("short_tracking_reference");
+                            if (trackingRef == null) trackingRef = shipment.get("tracking_reference");
+                            if (trackingRef != null) {
+                                order.setTrackingNumber(trackingRef.toString());
+                            }
+                            Object shipmentId = shipment.get("id");
+                            if (shipmentId != null) {
+                                order.setTcgShipmentId(shipmentId.toString());
+                            }
+                        } catch (Exception ignored) {
+                            // Shipment creation failed — order is still paid and in escrow.
+                            // Admin should manually create the shipment in the TCG portal
+                            // for order: order.getOrderNumber()
+                        }
+                    }
                 }
                 case "DELIVERY_ACCEPTED" -> {
                     order.setOrderStatus(Order.OrderStatus.DELIVERED);

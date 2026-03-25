@@ -45,7 +45,7 @@ class ShippingService {
     return response.json();
   }
 
-  // Get pickup points
+  // Get pickup points from TCG API via backend
   async getPickupPoints(filters: {
     type?: 'locker' | 'counter';
     lat?: number;
@@ -53,66 +53,51 @@ class ShippingService {
     search?: string;
     order_closest?: boolean;
   } = {}): Promise<PickupPoint[]> {
-    // Return mock data directly since Pudo API is not working properly
-    return [
-      {
-        pickup_point_id: 'PL001',
-        name: 'PudoLocker - Sandton City',
-        address: 'Sandton City Mall, Johannesburg',
-        lat: -26.1076,
-        lng: 28.0567,
-        type: 'locker',
-        provider: 'pudo'
-      },
-      {
-        pickup_point_id: 'PL002',
-        name: 'PudoLocker - Eastgate',
-        address: 'Eastgate Shopping Centre, Johannesburg',
-        lat: -26.1891,
-        lng: 28.1631,
-        type: 'locker',
-        provider: 'pudo'
-      },
-      {
-        pickup_point_id: 'PL003',
-        name: 'PudoLocker - Rosebank',
-        address: 'Rosebank Mall, Johannesburg',
-        lat: -26.1448,
-        lng: 28.0436,
-        type: 'locker',
-        provider: 'pudo'
-      }
-    ];
+    const lat = filters.lat ?? -26.2041;
+    const lng = filters.lng ?? 28.0473;
+    const response = await fetch(`${API_BASE_URL}/shipping/pickup-points?lat=${lat}&lng=${lng}`);
+    if (!response.ok) throw new Error(`Pickup points unavailable (${response.status})`);
+    const data: any[] = await response.json();
+    // Map TCG response fields to our PickupPoint interface
+    return data.map((p: any) => ({
+      pickup_point_id: p.id ?? p.pickup_point_id,
+      name: p.name,
+      address: [p.address?.street_address, p.address?.local_area, p.address?.city]
+        .filter(Boolean).join(', '),
+      lat: p.lat ?? p.address?.lat ?? 0,
+      lng: p.lng ?? p.address?.lng ?? 0,
+      type: 'locker' as const,
+      provider: 'tcg'
+    }));
   }
 
-  // Get shipping rates
+  // Get shipping rates from TCG API via backend
   async getRates(rateRequest: {
-    collection_address?: any;
-    delivery_address?: any;
-    collection_pickup_point_id?: string;
     delivery_pickup_point_id?: string;
-    parcels: Parcel[];
-    collection_min_date: string;
-    delivery_min_date: string;
+    item_id?: string | number;
+    [key: string]: any;
   }): Promise<ShippingRate[]> {
-    // Return mock rates directly since Pudo API is not working properly
-    const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-    const dayAfter = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString().split('T')[0];
-    
-    return [
-      {
-        service_level_code: 'PUDO_STD',
-        service_level_name: 'PudoLocker Standard',
-        total_cost: 35,
-        delivery_date: dayAfter
+    const token = localStorage.getItem('authToken');
+    const response = await fetch(`${API_BASE_URL}/shipping/rates`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token && { Authorization: `Bearer ${token}` })
       },
-      {
-        service_level_code: 'PUDO_EXP',
-        service_level_name: 'PudoLocker Express',
-        total_cost: 55,
-        delivery_date: tomorrow
-      }
-    ];
+      body: JSON.stringify({
+        delivery_pickup_point_id: rateRequest.delivery_pickup_point_id,
+        item_id: rateRequest.item_id
+      })
+    });
+    if (!response.ok) throw new Error(`Shipping rates unavailable (${response.status})`);
+    const data: any[] = await response.json();
+    // Map TCG rate fields to our ShippingRate interface
+    return data.map((r: any) => ({
+      service_level_code: r.service_level_code ?? r.code,
+      service_level_name: r.service_level_name ?? r.name,
+      total_cost: r.total_cost ?? r.rate ?? 0,
+      delivery_date: r.delivery_date ?? r.estimated_delivery ?? ''
+    }));
   }
 
   // Create shipment
