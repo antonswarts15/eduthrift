@@ -36,6 +36,7 @@ import ShippingPolicyPage from './pages/ShippingPolicyPage';
 import AdminConsolePage from './pages/AdminConsolePage';
 import DeleteAccountPage from './pages/DeleteAccountPage';
 import { useUserStore } from './stores/userStore';
+import { setupPushNotifications } from './services/pushNotifications';
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/react/css/core.css';
@@ -88,6 +89,13 @@ const App: React.FC = () => {
   useEffect(() => {
     if (videoRef.current) {
       videoRef.current.play();
+    }
+  }, []);
+
+  // Register for push notifications once the user is logged in
+  useEffect(() => {
+    if (isLoggedIn()) {
+      setupPushNotifications();
     }
   }, []);
 

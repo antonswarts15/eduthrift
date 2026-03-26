@@ -62,6 +62,9 @@ public class User {
     @Column(name = "street_address")
     private String streetAddress;
 
+    @Column(name = "postal_code")
+    private String postalCode;
+
     @Column(name = "bank_name")
     private String bankName;
 
@@ -76,6 +79,9 @@ public class User {
 
     @Column(name = "tradesafe_token")
     private String tradeSafeToken;
+
+    @Column(name = "fcm_token", length = 512)
+    private String fcmToken;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;

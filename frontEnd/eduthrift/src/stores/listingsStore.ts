@@ -54,6 +54,7 @@ export interface Listing {
   soldOut?: boolean;
   expiryDate: string;
   isExpired?: boolean;
+  largeItem?: boolean;
   // Location-based fields
   sellerLocation?: string;
   locationPriority?: number;
@@ -107,6 +108,7 @@ const mapBackendItem = (item: any): Listing => ({
   soldOut: item.sold_out || item.quantity === 0 || item.status === 'sold',
   expiryDate: item.expiry_date || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
   isExpired: item.is_expired || false,
+  largeItem: item.large_item || false,
   sellerLocation: item.seller_town && item.seller_province ? `${item.seller_town}, ${item.seller_province}` : undefined,
   locationPriority: item.location_priority || 3
 });
@@ -230,7 +232,8 @@ export const useListingsStore = create<ListingsStore>((set, get) => ({
         front_photo: frontPhotoUrl,
         back_photo: backPhotoUrl,
         description: listing.description,
-        quantity: listing.quantity || 1
+        quantity: listing.quantity || 1,
+        large_item: listing.largeItem || false
       };
 
       // Call backend API

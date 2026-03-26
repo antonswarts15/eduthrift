@@ -13,7 +13,7 @@ import java.util.*;
 @Service
 public class TCGShippingService {
 
-    private static final String BASE_URL = "https://api.portal.thecourierguy.co.za";
+    private static final String BASE_URL = "https://api.shiplogic.com";
 
     @Value("${pudo.api.key:}")
     private String apiKey;
@@ -50,12 +50,13 @@ public class TCGShippingService {
         Map<String, Object> body = new HashMap<>();
         body.put("collection_address", buildAddress(seller));
         body.put("delivery_pickup_point_id", deliveryPickupPointId);
+        body.put("delivery_pickup_point_provider", "tcg-locker");
         body.put("parcels", List.of(defaultParcel()));
         body.put("collection_min_date", LocalDate.now().plusDays(1).toString());
         body.put("delivery_min_date", LocalDate.now().plusDays(2).toString());
 
         ResponseEntity<Map> response = restTemplate.exchange(
-                BASE_URL + "/rates",
+                BASE_URL + "/v2/rates",
                 HttpMethod.POST,
                 new HttpEntity<>(body, headers()),
                 Map.class);
@@ -80,6 +81,7 @@ public class TCGShippingService {
                 "email", seller.getEmail()
         ));
         body.put("delivery_pickup_point_id", order.getDeliveryLockerId());
+        body.put("delivery_pickup_point_provider", "tcg-locker");
         body.put("delivery_contact", Map.of(
                 "name", buyer.getFirstName() + " " + buyer.getLastName(),
                 "mobile_number", buyer.getPhone() != null ? buyer.getPhone() : "",
@@ -113,17 +115,53 @@ public class TCGShippingService {
         address.put("city", user.getTown() != null ? user.getTown() : "");
         address.put("zone", user.getProvince() != null ? user.getProvince() : "");
         address.put("country", "ZA");
-        address.put("code", "");
+        address.put("code", user.getPostalCode() != null ? user.getPostalCode() : "");
         return address;
+    }
+
+    /**
+     * Gets shipping rates for courier (door-to-door) delivery of large items.
+     * Used when the item is too large for a locker.
+     */
+    @SuppressWarnings("unchecked")
+    public List<Map<String, Object>> getCourierRates(User seller, User buyer) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("collection_address", buildAddress(seller));
+        body.put("delivery_address", buildAddress(buyer));
+        body.put("parcels", List.of(largeParcel()));
+        body.put("collection_min_date", LocalDate.now().plusDays(1).toString());
+        body.put("delivery_min_date", LocalDate.now().plusDays(2).toString());
+
+        ResponseEntity<Map> response = restTemplate.exchange(
+                BASE_URL + "/v2/rates",
+                HttpMethod.POST,
+                new HttpEntity<>(body, headers()),
+                Map.class);
+        if (response.getBody() == null) return List.of();
+        Object rates = response.getBody().get("rates");
+        if (rates instanceof List<?> list) return (List<Map<String, Object>>) list;
+        return List.of();
     }
 
     private Map<String, Object> defaultParcel() {
         Map<String, Object> parcel = new HashMap<>();
-        parcel.put("parcel_description", "Standard Flyer");
+        parcel.put("packaging", "Standard flyer");
+        parcel.put("parcel_description", "Standard flyer");
         parcel.put("submitted_length_cm", 40);
         parcel.put("submitted_width_cm", 30);
         parcel.put("submitted_height_cm", 10);
         parcel.put("submitted_weight_kg", 1);
+        return parcel;
+    }
+
+    private Map<String, Object> largeParcel() {
+        Map<String, Object> parcel = new HashMap<>();
+        parcel.put("packaging", "Large parcel");
+        parcel.put("parcel_description", "Large parcel");
+        parcel.put("submitted_length_cm", 100);
+        parcel.put("submitted_width_cm", 60);
+        parcel.put("submitted_height_cm", 60);
+        parcel.put("submitted_weight_kg", 10);
         return parcel;
     }
 }

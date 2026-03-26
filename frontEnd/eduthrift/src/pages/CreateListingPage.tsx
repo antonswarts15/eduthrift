@@ -21,7 +21,8 @@ import {
   IonGrid,
   IonRow,
   IonCol,
-  IonAlert
+  IonAlert,
+  IonToggle
 } from '@ionic/react';
 import { addOutline, cameraOutline, checkmarkCircleOutline, warningOutline } from 'ionicons/icons';
 import { useHistory } from 'react-router-dom';
@@ -52,6 +53,7 @@ const CreateListingPage: React.FC = () => {
   
   // Optional fields
   const [sport, setSport] = useState('');
+  const [largeItem, setLargeItem] = useState(false);
   
   // UI state
   const [showToast, setShowToast] = useState(false);
@@ -139,6 +141,7 @@ const CreateListingPage: React.FC = () => {
         frontPhoto: frontPhotoUrl,
         backPhoto: backPhotoUrl,
         quantity: 1,
+        largeItem,
         dateCreated: new Date().toISOString()
       };
 
@@ -247,6 +250,22 @@ const CreateListingPage: React.FC = () => {
                     <IonSelectOption value="Swimming">Swimming</IonSelectOption>
                     <IonSelectOption value="Tennis">Tennis</IonSelectOption>
                   </IonSelect>
+                </IonItem>
+              )}
+
+              {category === 'Sports equipment' && (
+                <IonItem>
+                  <IonLabel>
+                    <h2>Large / Oversized Item</h2>
+                    <p style={{ fontSize: '12px', color: '#666' }}>
+                      Tick for bikes, cricket kits, hockey sticks, golf bags, etc. — too big for a locker. Buyer will need courier delivery.
+                    </p>
+                  </IonLabel>
+                  <IonToggle
+                    slot="end"
+                    checked={largeItem}
+                    onIonChange={e => setLargeItem(e.detail.checked)}
+                  />
                 </IonItem>
               )}
 

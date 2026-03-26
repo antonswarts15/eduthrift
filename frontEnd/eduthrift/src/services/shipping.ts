@@ -100,6 +100,30 @@ class ShippingService {
     }));
   }
 
+  // Get courier (door-to-door) rates for large items — uses buyer's profile address server-side
+  async getCourierRates(itemId: string | number): Promise<ShippingRate[]> {
+    const token = localStorage.getItem('authToken');
+    const response = await fetch(`${API_BASE_URL}/shipping/courier-rates`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token && { Authorization: `Bearer ${token}` })
+      },
+      body: JSON.stringify({ item_id: itemId })
+    });
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error(err.error || `Courier rates unavailable (${response.status})`);
+    }
+    const data: any[] = await response.json();
+    return data.map((r: any) => ({
+      service_level_code: r.service_level_code ?? r.code,
+      service_level_name: r.service_level_name ?? r.name,
+      total_cost: r.total_cost ?? r.rate ?? 0,
+      delivery_date: r.delivery_date ?? r.estimated_delivery ?? ''
+    }));
+  }
+
   // Create shipment
   async createShipment(shipmentData: any) {
     return this.request('/shipping/create-shipment', {

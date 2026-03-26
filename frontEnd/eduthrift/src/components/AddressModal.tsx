@@ -25,6 +25,7 @@ export interface AddressData {
   suburb?: string;
   town?: string;
   province?: string;
+  postalCode?: string;
 }
 
 const AddressModal: React.FC<AddressModalProps> = ({ isOpen, onDismiss, onSave, initialData }) => {
@@ -32,13 +33,14 @@ const AddressModal: React.FC<AddressModalProps> = ({ isOpen, onDismiss, onSave, 
   const [suburb, setSuburb] = useState(initialData?.suburb || '');
   const [town, setTown] = useState(initialData?.town || '');
   const [province, setProvince] = useState(initialData?.province || '');
+  const [postalCode, setPostalCode] = useState(initialData?.postalCode || '');
 
   const handleSave = () => {
-    if (!suburb || !town || !province) {
+    if (!streetAddress || !suburb || !town || !province) {
       alert('Please fill in all required fields');
       return;
     }
-    onSave({ streetAddress, suburb, town, province });
+    onSave({ streetAddress, suburb, town, province, postalCode });
   };
 
   return (
@@ -54,11 +56,12 @@ const AddressModal: React.FC<AddressModalProps> = ({ isOpen, onDismiss, onSave, 
       <IonContent>
         <IonList>
           <IonItem>
-            <IonLabel position="stacked">Street Address (Optional)</IonLabel>
+            <IonLabel position="stacked">Street Address *</IonLabel>
             <IonInput
               value={streetAddress}
               onIonInput={e => setStreetAddress((e.target as HTMLIonInputElement).value as string || '')}
               placeholder="123 Main Street"
+              required
             />
           </IonItem>
           <IonItem>
@@ -86,6 +89,15 @@ const AddressModal: React.FC<AddressModalProps> = ({ isOpen, onDismiss, onSave, 
               onIonInput={e => setProvince((e.target as HTMLIonInputElement).value as string || '')}
               placeholder="Gauteng"
               required
+            />
+          </IonItem>
+          <IonItem>
+            <IonLabel position="stacked">Postal Code</IonLabel>
+            <IonInput
+              value={postalCode}
+              onIonInput={e => setPostalCode((e.target as HTMLIonInputElement).value as string || '')}
+              placeholder="0181"
+              inputmode="numeric"
             />
           </IonItem>
         </IonList>

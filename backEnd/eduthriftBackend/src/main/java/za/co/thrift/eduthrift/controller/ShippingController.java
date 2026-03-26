@@ -80,4 +80,48 @@ public class ShippingController {
             return ResponseEntity.status(503).body(Map.of("error", "Could not calculate shipping rates"));
         }
     }
+
+    /**
+     * Returns courier rates for large-item door-to-door delivery.
+     * Uses the seller's address (from item) and buyer's address (from their profile).
+     * Neither party sees the other's address — it stays server-side.
+     * Request body: { "item_id": 123 }
+     */
+    @PostMapping("/courier-rates")
+    public ResponseEntity<?> getCourierRates(@RequestBody Map<String, Object> request,
+                                             Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(401).body(Map.of("error", "Not authenticated"));
+        }
+
+        Object itemIdRaw = request.get("item_id");
+        if (itemIdRaw == null) {
+            return ResponseEntity.badRequest().body(Map.of("error", "item_id is required"));
+        }
+        Long itemId = Long.valueOf(itemIdRaw.toString());
+        Optional<Item> itemOpt = itemRepository.findById(itemId);
+        if (itemOpt.isEmpty()) {
+            return ResponseEntity.status(404).body(Map.of("error", "Item not found"));
+        }
+
+        User seller = itemOpt.get().getUser();
+
+        String buyerEmail = authentication.getName();
+        Optional<User> buyerOpt = userRepository.findByEmail(buyerEmail);
+        if (buyerOpt.isEmpty()) {
+            return ResponseEntity.status(404).body(Map.of("error", "Buyer profile not found"));
+        }
+        User buyer = buyerOpt.get();
+
+        if (buyer.getStreetAddress() == null || buyer.getStreetAddress().isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Please complete your delivery address in your profile before selecting courier delivery"));
+        }
+
+        try {
+            List<Map<String, Object>> rates = tcgShippingService.getCourierRates(seller, buyer);
+            return ResponseEntity.ok(rates);
+        } catch (Exception e) {
+            return ResponseEntity.status(503).body(Map.of("error", "Could not calculate courier rates"));
+        }
+    }
 }

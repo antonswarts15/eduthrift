@@ -23,9 +23,11 @@ const PersonalDetailsPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [schoolName, setSchoolName] = useState('');
+  const [streetAddress, setStreetAddress] = useState('');
   const [suburb, setSuburb] = useState('');
   const [town, setTown] = useState('');
   const [province, setProvince] = useState('');
+  const [postalCode, setPostalCode] = useState('');
   const [loading, setLoading] = useState(true);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
@@ -44,9 +46,11 @@ const PersonalDetailsPage: React.FC = () => {
         setEmail(profile.email);
         setPhone(profile.phone || '');
         setSchoolName(profile.schoolName || '');
+        setStreetAddress(profile.streetAddress || '');
         setSuburb(profile.suburb || '');
         setTown(profile.town || '');
         setProvince(profile.province || '');
+        setPostalCode(profile.postalCode || '');
       } catch (error) {
         console.error('Failed to fetch profile', error);
         setToastMessage('Could not load profile data.');
@@ -62,7 +66,7 @@ const PersonalDetailsPage: React.FC = () => {
   const handleUpdate = async () => {
     setLoading(true);
     try {
-      const updateData = { firstName, lastName, phone, schoolName, suburb, town, province };
+      const updateData = { firstName, lastName, phone, schoolName, streetAddress, suburb, town, province, postalCode };
       await userApi.updateProfile(updateData);
       setToastMessage('Profile updated successfully!');
       setShowToast(true);
@@ -152,6 +156,14 @@ const PersonalDetailsPage: React.FC = () => {
           <IonItem>
             <IonLabel position="stacked">Province</IonLabel>
             <IonInput value={province} onIonInput={e => setProvince((e.target as HTMLIonInputElement).value as string || '')} />
+          </IonItem>
+          <IonItem>
+            <IonLabel position="stacked">Street Address</IonLabel>
+            <IonInput value={streetAddress} onIonInput={e => setStreetAddress((e.target as HTMLIonInputElement).value as string || '')} placeholder="e.g., 12 Main Street" />
+          </IonItem>
+          <IonItem>
+            <IonLabel position="stacked">Postal Code</IonLabel>
+            <IonInput value={postalCode} onIonInput={e => setPostalCode((e.target as HTMLIonInputElement).value as string || '')} placeholder="e.g., 0181" inputmode="numeric" />
           </IonItem>
         </IonList>
         <IonButton expand="full" onClick={handleUpdate} style={{ margin: '20px' }}>

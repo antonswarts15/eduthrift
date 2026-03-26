@@ -173,6 +173,7 @@ public class AuthController {
             if (updates.containsKey("town")) user.setTown((String) updates.get("town"));
             if (updates.containsKey("province")) user.setProvince((String) updates.get("province"));
             if (updates.containsKey("streetAddress")) user.setStreetAddress((String) updates.get("streetAddress"));
+            if (updates.containsKey("postalCode")) user.setPostalCode((String) updates.get("postalCode"));
             if (updates.containsKey("bankName")) user.setBankName((String) updates.get("bankName"));
             if (updates.containsKey("bankAccountNumber")) user.setBankAccountNumber((String) updates.get("bankAccountNumber"));
             if (updates.containsKey("bankAccountType")) user.setBankAccountType((String) updates.get("bankAccountType"));
@@ -183,6 +184,25 @@ public class AuthController {
         } catch (Exception e) {
             return ResponseEntity.status(500).body(new ErrorResponse("Failed to update profile. Please try again."));
         }
+    }
+
+    @PutMapping("/fcm-token")
+    public ResponseEntity<?> saveFcmToken(@RequestBody Map<String, Object> body, Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(401).body(new ErrorResponse("Not authenticated"));
+        }
+        String token = (String) body.get("fcmToken");
+        if (token == null || token.isBlank()) {
+            return ResponseEntity.badRequest().body(new ErrorResponse("fcmToken is required"));
+        }
+        String email = authentication.getName();
+        Optional<User> userOpt = userRepository.findByEmail(email);
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.status(404).body(new ErrorResponse("User not found"));
+        }
+        userOpt.get().setFcmToken(token);
+        userRepository.save(userOpt.get());
+        return ResponseEntity.ok(Map.of("message", "FCM token saved"));
     }
 
     @PostMapping("/upload-id-document")
@@ -341,6 +361,7 @@ public class AuthController {
         private String suburb;
         private String province;
         private String streetAddress;
+        private String postalCode;
         private String idDocumentPath;
         private String proofOfResidencePath;
         private String verificationStatus;
@@ -362,6 +383,7 @@ public class AuthController {
             this.suburb = user.getSuburb();
             this.province = user.getProvince();
             this.streetAddress = user.getStreetAddress();
+            this.postalCode = user.getPostalCode();
             this.idDocumentPath = user.getIdDocumentUrl();
             this.proofOfResidencePath = user.getProofOfAddressUrl();
             this.verificationStatus = user.getVerificationStatus();
@@ -383,6 +405,7 @@ public class AuthController {
         public String getSuburb() { return suburb; }
         public String getProvince() { return province; }
         public String getStreetAddress() { return streetAddress; }
+        public String getPostalCode() { return postalCode; }
         public String getIdDocumentPath() { return idDocumentPath; }
         public String getProofOfResidencePath() { return proofOfResidencePath; }
         public String getVerificationStatus() { return verificationStatus; }

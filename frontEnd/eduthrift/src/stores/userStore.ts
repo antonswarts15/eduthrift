@@ -9,6 +9,7 @@ export interface UserProfile {
   phone: string;
   address?: string;
   streetAddress?: string;
+  postalCode?: string;
   town?: string;
   suburb?: string;
   province?: string;

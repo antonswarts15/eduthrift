@@ -59,10 +59,13 @@ const CheckoutPage: React.FC = () => {
 
   // Check if address is missing and show modal
   useEffect(() => {
-    if (userProfile && !userProfile.suburb && !userProfile.town) {
+    if (!userProfile) return;
+    const missingBasic = !userProfile.suburb && !userProfile.town;
+    const missingStreet = isLargeItem && !userProfile.streetAddress;
+    if (missingBasic || missingStreet) {
       setShowAddressModal(true);
     }
-  }, [userProfile]);
+  }, [userProfile, isLargeItem]);
 
   // Set up webhook callbacks
   useEffect(() => {
@@ -79,6 +82,9 @@ const CheckoutPage: React.FC = () => {
   const items = Array.isArray(locationItems) ? locationItems : 
                 Array.isArray(cartItems) ? cartItems : [];
   
+  // Detect if any item in the cart is oversized (requires courier, not locker)
+  const isLargeItem = items.some((item: any) => item.largeItem === true);
+
   const [pickupPoints, setPickupPoints] = useState<PickupPoint[]>([]);
   const [selectedPickupPoint, setSelectedPickupPoint] = useState<string>('');
   const [shippingRates, setShippingRates] = useState<ShippingRate[]>([]);
@@ -149,12 +155,12 @@ const CheckoutPage: React.FC = () => {
     }
   };
 
-  // Add a specific effect to reload pickup points when userProfile changes
+  // Load pickup points only for normal (non-large) items
   useEffect(() => {
-    if (userProfile && (userProfile.suburb || userProfile.town)) {
-        loadNearbyPickupPoints();
+    if (!isLargeItem && userProfile && (userProfile.suburb || userProfile.town)) {
+      loadNearbyPickupPoints();
     }
-  }, [userProfile]); // This dependency ensures it runs when profile is loaded/updated
+  }, [userProfile, isLargeItem]);
 
   if (!items || items.length === 0) {
     return (
@@ -173,19 +179,24 @@ const CheckoutPage: React.FC = () => {
     if (!items.length) return;
     try {
       setLoading(true);
-      const rateRequest = {
-        delivery_pickup_point_id: selectedPickupPoint,
-        item_id: items[0]?.id
-      };
-      const rates = await ShippingService.getRates(rateRequest);
-      if (Array.isArray(rates)) {
+      let rates: ShippingRate[];
+      if (isLargeItem) {
+        rates = await ShippingService.getCourierRates(items[0]?.id);
+      } else {
+        rates = await ShippingService.getRates({
+          delivery_pickup_point_id: selectedPickupPoint,
+          item_id: items[0]?.id
+        });
+      }
+      if (Array.isArray(rates) && rates.length > 0) {
         setShippingRates(rates);
       } else {
-        console.error('Invalid shipping rates response:', rates);
         setShippingRates([]);
+        setToastMessage('No shipping rates available. Please check your address and try again.');
+        setShowToast(true);
       }
-    } catch {
-      setToastMessage('Failed to calculate shipping rates. Please try again.');
+    } catch (err: any) {
+      setToastMessage(err.message || 'Failed to calculate shipping rates. Please try again.');
       setShowToast(true);
     } finally {
       setLoading(false);
@@ -217,7 +228,9 @@ const CheckoutPage: React.FC = () => {
       status: 'pending_payment',
       paymentMethod,
       paymentStatus: 'pending',
-      pickupPoint: pickupPoints.find(p => p.pickup_point_id === selectedPickupPoint)?.name || selectedPickupPoint
+      pickupPoint: isLargeItem
+        ? 'Courier delivery'
+        : (pickupPoints.find(p => p.pickup_point_id === selectedPickupPoint)?.name || selectedPickupPoint)
     });
     addNotification('Order Created', `Your order ${orderId} is pending payment.`);
 
@@ -229,8 +242,10 @@ const CheckoutPage: React.FC = () => {
           itemId: firstItem.id,
           quantity: 1,
           shippingCost: shippingCost,
-          pickupPoint: pickupPoints.find(p => p.pickup_point_id === selectedPickupPoint)?.name || selectedPickupPoint,
-          deliveryLockerId: selectedPickupPoint,
+          pickupPoint: isLargeItem
+            ? 'Courier delivery'
+            : (pickupPoints.find(p => p.pickup_point_id === selectedPickupPoint)?.name || selectedPickupPoint),
+          deliveryLockerId: isLargeItem ? '' : selectedPickupPoint,
           serviceLevelCode: selectedRate
         });
         const backendOrderNumber = orderResponse.data.orderNumber;
@@ -293,43 +308,70 @@ const CheckoutPage: React.FC = () => {
         </IonCardContent>
       </IonCard>
 
-      <IonCard>
-        <IonCardHeader>
-          <IonCardTitle>Select Pickup Point</IonCardTitle>
-        </IonCardHeader>
-        <IonCardContent>
-          <p style={{ margin: '0 0 16px 0', fontSize: '14px', color: '#666' }}>
-            <strong>Your Address:</strong> {userProfile?.suburb || userProfile?.town || userProfile?.province ?
-              `${userProfile.suburb || 'N/A'}, ${userProfile.town || 'N/A'}, ${userProfile.province || 'N/A'}` :
-              'Address not set'
-            }
-          </p>
-          {pickupPoints.length > 0 ? (
-            <IonRadioGroup value={selectedPickupPoint} onIonChange={e => setSelectedPickupPoint(e.detail.value)}>
-              {pickupPoints.map((point, index) => (
-                <IonItem key={point.pickup_point_id} button onClick={() => setSelectedPickupPoint(point.pickup_point_id)}>
-                  <IonIcon icon={locationOutline} slot="start" />
-                  <IonLabel>
-                    <h3>{point.name} {index === 0 ? '(Nearest)' : ''}</h3>
-                    <p>{point.address}</p>
-                  </IonLabel>
-                  <IonRadio slot="end" value={point.pickup_point_id} />
-                </IonItem>
-              ))}
-            </IonRadioGroup>
-          ) : (
-            <p>Loading pickup points...</p>
-          )}
-        </IonCardContent>
-      </IonCard>
+      {isLargeItem ? (
+        <IonCard>
+          <IonCardHeader>
+            <IonCardTitle>Courier Delivery</IonCardTitle>
+          </IonCardHeader>
+          <IonCardContent>
+            <div style={{ padding: '10px', backgroundColor: '#fff3cd', borderRadius: '8px', marginBottom: '12px' }}>
+              <p style={{ margin: 0, fontSize: '13px', color: '#856404' }}>
+                This item is too large for a locker. It will be delivered to your home or business address by courier.
+              </p>
+            </div>
+            <p style={{ margin: '0 0 4px 0', fontSize: '14px', color: '#666' }}>
+              <strong>Delivery address:</strong>
+            </p>
+            <p style={{ margin: '0 0 12px 0', fontSize: '14px' }}>
+              {userProfile?.streetAddress
+                ? `${userProfile.streetAddress}, ${userProfile.suburb || ''}, ${userProfile.town || ''}, ${userProfile.province || ''} ${userProfile.postalCode || ''}`.replace(/,\s*,/g, ',').trim()
+                : 'No street address on profile — please update your profile first.'}
+            </p>
+            {!userProfile?.streetAddress && (
+              <IonButton size="small" fill="outline" onClick={() => setShowAddressModal(true)}>
+                Add Delivery Address
+              </IonButton>
+            )}
+          </IonCardContent>
+        </IonCard>
+      ) : (
+        <IonCard>
+          <IonCardHeader>
+            <IonCardTitle>Select Pickup Point</IonCardTitle>
+          </IonCardHeader>
+          <IonCardContent>
+            <p style={{ margin: '0 0 16px 0', fontSize: '14px', color: '#666' }}>
+              <strong>Your area:</strong> {userProfile?.suburb || userProfile?.town || userProfile?.province
+                ? `${userProfile.suburb || ''}, ${userProfile.town || ''}, ${userProfile.province || ''}`
+                : 'Address not set'}
+            </p>
+            {pickupPoints.length > 0 ? (
+              <IonRadioGroup value={selectedPickupPoint} onIonChange={e => setSelectedPickupPoint(e.detail.value)}>
+                {pickupPoints.map((point, index) => (
+                  <IonItem key={point.pickup_point_id} button onClick={() => setSelectedPickupPoint(point.pickup_point_id)}>
+                    <IonIcon icon={locationOutline} slot="start" />
+                    <IonLabel>
+                      <h3>{point.name} {index === 0 ? '(Nearest)' : ''}</h3>
+                      <p>{point.address}</p>
+                    </IonLabel>
+                    <IonRadio slot="end" value={point.pickup_point_id} />
+                  </IonItem>
+                ))}
+              </IonRadioGroup>
+            ) : (
+              <p>Loading pickup points...</p>
+            )}
+          </IonCardContent>
+        </IonCard>
+      )}
 
-      <IonButton 
-        expand="block" 
+      <IonButton
+        expand="block"
         onClick={calculateShipping}
-        disabled={!selectedPickupPoint}
+        disabled={isLargeItem ? !userProfile?.streetAddress : !selectedPickupPoint}
         style={{ margin: '16px 0' }}
       >
-        Calculate Shipping
+        {isLargeItem ? 'Get Courier Rates' : 'Calculate Shipping'}
       </IonButton>
 
       {shippingRates.length > 0 && (
@@ -393,7 +435,8 @@ const CheckoutPage: React.FC = () => {
           streetAddress: userProfile?.streetAddress,
           suburb: userProfile?.suburb,
           town: userProfile?.town,
-          province: userProfile?.province
+          province: userProfile?.province,
+          postalCode: userProfile?.postalCode
         }}
       />
 

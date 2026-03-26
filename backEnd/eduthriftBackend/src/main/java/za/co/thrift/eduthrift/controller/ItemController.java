@@ -55,6 +55,7 @@ public class ItemController {
             item.setFrontPhoto(request.frontPhoto);
             item.setBackPhoto(request.backPhoto);
             item.setQuantity(request.quantity != null ? request.quantity : 1);
+            item.setLargeItem(request.largeItem != null && request.largeItem);
             item.setStatus(Item.ItemStatus.AVAILABLE);
 
             if (request.price == null) {
@@ -259,6 +260,7 @@ public class ItemController {
         map.put("sold_out", item.getQuantity() != null && item.getQuantity() == 0);
         map.put("created_at", item.getCreatedAt() != null ? item.getCreatedAt().toString() : null);
         map.put("updated_at", item.getUpdatedAt() != null ? item.getUpdatedAt().toString() : null);
+        map.put("large_item", item.getLargeItem() != null && item.getLargeItem());
         map.put("seller_town", user.getTown());
         map.put("seller_province", user.getProvince());
         return map;
@@ -287,5 +289,7 @@ public class ItemController {
         public String backPhoto;
         public String description;
         public Integer quantity;
+        @JsonProperty("large_item")
+        public Boolean largeItem;
     }
 }

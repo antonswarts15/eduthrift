@@ -63,6 +63,8 @@ export const userApi = {
       },
     });
   },
+
+  saveFcmToken: (fcmToken: string) => api.put('/auth/fcm-token', { fcmToken }),
 };
 
 // Wishlist API

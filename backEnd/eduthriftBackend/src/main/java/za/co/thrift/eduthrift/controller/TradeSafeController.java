@@ -7,6 +7,7 @@ import za.co.thrift.eduthrift.entity.Order;
 import za.co.thrift.eduthrift.entity.User;
 import za.co.thrift.eduthrift.repository.OrderRepository;
 import za.co.thrift.eduthrift.repository.UserRepository;
+import za.co.thrift.eduthrift.service.FCMNotificationService;
 import za.co.thrift.eduthrift.service.TCGShippingService;
 import za.co.thrift.eduthrift.service.TradeSafeService;
 
@@ -20,15 +21,18 @@ public class TradeSafeController {
     private final TCGShippingService tcgShippingService;
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
+    private final FCMNotificationService fcmNotificationService;
 
     public TradeSafeController(TradeSafeService tradeSafeService,
                                 TCGShippingService tcgShippingService,
                                 OrderRepository orderRepository,
-                                UserRepository userRepository) {
+                                UserRepository userRepository,
+                                FCMNotificationService fcmNotificationService) {
         this.tradeSafeService = tradeSafeService;
         this.tcgShippingService = tcgShippingService;
         this.orderRepository = orderRepository;
         this.userRepository = userRepository;
+        this.fcmNotificationService = fcmNotificationService;
     }
 
     /**
@@ -65,6 +69,16 @@ public class TradeSafeController {
                     order.setPaymentStatus(Order.PaymentStatus.CAPTURED);
                     order.setOrderStatus(Order.OrderStatus.PAYMENT_CONFIRMED);
                     order.setEscrowStatus(Order.EscrowStatus.HELD);
+                    fcmNotificationService.send(
+                            order.getBuyer().getFcmToken(),
+                            "Payment Received",
+                            "Your payment for order " + order.getOrderNumber() + " is held in escrow. The seller will ship your item shortly."
+                    );
+                    fcmNotificationService.send(
+                            order.getSeller().getFcmToken(),
+                            "Payment Secured — Please Ship",
+                            "Funds for order " + order.getOrderNumber() + " are held in escrow. Please ship the item."
+                    );
 
                     // Create TCG shipment now that funds are secured in escrow
                     if (order.getDeliveryLockerId() != null && order.getServiceLevelCode() != null) {
@@ -95,15 +109,30 @@ public class TradeSafeController {
                     order.setOrderStatus(Order.OrderStatus.COMPLETED);
                     order.setEscrowStatus(Order.EscrowStatus.RELEASED_TO_SELLER);
                     order.setPayoutStatus(Order.PayoutStatus.COMPLETED);
+                    fcmNotificationService.send(
+                            order.getSeller().getFcmToken(),
+                            "Payment Released",
+                            "Funds for order " + order.getOrderNumber() + " have been released to your account."
+                    );
                 }
                 case "CANCELLED", "DECLINED" -> {
                     order.setPaymentStatus(Order.PaymentStatus.FAILED);
                     order.setOrderStatus(Order.OrderStatus.CANCELLED);
+                    fcmNotificationService.send(
+                            order.getBuyer().getFcmToken(),
+                            "Order Cancelled",
+                            "Your order " + order.getOrderNumber() + " has been cancelled."
+                    );
                 }
                 case "REFUNDED" -> {
                     order.setPaymentStatus(Order.PaymentStatus.REFUNDED);
                     order.setOrderStatus(Order.OrderStatus.REFUNDED);
                     order.setEscrowStatus(Order.EscrowStatus.REFUNDED_TO_BUYER);
+                    fcmNotificationService.send(
+                            order.getBuyer().getFcmToken(),
+                            "Refund Processed",
+                            "Your refund for order " + order.getOrderNumber() + " has been processed."
+                    );
                 }
                 default -> { /* Unknown state — log and ignore */ }
             }

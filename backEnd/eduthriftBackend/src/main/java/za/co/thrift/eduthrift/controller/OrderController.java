@@ -10,6 +10,7 @@ import za.co.thrift.eduthrift.repository.ItemRepository;
 import za.co.thrift.eduthrift.repository.OrderRepository;
 import za.co.thrift.eduthrift.repository.UserRepository;
 import za.co.thrift.eduthrift.service.EscrowService;
+import za.co.thrift.eduthrift.service.FCMNotificationService;
 import za.co.thrift.eduthrift.service.TradeSafeService;
 
 import java.math.BigDecimal;
@@ -24,15 +25,17 @@ public class OrderController {
     private final ItemRepository itemRepository;
     private final EscrowService escrowService;
     private final TradeSafeService tradeSafeService;
+    private final FCMNotificationService fcmNotificationService;
 
     public OrderController(OrderRepository orderRepository, UserRepository userRepository,
                            ItemRepository itemRepository, EscrowService escrowService,
-                           TradeSafeService tradeSafeService) {
+                           TradeSafeService tradeSafeService, FCMNotificationService fcmNotificationService) {
         this.orderRepository = orderRepository;
         this.userRepository = userRepository;
         this.itemRepository = itemRepository;
         this.escrowService = escrowService;
         this.tradeSafeService = tradeSafeService;
+        this.fcmNotificationService = fcmNotificationService;
     }
 
     @PostMapping
@@ -70,6 +73,14 @@ public class OrderController {
         order.setServiceLevelCode(request.serviceLevelCode);
 
         Order saved = orderRepository.save(order);
+
+        // Notify seller about new order
+        fcmNotificationService.send(
+                seller.getFcmToken(),
+                "New Order Received",
+                "You have a new order for " + item.getItemName() + " (" + saved.getOrderNumber() + ")"
+        );
+
         return ResponseEntity.ok(toResponse(saved));
     }
 
@@ -133,6 +144,33 @@ public class OrderController {
                     } catch (Exception ignored) {
                         // Non-fatal: order is still marked shipped; TradeSafe will be retried via callback
                     }
+                }
+
+                // Notify the relevant party based on the new status
+                switch (newStatus) {
+                    case SHIPPED -> fcmNotificationService.send(
+                            order.getBuyer().getFcmToken(),
+                            "Your Order is On Its Way",
+                            "Order " + orderNumber + " has been shipped. Check your orders for tracking details."
+                    );
+                    case DELIVERED -> fcmNotificationService.send(
+                            order.getBuyer().getFcmToken(),
+                            "Order Delivered",
+                            "Order " + orderNumber + " has been delivered. Please confirm receipt in the app."
+                    );
+                    case CANCELLED -> {
+                        fcmNotificationService.send(
+                                order.getBuyer().getFcmToken(),
+                                "Order Cancelled",
+                                "Order " + orderNumber + " has been cancelled."
+                        );
+                        fcmNotificationService.send(
+                                order.getSeller().getFcmToken(),
+                                "Order Cancelled",
+                                "Order " + orderNumber + " has been cancelled."
+                        );
+                    }
+                    default -> { /* no notification for other transitions */ }
                 }
 
                 return ResponseEntity.ok(toResponse(order));

@@ -61,6 +61,9 @@ public class Item {
     @Column(columnDefinition = "INT DEFAULT 1")
     private Integer quantity = 1;
 
+    @Column(name = "large_item", columnDefinition = "BOOLEAN DEFAULT false")
+    private Boolean largeItem = false;
+
     @Enumerated(EnumType.STRING)
     private ItemStatus status = ItemStatus.AVAILABLE;
 
