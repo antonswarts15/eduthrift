@@ -50,6 +50,13 @@ const CheckoutPage: React.FC = () => {
   const { decreaseQuantity } = useListingsStore();
   const { addNotification } = useNotificationStore();
 
+  const locationItems = (location.state as any)?.items;
+  const items = Array.isArray(locationItems) ? locationItems :
+                Array.isArray(cartItems) ? cartItems : [];
+
+  // Detect if any item in the cart is oversized (requires courier, not locker)
+  const isLargeItem = items.some((item: any) => item.largeItem === true);
+
   // Fetch user profile when the component mounts
   useEffect(() => {
     if (!userProfile) {
@@ -77,13 +84,6 @@ const CheckoutPage: React.FC = () => {
     };
     ShippingWebhookService.setCallbacks(addNotification, handleOrderStatusUpdate);
   }, [addNotification, updateOrderStatus]);
-  
-  const locationItems = (location.state as any)?.items;
-  const items = Array.isArray(locationItems) ? locationItems : 
-                Array.isArray(cartItems) ? cartItems : [];
-  
-  // Detect if any item in the cart is oversized (requires courier, not locker)
-  const isLargeItem = items.some((item: any) => item.largeItem === true);
 
   const [pickupPoints, setPickupPoints] = useState<PickupPoint[]>([]);
   const [selectedPickupPoint, setSelectedPickupPoint] = useState<string>('');
