@@ -52,7 +52,7 @@ services:
       TRADESAFE_CLIENT_SECRET: ${TRADESAFE_CLIENT_SECRET}
       TRADESAFE_API_URL: ${TRADESAFE_API_URL:-https://api.tradesafe.co.za}
     volumes:
-      - /home/almalinux/eduthrift-uploads:/app/uploads
+      - /home/almalinux/eduthrift-uploads:/app/uploads:z
     depends_on:
       mysql:
         condition: service_healthy
