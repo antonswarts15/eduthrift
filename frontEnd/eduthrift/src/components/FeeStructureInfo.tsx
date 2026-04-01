@@ -49,22 +49,15 @@ const FeeStructureInfo: React.FC = () => {
               <IonCardContent>
                 <IonItem lines="none">
                   <IonLabel>
-                    <h3>Service Fee (10%)</h3>
-                    <p>Covers secure payments, buyer protection, escrow services, and platform maintenance</p>
+                    <h3>Platform Fee (10%) — charged to seller</h3>
+                    <p>Deducted from the seller's payout. Covers TradeSafe escrow fees, payment processing, buyer protection, and platform maintenance. Buyers pay no platform fee.</p>
                   </IonLabel>
                 </IonItem>
-                
+
                 <IonItem lines="none">
                   <IonLabel>
-                    <h3>Shipping Fee</h3>
-                    <p>Pudo/CourierGuy delivery costs - varies by distance and service level</p>
-                  </IonLabel>
-                </IonItem>
-                
-                <IonItem lines="none">
-                  <IonLabel>
-                    <h3>Payment Processing</h3>
-                    <p>Paystack fees (2.9% + R2) are included in our service fee - no extra charges</p>
+                    <h3>Shipping Fee — paid by buyer</h3>
+                    <p>Pudo locker or CourierGuy delivery cost, calculated at checkout based on distance and service level. This goes directly to the carrier and is not part of the platform fee.</p>
                   </IonLabel>
                 </IonItem>
               </IonCardContent>

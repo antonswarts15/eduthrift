@@ -123,11 +123,14 @@ public class Order {
     }
 
     private void calculateFees() {
-        if (totalAmount != null) {
-            platformFee = totalAmount.multiply(BigDecimal.valueOf(0.10));
-            paymentProcessingFee = totalAmount.multiply(BigDecimal.valueOf(0.025));
-            sellerPayout = totalAmount.subtract(platformFee).subtract(paymentProcessingFee);
-            escrowAmount = totalAmount;
+        if (itemPrice != null && quantity != null) {
+            BigDecimal itemTotal = itemPrice.multiply(BigDecimal.valueOf(quantity));
+            // 10% platform fee covers TradeSafe escrow fees + Eduthrift margin, charged to seller
+            platformFee = itemTotal.multiply(BigDecimal.valueOf(0.10))
+                    .setScale(2, java.math.RoundingMode.HALF_UP);
+            paymentProcessingFee = BigDecimal.ZERO; // absorbed in platform fee
+            sellerPayout = itemTotal.subtract(platformFee);
+            escrowAmount = itemTotal; // shipping is a pass-through to the carrier, not held in escrow
         }
     }
 

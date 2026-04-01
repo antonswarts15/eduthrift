@@ -12,9 +12,11 @@ import java.util.Optional;
 public class EscrowService {
 
     private final OrderRepository orderRepository;
+    private final TradeSafeService tradeSafeService;
 
-    public EscrowService(OrderRepository orderRepository) {
+    public EscrowService(OrderRepository orderRepository, TradeSafeService tradeSafeService) {
         this.orderRepository = orderRepository;
+        this.tradeSafeService = tradeSafeService;
     }
 
     @Transactional
@@ -63,7 +65,17 @@ public class EscrowService {
         order.setOrderStatus(Order.OrderStatus.DELIVERED);
         orderRepository.save(order);
 
-        releaseToSeller(orderNumber);
+        // Tell TradeSafe the buyer has accepted delivery — this triggers fund release to the seller.
+        // TradeSafe will then POST back DELIVERY_ACCEPTED + COMPLETED to our /tradesafe/callback.
+        if (order.getTradeSafeAllocationId() != null) {
+            try {
+                tradeSafeService.acceptDelivery(order.getTradeSafeAllocationId());
+            } catch (Exception ignored) {
+                // Non-fatal: order is marked delivered locally.
+                // Admin should manually accept delivery in TradeSafe portal
+                // for transaction: order.getTradeSafeTransactionId()
+            }
+        }
     }
 
     private void processPayout(Order order) {

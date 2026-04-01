@@ -24,9 +24,10 @@ import {
   IonIcon,
   IonGrid,
   IonRow,
-  IonCol
+  IonCol,
+  IonSearchbar
 } from '@ionic/react';
-import { locationOutline, timeOutline, cashOutline } from 'ionicons/icons';
+import { locationOutline, timeOutline, cashOutline, checkmarkCircleOutline, arrowUndoOutline } from 'ionicons/icons';
 import { useHistory, useLocation } from 'react-router-dom';
 import ShippingService, { PickupPoint, ShippingRate } from '../services/shipping';
 import { useCartStore } from '../stores/cartStore';
@@ -87,6 +88,8 @@ const CheckoutPage: React.FC = () => {
 
   const [pickupPoints, setPickupPoints] = useState<PickupPoint[]>([]);
   const [selectedPickupPoint, setSelectedPickupPoint] = useState<string>('');
+  const [pickupLocked, setPickupLocked] = useState(false);
+  const [pickupSearch, setPickupSearch] = useState('');
   const [shippingRates, setShippingRates] = useState<ShippingRate[]>([]);
 
   const [selectedRate, setSelectedRate] = useState<string>('');
@@ -340,39 +343,71 @@ const CheckoutPage: React.FC = () => {
             <IonCardTitle>Select Pickup Point</IonCardTitle>
           </IonCardHeader>
           <IonCardContent>
-            <p style={{ margin: '0 0 16px 0', fontSize: '14px', color: '#666' }}>
+            <p style={{ margin: '0 0 8px 0', fontSize: '14px', color: '#666' }}>
               <strong>Your area:</strong> {userProfile?.suburb || userProfile?.town || userProfile?.province
                 ? `${userProfile.suburb || ''}, ${userProfile.town || ''}, ${userProfile.province || ''}`
                 : 'Address not set'}
             </p>
             {pickupPoints.length > 0 ? (
-              <IonRadioGroup value={selectedPickupPoint} onIonChange={e => setSelectedPickupPoint(e.detail.value)}>
-                {pickupPoints.map((point, index) => (
-                  <IonItem key={point.pickup_point_id} button onClick={() => setSelectedPickupPoint(point.pickup_point_id)}>
-                    <IonIcon icon={locationOutline} slot="start" />
-                    <IonLabel>
-                      <h3>{point.name} {index === 0 ? '(Nearest)' : ''}</h3>
-                      <p>{point.address}</p>
-                    </IonLabel>
-                    <IonRadio slot="end" value={point.pickup_point_id} />
-                  </IonItem>
-                ))}
-              </IonRadioGroup>
+              pickupLocked ? (
+                <>
+                  {(() => {
+                    const locked = pickupPoints.find(p => p.pickup_point_id === selectedPickupPoint);
+                    return locked ? (
+                      <IonItem>
+                        <IonIcon icon={checkmarkCircleOutline} slot="start" color="success" />
+                        <IonLabel>
+                          <h3>{locked.name}</h3>
+                          <p>{locked.address}</p>
+                        </IonLabel>
+                      </IonItem>
+                    ) : null;
+                  })()}
+                  <IonButton fill="outline" size="small" onClick={() => setPickupLocked(false)} style={{ marginTop: '8px' }}>
+                    <IonIcon icon={arrowUndoOutline} slot="start" />
+                    Change Pickup Point
+                  </IonButton>
+                </>
+              ) : (
+                <>
+                  <IonSearchbar
+                    value={pickupSearch}
+                    onIonInput={e => setPickupSearch((e.target as HTMLIonSearchbarElement).value || '')}
+                    placeholder="Search pickup points..."
+                    style={{ padding: '0 0 8px 0' }}
+                  />
+                  <IonRadioGroup value={selectedPickupPoint} onIonChange={e => {
+                    setSelectedPickupPoint(e.detail.value);
+                    setPickupLocked(true);
+                  }}>
+                    {pickupPoints
+                      .filter(p =>
+                        !pickupSearch ||
+                        p.name.toLowerCase().includes(pickupSearch.toLowerCase()) ||
+                        p.address.toLowerCase().includes(pickupSearch.toLowerCase())
+                      )
+                      .map((point, index) => (
+                        <IonItem key={point.pickup_point_id} button onClick={() => {
+                          setSelectedPickupPoint(point.pickup_point_id);
+                          setPickupLocked(true);
+                        }}>
+                          <IonIcon icon={locationOutline} slot="start" />
+                          <IonLabel>
+                            <h3>{point.name} {index === 0 && !pickupSearch ? '(Nearest)' : ''}</h3>
+                            <p>{point.address}</p>
+                          </IonLabel>
+                          <IonRadio slot="end" value={point.pickup_point_id} />
+                        </IonItem>
+                      ))}
+                  </IonRadioGroup>
+                </>
+              )
             ) : (
               <p>Loading pickup points...</p>
             )}
           </IonCardContent>
         </IonCard>
       )}
-
-      <IonButton
-        expand="block"
-        onClick={calculateShipping}
-        disabled={isLargeItem ? !userProfile?.streetAddress : !selectedPickupPoint}
-        style={{ margin: '16px 0' }}
-      >
-        {isLargeItem ? 'Get Courier Rates' : 'Calculate Shipping'}
-      </IonButton>
 
       {shippingRates.length > 0 && (
         <IonCard>
@@ -398,6 +433,15 @@ const CheckoutPage: React.FC = () => {
           </IonCardContent>
         </IonCard>
       )}
+
+      <IonButton
+        expand="block"
+        onClick={calculateShipping}
+        disabled={isLargeItem ? !userProfile?.streetAddress : !selectedPickupPoint || !pickupLocked}
+        style={{ margin: '16px 0' }}
+      >
+        {isLargeItem ? 'Get Courier Rates' : 'Calculate Shipping'}
+      </IonButton>
 
       {selectedRate && (
         <>
