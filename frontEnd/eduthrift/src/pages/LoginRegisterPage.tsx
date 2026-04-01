@@ -20,7 +20,7 @@ import {
   IonSelect,
   IonSelectOption
 } from '@ionic/react';
-import { logInOutline, personAddOutline, eyeOutline, eyeOffOutline, locationOutline } from 'ionicons/icons';
+import { logInOutline, personAddOutline, eyeOutline, eyeOffOutline, locationOutline, arrowBackOutline } from 'ionicons/icons';
 import { useHistory, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
 import { useUserStore } from '../stores/userStore';
@@ -175,6 +175,12 @@ const LoginRegisterPage: React.FC = () => {
               <IonCol size="12" size-md="8" size-lg="6">
                 <IonCard>
                   <IonCardHeader className="ion-text-center">
+                    <div style={{ textAlign: 'left', marginBottom: '4px' }}>
+                      <IonButton fill="clear" size="small" onClick={() => history.goBack()} style={{ '--padding-start': '0' }}>
+                        <IonIcon icon={arrowBackOutline} slot="start" />
+                        Browse
+                      </IonButton>
+                    </div>
                     <img
                         src={LogoImage}
                         alt="Eduthrift Logo"

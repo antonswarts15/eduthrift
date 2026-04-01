@@ -7,7 +7,8 @@ import {
   IonCardContent,
   IonGrid,
   IonRow,
-  IonCol, IonIcon
+  IonCol, IonIcon,
+  IonSpinner
 } from '@ionic/react';
 import {
     schoolOutline,
@@ -29,7 +30,9 @@ import {
     pencilOutline,
     shirtOutline,
     footstepsOutline,
-    roseOutline
+    roseOutline,
+    fitnessOutline,
+    bagOutline
 } from 'ionicons/icons';
 import { useHistory } from 'react-router-dom';
 import logo from '../assets/logo.png';
@@ -37,10 +40,20 @@ import homeVideo from '../assets/Homevid.mp4';
 import buyerIcon from '../assets/buyerIcon.jpg';
 import sellerIcon from '../assets/sellerIcon.jpg';
 import cardBg from '../assets/card-bg.jpg'; // Import the background image
+import { useListingsStore } from '../stores/listingsStore';
 
 
 const Welcome: React.FC = () => {
   const history = useHistory();
+  const { listings, fetchListings, isLoading } = useListingsStore();
+
+  useEffect(() => {
+    fetchListings();
+  }, []);
+
+  const justListed = listings
+    .filter(l => !l.soldOut && !l.isExpired)
+    .slice(0, 10);
 
 
   const handleBuyClick = () => {
@@ -103,6 +116,86 @@ const Welcome: React.FC = () => {
                         reducing costs while promoting sustainability in education.
                     </p>
                 </IonCardContent>
+            </IonCard>
+
+            {/* Just Listed */}
+            <IonCard>
+              <IonCardContent style={{ padding: '16px' }}>
+                <h3 style={{ color: '#2C3E50', marginTop: 0, marginBottom: '16px' }}>Just Listed</h3>
+                {isLoading ? (
+                  <div style={{ textAlign: 'center', padding: '20px' }}>
+                    <IonSpinner />
+                  </div>
+                ) : justListed.length === 0 ? (
+                  <p style={{ color: '#666', textAlign: 'center' }}>No listings yet — be the first to sell!</p>
+                ) : (
+                  <div style={{ display: 'flex', overflowX: 'auto', gap: '12px', paddingBottom: '8px' }}>
+                    {justListed.map(item => (
+                      <div
+                        key={item.id}
+                        onClick={() => history.push('/buyer')}
+                        style={{ flex: '0 0 140px', cursor: 'pointer' }}
+                      >
+                        <div style={{
+                          width: '140px', height: '140px', borderRadius: '8px', overflow: 'hidden',
+                          backgroundColor: '#f0f0f0', marginBottom: '8px'
+                        }}>
+                          {item.frontPhoto ? (
+                            <img src={item.frontPhoto} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          ) : (
+                            <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                              <IonIcon icon={schoolOutline} style={{ fontSize: '40px', color: '#ccc' }} />
+                            </div>
+                          )}
+                        </div>
+                        <p style={{ margin: '0 0 4px 0', fontSize: '13px', fontWeight: '600', color: '#2C3E50',
+                          whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.name}</p>
+                        <p style={{ margin: '0 0 2px 0', fontSize: '12px', color: '#666',
+                          whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.school}</p>
+                        <p style={{ margin: '0', fontSize: '14px', fontWeight: '700', color: '#3498DB' }}>R{item.price}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </IonCardContent>
+            </IonCard>
+
+            {/* Browse Categories */}
+            <IonCard>
+              <IonCardContent style={{ padding: '16px' }}>
+                <h3 style={{ color: '#2C3E50', marginTop: 0, marginBottom: '16px' }}>Browse Categories</h3>
+                <IonGrid style={{ padding: 0 }}>
+                  <IonRow>
+                    {[
+                      { name: 'School & sport uniform', icon: schoolOutline, color: '#3498DB' },
+                      { name: 'Club clothing', icon: shirtOutline, color: '#E74C3C' },
+                      { name: 'Training wear', icon: fitnessOutline, color: '#27AE60' },
+                      { name: 'Belts, bags & shoes', icon: bagOutline, color: '#8E44AD' },
+                      { name: 'Sports equipment', icon: basketballOutline, color: '#E67E22' },
+                      { name: 'Textbooks', icon: libraryOutline, color: '#16A085' },
+                      { name: 'Stationery', icon: pencilOutline, color: '#F39C12' },
+                      { name: 'Matric dance clothing', icon: roseOutline, color: '#E91E63' },
+                    ].map(cat => (
+                      <IonCol key={cat.name} size="3" style={{ padding: '4px' }}>
+                        <div
+                          onClick={() => history.push('/buyer')}
+                          style={{ textAlign: 'center', cursor: 'pointer', padding: '8px 4px' }}
+                        >
+                          <div style={{
+                            width: '52px', height: '52px', borderRadius: '14px',
+                            backgroundColor: cat.color + '18',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            margin: '0 auto 6px'
+                          }}>
+                            <IonIcon icon={cat.icon} style={{ fontSize: '26px', color: cat.color }} />
+                          </div>
+                          <p style={{ margin: 0, fontSize: '10px', color: '#2C3E50', lineHeight: '1.3' }}>{cat.name}</p>
+                        </div>
+                      </IonCol>
+                    ))}
+                  </IonRow>
+                </IonGrid>
+              </IonCardContent>
             </IonCard>
 
             {/* Core Categories */}

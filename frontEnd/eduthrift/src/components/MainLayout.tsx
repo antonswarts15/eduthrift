@@ -236,19 +236,30 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
               <IonIcon icon={searchOutline} />
             </IonButton>
             <IonButtons slot="end">
-              <IonButton
-                id="profile-dropdown-trigger"
-                fill="clear"
-                size="small"
-                onClick={() => setShowProfileDropdown(true)}
-                style={{ textTransform: 'none' }}
-              >
-                <IonIcon icon={personOutline} style={{ marginRight: '4px', fontSize: '16px', color: '#777' }} />
-                <span style={{ fontSize: '14px', fontWeight: '500', color: '#777' }}>
-                  {isLoggedIn() ? (userProfile?.name || 'User') : 'Guest'}
-                </span>
-                <IonIcon icon={chevronDownOutline} style={{ marginLeft: '2px', fontSize: '12px', color: '#777' }} />
-              </IonButton>
+              {isLoggedIn() ? (
+                <IonButton
+                  id="profile-dropdown-trigger"
+                  fill="clear"
+                  size="small"
+                  onClick={() => setShowProfileDropdown(true)}
+                  style={{ textTransform: 'none' }}
+                >
+                  <IonIcon icon={personOutline} style={{ marginRight: '4px', fontSize: '16px', color: '#777' }} />
+                  <span style={{ fontSize: '14px', fontWeight: '500', color: '#777' }}>
+                    {userProfile?.name || 'User'}
+                  </span>
+                  <IonIcon icon={chevronDownOutline} style={{ marginLeft: '2px', fontSize: '12px', color: '#777' }} />
+                </IonButton>
+              ) : (
+                <IonButton
+                  fill="solid"
+                  size="small"
+                  onClick={() => history.push('/login')}
+                  style={{ textTransform: 'none', '--border-radius': '20px' }}
+                >
+                  Login / Register
+                </IonButton>
+              )}
               <IonButton id="notifications-trigger" onClick={() => setShowNotifications(true)}>
                 <IonIcon icon={notificationsOutline} />
                 {notifications.length > 0 && <IonBadge>{notifications.length}</IonBadge>}
