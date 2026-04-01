@@ -98,7 +98,17 @@ public class TradeSafeService {
         }
 
         if (response.containsKey("errors")) {
-            throw new RuntimeException("TradeSafe API error: " + response.get("errors"));
+            Object errors = response.get("errors");
+            // Extract first error message for clarity
+            String msg = errors.toString();
+            try {
+                @SuppressWarnings("unchecked")
+                java.util.List<Map<String, Object>> errList = (java.util.List<Map<String, Object>>) errors;
+                if (!errList.isEmpty()) {
+                    msg = String.valueOf(errList.get(0).get("message"));
+                }
+            } catch (Exception ignored) {}
+            throw new RuntimeException("TradeSafe GraphQL error: " + msg);
         }
 
         return response;
@@ -238,16 +248,16 @@ public class TradeSafeService {
                 ? (String) allocations.get(0).get("id")
                 : null;
 
-        // Step 2: Get the checkout link (separate mutation per TradeSafe docs)
-        String checkoutMutation = """
-                mutation checkoutLink($id: ID!) {
-                    checkoutLink(transactionId: $id)
+        // Step 2: Get the deposit/checkout URL — this is a query, not a mutation
+        String checkoutQuery = """
+                query transactionCheckoutLink($id: ID!) {
+                    transactionCheckoutLink(id: $id)
                 }
                 """;
 
-        Map<String, Object> checkoutResult = executeGraphQL(checkoutMutation, Map.of("id", transactionId));
+        Map<String, Object> checkoutResult = executeGraphQL(checkoutQuery, Map.of("id", transactionId));
         Map<String, Object> checkoutData = (Map<String, Object>) checkoutResult.get("data");
-        String depositUrl = (String) checkoutData.get("checkoutLink");
+        String depositUrl = (String) checkoutData.get("transactionCheckoutLink");
 
         return new TradeSafeTransaction(transactionId, allocationId, depositUrl);
     }

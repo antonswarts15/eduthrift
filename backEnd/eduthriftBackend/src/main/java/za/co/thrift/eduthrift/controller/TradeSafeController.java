@@ -207,7 +207,12 @@ public class TradeSafeController {
             ));
 
         } catch (Exception e) {
-            return ResponseEntity.status(500).body(Map.of("error", "Failed to create TradeSafe transaction"));
+            // Log the full cause so it appears in podman logs — helps diagnose API/credential issues
+            String cause = e.getCause() != null ? e.getCause().getMessage() : e.getMessage();
+            return ResponseEntity.status(500).body(Map.of(
+                "error", "Failed to create TradeSafe transaction",
+                "detail", cause != null ? cause : "unknown"
+            ));
         }
     }
 }

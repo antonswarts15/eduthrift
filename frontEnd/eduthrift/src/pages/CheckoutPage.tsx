@@ -219,7 +219,9 @@ const [pickupPoints, setPickupPoints] = useState<PickupPoint[]>([]);
         window.location.href = depositUrl;
 
       } catch (error: any) {
-        setToastMessage(`Payment failed: ${error.response?.data?.error || error.message}`);
+        const data = error.response?.data;
+        const msg = data?.detail || data?.error || error.message;
+        setToastMessage(`Payment failed: ${msg}`);
         setShowToast(true);
         setLoading(false);
       }
@@ -344,26 +346,35 @@ const [pickupPoints, setPickupPoints] = useState<PickupPoint[]>([]);
                       p.name.toLowerCase().includes(pickupSearch.toLowerCase()) ||
                       p.address.toLowerCase().includes(pickupSearch.toLowerCase())
                     )
-                    .map((point, index) => (
-                      <IonItem
-                        key={point.pickup_point_id}
-                        button
-                        detail={false}
-                        onClick={() => { setSelectedPickupPoint(point.pickup_point_id); setPickupLocked(true); }}
-                        style={selectedPickupPoint === point.pickup_point_id
-                          ? { '--background': 'var(--ion-color-primary-tint)', '--border-radius': '8px' }
-                          : {}}
-                      >
-                        <IonIcon icon={locationOutline} slot="start" color={selectedPickupPoint === point.pickup_point_id ? 'primary' : undefined} />
-                        <IonLabel>
-                          <h3>{point.name}{index === 0 && !pickupSearch ? ' (Nearest)' : ''}</h3>
-                          <p>{point.address}</p>
-                        </IonLabel>
-                        {selectedPickupPoint === point.pickup_point_id && (
-                          <IonIcon icon={checkmarkCircleOutline} slot="end" color="primary" />
-                        )}
-                      </IonItem>
-                    ))}
+                    .map((point, index) => {
+                      const isPickupSelected = selectedPickupPoint === point.pickup_point_id;
+                      return (
+                        <IonItem
+                          key={point.pickup_point_id}
+                          button
+                          detail={false}
+                          onClick={() => { setSelectedPickupPoint(point.pickup_point_id); setPickupLocked(true); }}
+                          style={{
+                            '--background': isPickupSelected ? 'var(--ion-color-primary)' : '',
+                            '--border-radius': '8px',
+                            marginBottom: '6px',
+                          }}
+                        >
+                          <IonIcon icon={locationOutline} slot="start" style={{ color: isPickupSelected ? '#fff' : undefined }} />
+                          <IonLabel style={{ color: isPickupSelected ? '#fff' : undefined }}>
+                            <h3 style={{ color: isPickupSelected ? '#fff' : undefined }}>
+                              {point.name}{index === 0 && !pickupSearch ? ' (Nearest)' : ''}
+                            </h3>
+                            <p style={{ color: isPickupSelected ? 'rgba(255,255,255,0.8)' : undefined }}>
+                              {point.address}
+                            </p>
+                          </IonLabel>
+                          {isPickupSelected && (
+                            <IonIcon icon={checkmarkCircleOutline} slot="end" style={{ color: '#fff' }} />
+                          )}
+                        </IonItem>
+                      );
+                    })}
                 </>
               )
             ) : (
@@ -423,8 +434,8 @@ const [pickupPoints, setPickupPoints] = useState<PickupPoint[]>([]);
                       {rate.delivery_date ? `Est. delivery: ${formatDeliveryDate(rate.delivery_date)}` : rate.service_level_name}
                     </p>
                   </IonLabel>
-                  <IonLabel slot="end" style={{ color: isSelected ? '#fff' : undefined }}>
-                    <strong>R{rate.total_cost}</strong>
+                  <IonLabel slot="end">
+                    <strong style={{ color: isSelected ? '#fff' : undefined }}>R{rate.total_cost}</strong>
                   </IonLabel>
                   {isSelected && (
                     <IonIcon icon={checkmarkCircleOutline} slot="end" style={{ color: '#fff' }} />
