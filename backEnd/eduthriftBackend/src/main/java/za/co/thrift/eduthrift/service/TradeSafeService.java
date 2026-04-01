@@ -27,8 +27,12 @@ public class TradeSafeService {
     @Value("${tradesafe.client.secret}")
     private String clientSecret;
 
-    @Value("${tradesafe.api.url:https://api.tradesafe.dev}")
+    @Value("${tradesafe.api.url:https://api.tradesafe.co.za}")
     private String apiUrl;
+
+    // Auth server is on a separate subdomain from the GraphQL API
+    @Value("${tradesafe.auth.url:https://auth.tradesafe.co.za}")
+    private String authUrl;
 
     private final RestTemplate restTemplate = new RestTemplate();
     private final UserRepository userRepository;
@@ -57,7 +61,7 @@ public class TradeSafeService {
 
         @SuppressWarnings("unchecked")
         Map<String, Object> response = restTemplate.postForObject(
-                apiUrl + "/auth/oauth/token", request, Map.class);
+                authUrl + "/oauth/token", request, Map.class);
 
         if (response == null || !response.containsKey("access_token")) {
             throw new RuntimeException("Failed to obtain TradeSafe access token");
