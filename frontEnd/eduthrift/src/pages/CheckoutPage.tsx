@@ -401,29 +401,37 @@ const [pickupPoints, setPickupPoints] = useState<PickupPoint[]>([]);
             </IonButton>
           </IonCardHeader>
           <IonCardContent>
-            {shippingRates.map(rate => (
-              <IonItem
-                key={rate.service_level_code}
-                button
-                detail={false}
-                onClick={() => setSelectedRate(rate.service_level_code)}
-                style={selectedRate === rate.service_level_code
-                  ? { '--background': 'var(--ion-color-primary-tint)', '--border-radius': '8px' }
-                  : {}}
-              >
-                <IonIcon icon={timeOutline} slot="start" color={selectedRate === rate.service_level_code ? 'primary' : undefined} />
-                <IonLabel>
-                  <h3>{serviceLabelFor(rate.service_level_name, rate.service_level_code)} Delivery</h3>
-                  <p>{rate.delivery_date ? `Est. delivery: ${formatDeliveryDate(rate.delivery_date)}` : rate.service_level_name}</p>
-                </IonLabel>
-                <IonLabel slot="end">
-                  <strong>R{rate.total_cost}</strong>
-                </IonLabel>
-                {selectedRate === rate.service_level_code && (
-                  <IonIcon icon={checkmarkCircleOutline} slot="end" color="primary" />
-                )}
-              </IonItem>
-            ))}
+            {shippingRates.map(rate => {
+              const isSelected = selectedRate === rate.service_level_code;
+              return (
+                <IonItem
+                  key={rate.service_level_code}
+                  button
+                  detail={false}
+                  onClick={() => setSelectedRate(rate.service_level_code)}
+                  style={{
+                    '--background': isSelected ? 'var(--ion-color-primary)' : '',
+                    '--color': isSelected ? '#fff' : '',
+                    '--border-radius': '8px',
+                    marginBottom: '6px',
+                  }}
+                >
+                  <IonIcon icon={timeOutline} slot="start" style={{ color: isSelected ? '#fff' : undefined }} />
+                  <IonLabel style={{ color: isSelected ? '#fff' : undefined }}>
+                    <h3>{serviceLabelFor(rate.service_level_name, rate.service_level_code)} Delivery</h3>
+                    <p style={{ color: isSelected ? 'rgba(255,255,255,0.8)' : undefined }}>
+                      {rate.delivery_date ? `Est. delivery: ${formatDeliveryDate(rate.delivery_date)}` : rate.service_level_name}
+                    </p>
+                  </IonLabel>
+                  <IonLabel slot="end" style={{ color: isSelected ? '#fff' : undefined }}>
+                    <strong>R{rate.total_cost}</strong>
+                  </IonLabel>
+                  {isSelected && (
+                    <IonIcon icon={checkmarkCircleOutline} slot="end" style={{ color: '#fff' }} />
+                  )}
+                </IonItem>
+              );
+            })}
           </IonCardContent>
         </IonCard>
       )}

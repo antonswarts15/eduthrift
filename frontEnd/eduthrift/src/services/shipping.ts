@@ -26,6 +26,28 @@ export interface Parcel {
   packaging: string;
 }
 
+/**
+ * Maps raw ShipLogic rate objects to ShippingRate, sorts cheapest first,
+ * and guarantees unique stable codes (STANDARD / EXPRESS) when the API
+ * doesn't return service_level_code.
+ */
+function normaliseRates(data: any[]): ShippingRate[] {
+  const mapped = data.map((r: any) => ({
+    service_level_code: (r.service_level_code ?? r.code ?? '') as string,
+    service_level_name: (r.service_level_name ?? r.name ?? '') as string,
+    total_cost: (r.total_cost ?? r.rate ?? 0) as number,
+    delivery_date: (r.delivery_date ?? r.estimated_delivery ?? '') as string,
+  }));
+
+  mapped.sort((a, b) => a.total_cost - b.total_cost);
+
+  return mapped.map((r, i) => ({
+    ...r,
+    service_level_code: r.service_level_code || (i === 0 ? 'STANDARD' : 'EXPRESS'),
+    service_level_name: r.service_level_name || (i === 0 ? 'Standard' : 'Express'),
+  }));
+}
+
 class ShippingService {
   private async request(endpoint: string, options: RequestInit = {}) {
     const token = localStorage.getItem('authToken');
@@ -91,13 +113,7 @@ class ShippingService {
     });
     if (!response.ok) throw new Error(`Shipping rates unavailable (${response.status})`);
     const data: any[] = await response.json();
-    // Map TCG rate fields to our ShippingRate interface
-    return data.map((r: any) => ({
-      service_level_code: r.service_level_code ?? r.code,
-      service_level_name: r.service_level_name ?? r.name,
-      total_cost: r.total_cost ?? r.rate ?? 0,
-      delivery_date: r.delivery_date ?? r.estimated_delivery ?? ''
-    }));
+    return normaliseRates(data);
   }
 
   // Get courier (door-to-door) rates for large items — uses buyer's profile address server-side
@@ -116,12 +132,7 @@ class ShippingService {
       throw new Error(err.error || `Courier rates unavailable (${response.status})`);
     }
     const data: any[] = await response.json();
-    return data.map((r: any) => ({
-      service_level_code: r.service_level_code ?? r.code,
-      service_level_name: r.service_level_name ?? r.name,
-      total_cost: r.total_cost ?? r.rate ?? 0,
-      delivery_date: r.delivery_date ?? r.estimated_delivery ?? ''
-    }));
+    return normaliseRates(data);
   }
 
   // Create shipment
