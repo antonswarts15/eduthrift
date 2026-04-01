@@ -7,8 +7,6 @@ import {
   IonItem,
   IonLabel,
   IonButton,
-  IonRadioGroup,
-  IonRadio,
   IonLoading,
   IonToast,
   IonIcon,
@@ -228,6 +226,30 @@ const [pickupPoints, setPickupPoints] = useState<PickupPoint[]>([]);
     }
   };
 
+  // Derived values for the confirmation summary
+  const selectedRateObj = shippingRates.find(r => r.service_level_code === selectedRate) ?? null;
+  const lockedPickupPoint = !isLargeItem
+    ? pickupPoints.find(p => p.pickup_point_id === selectedPickupPoint) ?? null
+    : null;
+  const courierAddress = isLargeItem && userProfile
+    ? [userProfile.streetAddress, userProfile.suburb, userProfile.town, userProfile.province]
+        .filter(Boolean).join(', ')
+    : '';
+
+  const serviceLabelFor = (name: string, code: string): string => {
+    const s = (name + ' ' + code).toLowerCase();
+    if (s.includes('express') || s.includes('exp') || s.includes('overnight') || s.includes('prio')) return 'Express';
+    if (s.includes('eco') || s.includes('standard') || s.includes('std') || s.includes('economy')) return 'Standard';
+    return name;
+  };
+
+  const formatDeliveryDate = (raw: string): string => {
+    if (!raw) return '';
+    const d = new Date(raw);
+    if (isNaN(d.getTime())) return raw;
+    return d.toLocaleDateString('en-ZA', { weekday: 'short', day: 'numeric', month: 'short' });
+  };
+
   return (
     <div style={{ padding: '16px' }}>
       <h2>Checkout</h2>
@@ -316,34 +338,32 @@ const [pickupPoints, setPickupPoints] = useState<PickupPoint[]>([]);
                     placeholder="Search pickup points..."
                     style={{ padding: '0 0 8px 0' }}
                   />
-                  <IonRadioGroup
-                    key={pickupSearch}
-                    value={selectedPickupPoint}
-                    onIonChange={e => {
-                      setSelectedPickupPoint(e.detail.value);
-                      setPickupLocked(true);
-                    }}
-                  >
-                    {pickupPoints
-                      .filter(p =>
-                        !pickupSearch ||
-                        p.name.toLowerCase().includes(pickupSearch.toLowerCase()) ||
-                        p.address.toLowerCase().includes(pickupSearch.toLowerCase())
-                      )
-                      .map((point, index) => (
-                        <IonItem key={point.pickup_point_id} button onClick={() => {
-                          setSelectedPickupPoint(point.pickup_point_id);
-                          setPickupLocked(true);
-                        }}>
-                          <IonIcon icon={locationOutline} slot="start" />
-                          <IonLabel>
-                            <h3>{point.name} {index === 0 && !pickupSearch ? '(Nearest)' : ''}</h3>
-                            <p>{point.address}</p>
-                          </IonLabel>
-                          <IonRadio slot="end" value={point.pickup_point_id} />
-                        </IonItem>
-                      ))}
-                  </IonRadioGroup>
+                  {pickupPoints
+                    .filter(p =>
+                      !pickupSearch ||
+                      p.name.toLowerCase().includes(pickupSearch.toLowerCase()) ||
+                      p.address.toLowerCase().includes(pickupSearch.toLowerCase())
+                    )
+                    .map((point, index) => (
+                      <IonItem
+                        key={point.pickup_point_id}
+                        button
+                        detail={false}
+                        onClick={() => { setSelectedPickupPoint(point.pickup_point_id); setPickupLocked(true); }}
+                        style={selectedPickupPoint === point.pickup_point_id
+                          ? { '--background': 'var(--ion-color-primary-tint)', '--border-radius': '8px' }
+                          : {}}
+                      >
+                        <IonIcon icon={locationOutline} slot="start" color={selectedPickupPoint === point.pickup_point_id ? 'primary' : undefined} />
+                        <IonLabel>
+                          <h3>{point.name}{index === 0 && !pickupSearch ? ' (Nearest)' : ''}</h3>
+                          <p>{point.address}</p>
+                        </IonLabel>
+                        {selectedPickupPoint === point.pickup_point_id && (
+                          <IonIcon icon={checkmarkCircleOutline} slot="end" color="primary" />
+                        )}
+                      </IonItem>
+                    ))}
                 </>
               )
             ) : (
@@ -381,107 +401,114 @@ const [pickupPoints, setPickupPoints] = useState<PickupPoint[]>([]);
             </IonButton>
           </IonCardHeader>
           <IonCardContent>
-            <IonRadioGroup value={selectedRate} onIonChange={e => setSelectedRate(e.detail.value)}>
-              {shippingRates.map(rate => (
-                <IonItem key={rate.service_level_code} button onClick={() => setSelectedRate(rate.service_level_code)}>
-                  <IonIcon icon={timeOutline} slot="start" />
-                  <IonLabel>
-                    <h3>{rate.service_level_name}</h3>
-                    <p>Est. delivery: {rate.delivery_date}</p>
-                  </IonLabel>
-                  <IonLabel slot="end">
-                    <strong>R{rate.total_cost}</strong>
-                  </IonLabel>
-                  <IonRadio slot="end" value={rate.service_level_code} />
-                </IonItem>
-              ))}
-            </IonRadioGroup>
+            {shippingRates.map(rate => (
+              <IonItem
+                key={rate.service_level_code}
+                button
+                detail={false}
+                onClick={() => setSelectedRate(rate.service_level_code)}
+                style={selectedRate === rate.service_level_code
+                  ? { '--background': 'var(--ion-color-primary-tint)', '--border-radius': '8px' }
+                  : {}}
+              >
+                <IonIcon icon={timeOutline} slot="start" color={selectedRate === rate.service_level_code ? 'primary' : undefined} />
+                <IonLabel>
+                  <h3>{serviceLabelFor(rate.service_level_name, rate.service_level_code)} Delivery</h3>
+                  <p>{rate.delivery_date ? `Est. delivery: ${formatDeliveryDate(rate.delivery_date)}` : rate.service_level_name}</p>
+                </IonLabel>
+                <IonLabel slot="end">
+                  <strong>R{rate.total_cost}</strong>
+                </IonLabel>
+                {selectedRate === rate.service_level_code && (
+                  <IonIcon icon={checkmarkCircleOutline} slot="end" color="primary" />
+                )}
+              </IonItem>
+            ))}
           </IonCardContent>
         </IonCard>
       )}
 
       {/* Order confirmation summary — shown once a service is selected */}
-      {selectedRate && (() => {
-        const rate = shippingRates.find(r => r.service_level_code === selectedRate);
-        const lockedPoint = !isLargeItem
-          ? pickupPoints.find(p => p.pickup_point_id === selectedPickupPoint)
-          : null;
-        const deliveryAddress = isLargeItem && userProfile
-          ? `${userProfile.streetAddress || ''}, ${userProfile.suburb || ''}, ${userProfile.town || ''}, ${userProfile.province || ''}`
-              .replace(/,\s*,/g, ',').replace(/^,\s*/, '').trim()
-          : null;
+      {selectedRate && selectedRateObj && (
+        <>
+          <IonCard style={{ border: '2px solid var(--ion-color-primary)', borderRadius: '12px' }}>
+            <IonCardHeader>
+              <IonCardTitle>Confirm Your Order</IonCardTitle>
+            </IonCardHeader>
+            <IonCardContent>
 
-        return (
-          <>
-            <IonCard style={{ border: '2px solid var(--ion-color-primary)', borderRadius: '12px' }}>
-              <IonCardHeader>
-                <IonCardTitle>Confirm Your Order</IonCardTitle>
-              </IonCardHeader>
-              <IonCardContent>
-
-                {/* Delivery destination */}
-                <IonItem lines="none" style={{ '--padding-start': '0' }}>
-                  <IonIcon icon={locationOutline} slot="start" color="primary" />
-                  <IonLabel>
-                    <p style={{ fontSize: '11px', color: '#888', margin: '0 0 2px' }}>
-                      {isLargeItem ? 'COURIER DELIVERY TO' : 'PUDO LOCKER'}
-                    </p>
-                    <h3 style={{ margin: 0 }}>{isLargeItem ? 'Home / Business Address' : lockedPoint?.name}</h3>
-                    <p style={{ margin: 0 }}>{isLargeItem ? deliveryAddress : lockedPoint?.address}</p>
-                  </IonLabel>
-                </IonItem>
-
-                {/* Service level */}
-                <IonItem lines="none" style={{ '--padding-start': '0' }}>
-                  <IonIcon icon={timeOutline} slot="start" color="primary" />
-                  <IonLabel>
-                    <p style={{ fontSize: '11px', color: '#888', margin: '0 0 2px' }}>SHIPPING SERVICE</p>
-                    <h3 style={{ margin: 0 }}>{rate?.service_level_name}</h3>
-                    <p style={{ margin: 0 }}>Est. delivery: {rate?.delivery_date}</p>
-                  </IonLabel>
-                </IonItem>
-
-                {/* Cost breakdown */}
-                <div style={{ borderTop: '1px solid #eee', marginTop: '12px', paddingTop: '12px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', fontSize: '14px' }}>
-                    <span style={{ color: '#555' }}>Items</span>
-                    <span>R{totalAmount}</span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', fontSize: '14px' }}>
-                    <span style={{ color: '#555' }}>Shipping</span>
-                    <span>R{shippingCost}</span>
-                  </div>
-                  <div style={{
-                    display: 'flex', justifyContent: 'space-between',
-                    fontSize: '17px', fontWeight: '700',
-                    borderTop: '1px solid #ddd', paddingTop: '10px', marginTop: '6px'
-                  }}>
-                    <span>Total</span>
-                    <span style={{ color: 'var(--ion-color-primary)' }}>R{finalAmount}</span>
-                  </div>
-                </div>
-
-                {/* Escrow note */}
-                <div style={{ marginTop: '14px', padding: '10px 12px', backgroundColor: '#e8f5e8', borderRadius: '8px' }}>
-                  <p style={{ margin: 0, fontSize: '12px', color: '#2d5a2d', lineHeight: '1.5' }}>
-                    <strong>Secure escrow:</strong> Your payment is held by TradeSafe and only released to the seller once you confirm receipt. Platform fee (10%) is deducted from the seller's payout.
+              {/* Delivery destination */}
+              <IonItem lines="none" style={{ '--padding-start': '0' }}>
+                <IonIcon icon={locationOutline} slot="start" color="primary" />
+                <IonLabel>
+                  <p style={{ fontSize: '11px', color: '#888', margin: '0 0 2px' }}>
+                    {isLargeItem ? 'COURIER DELIVERY TO' : 'PUDO LOCKER'}
                   </p>
-                </div>
-              </IonCardContent>
-            </IonCard>
+                  <h3 style={{ margin: 0 }}>
+                    {isLargeItem ? 'Home / Business Address' : lockedPickupPoint?.name}
+                  </h3>
+                  <p style={{ margin: 0 }}>
+                    {isLargeItem ? courierAddress : lockedPickupPoint?.address}
+                  </p>
+                </IonLabel>
+              </IonItem>
 
-            <IonButton
-              expand="block"
-              color="success"
-              onClick={processOrder}
-              style={{ margin: '16px 0' }}
-            >
-              <IonIcon icon={cashOutline} slot="start" />
-              Proceed to Payment
-            </IonButton>
-          </>
-        );
-      })()}
+              {/* Service level */}
+              <IonItem lines="none" style={{ '--padding-start': '0' }}>
+                <IonIcon icon={timeOutline} slot="start" color="primary" />
+                <IonLabel>
+                  <p style={{ fontSize: '11px', color: '#888', margin: '0 0 2px' }}>SHIPPING SERVICE</p>
+                  <h3 style={{ margin: 0 }}>
+                    {serviceLabelFor(selectedRateObj.service_level_name, selectedRateObj.service_level_code)} Delivery
+                  </h3>
+                  <p style={{ margin: 0 }}>
+                    {selectedRateObj.delivery_date
+                      ? `Est. delivery: ${formatDeliveryDate(selectedRateObj.delivery_date)}`
+                      : selectedRateObj.service_level_name}
+                  </p>
+                </IonLabel>
+              </IonItem>
+
+              {/* Cost breakdown */}
+              <div style={{ borderTop: '1px solid #eee', marginTop: '12px', paddingTop: '12px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', fontSize: '14px' }}>
+                  <span style={{ color: '#555' }}>Items</span>
+                  <span>R{totalAmount}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', fontSize: '14px' }}>
+                  <span style={{ color: '#555' }}>Shipping</span>
+                  <span>R{shippingCost}</span>
+                </div>
+                <div style={{
+                  display: 'flex', justifyContent: 'space-between',
+                  fontSize: '17px', fontWeight: '700',
+                  borderTop: '1px solid #ddd', paddingTop: '10px', marginTop: '6px'
+                }}>
+                  <span>Total</span>
+                  <span style={{ color: 'var(--ion-color-primary)' }}>R{finalAmount}</span>
+                </div>
+              </div>
+
+              {/* Escrow note */}
+              <div style={{ marginTop: '14px', padding: '10px 12px', backgroundColor: '#e8f5e8', borderRadius: '8px' }}>
+                <p style={{ margin: 0, fontSize: '12px', color: '#2d5a2d', lineHeight: '1.5' }}>
+                  <strong>Secure escrow:</strong> Your payment is held by TradeSafe and only released to the seller once you confirm receipt.
+                </p>
+              </div>
+            </IonCardContent>
+          </IonCard>
+
+          <IonButton
+            expand="block"
+            color="success"
+            onClick={processOrder}
+            style={{ margin: '16px 0' }}
+          >
+            <IonIcon icon={cashOutline} slot="start" />
+            Proceed to Payment
+          </IonButton>
+        </>
+      )}
 
       <AddressModal
         isOpen={showAddressModal}
