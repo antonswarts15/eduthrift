@@ -94,6 +94,15 @@ public class TradeSafeController {
                             if (shipmentId != null) {
                                 order.setTcgShipmentId(shipmentId.toString());
                             }
+                            // Signal to TradeSafe that delivery has started
+                            if (order.getTradeSafeAllocationId() != null) {
+                                try {
+                                    tradeSafeService.startDelivery(order.getTradeSafeAllocationId());
+                                } catch (Exception ignored) {
+                                    // startDelivery failed — admin should manually mark delivery
+                                    // started in TradeSafe portal for transaction: order.getTradeSafeTransactionId()
+                                }
+                            }
                         } catch (Exception ignored) {
                             // Shipment creation failed — order is still paid and in escrow.
                             // Admin should manually create the shipment in the TCG portal

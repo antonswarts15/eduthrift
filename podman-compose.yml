@@ -44,6 +44,9 @@ services:
       PUDO_API_URL: ${PUDO_API_URL:-https://api.pudo.co.za}
       PUDO_WEBHOOK_SECRET: ${PUDO_WEBHOOK_SECRET}
 
+      # Courier Guy (ShipLogic)
+      SHIPLOGIC_API_KEY: ${SHIPLOGIC_API_KEY}
+
       # TradeSafe
       TRADESAFE_CLIENT_ID: ${TRADESAFE_CLIENT_ID}
       TRADESAFE_CLIENT_SECRET: ${TRADESAFE_CLIENT_SECRET}

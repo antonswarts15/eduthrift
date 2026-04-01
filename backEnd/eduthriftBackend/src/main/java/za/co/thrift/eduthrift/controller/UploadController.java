@@ -18,7 +18,7 @@ import java.util.Set;
 @RequestMapping("/upload")
 public class UploadController {
 
-    @Value("${file.upload.dir:./uploads}")
+    @Value("${file.upload.dir:/app/uploads}")
     private String uploadDir;
 
     private static final Set<String> ALLOWED_CONTENT_TYPES = Set.of(

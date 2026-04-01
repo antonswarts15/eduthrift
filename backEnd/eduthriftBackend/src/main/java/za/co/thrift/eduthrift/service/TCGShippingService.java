@@ -15,7 +15,7 @@ public class TCGShippingService {
 
     private static final String BASE_URL = "https://api.shiplogic.com";
 
-    @Value("${pudo.api.key:}")
+    @Value("${shiplogic.api.key:}")
     private String apiKey;
 
     private final RestTemplate restTemplate = new RestTemplate();
