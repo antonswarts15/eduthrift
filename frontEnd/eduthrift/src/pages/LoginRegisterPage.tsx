@@ -171,7 +171,7 @@ const LoginRegisterPage: React.FC = () => {
 
           {/* Foreground content */}
           <IonGrid className="ion-padding content-overlay">
-            <IonRow className="ion-justify-content-center ion-align-items-center" style={{ minHeight: '100vh' }}>
+            <IonRow className="ion-justify-content-center" style={{ paddingTop: '40px' }}>
               <IonCol size="12" size-md="8" size-lg="6">
                 <IonCard>
                   <IonCardHeader className="ion-text-center">
@@ -326,17 +326,20 @@ const LoginRegisterPage: React.FC = () => {
                     )}
                   </IonCardContent>
                 </IonCard>
+                {/* Back to browse — below card, inside column so it scrolls with content */}
+                <div style={{ textAlign: 'center', padding: '16px 0 32px' }}>
+                  <IonButton
+                    fill="solid"
+                    onClick={() => history.goBack()}
+                    style={{ '--background': '#1a3a5c', '--color': 'white', '--border-radius': '20px', textTransform: 'none' }}
+                  >
+                    <IonIcon icon={arrowBackOutline} slot="start" />
+                    Continue browsing without logging in
+                  </IonButton>
+                </div>
               </IonCol>
             </IonRow>
           </IonGrid>
-
-          {/* Back to browse — outside card, bottom of page */}
-          <div style={{ textAlign: 'center', paddingBottom: '24px' }}>
-            <IonButton fill="clear" onClick={() => history.goBack()}>
-              <IonIcon icon={arrowBackOutline} slot="start" />
-              Continue browsing without logging in
-            </IonButton>
-          </div>
 
           <IonToast
               isOpen={showToast}

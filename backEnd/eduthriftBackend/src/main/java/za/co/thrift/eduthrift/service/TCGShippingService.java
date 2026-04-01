@@ -37,7 +37,9 @@ public class TCGShippingService {
         ResponseEntity<Map> response = restTemplate.exchange(
                 url, HttpMethod.GET, new HttpEntity<>(headers()), Map.class);
         if (response.getBody() == null) return List.of();
-        Object results = response.getBody().get("results");
+        // ShipLogic returns pickup_points; fall back to results for safety
+        Object results = response.getBody().get("pickup_points");
+        if (results == null) results = response.getBody().get("results");
         if (results instanceof List<?> list) return (List<Map<String, Object>>) list;
         return List.of();
     }

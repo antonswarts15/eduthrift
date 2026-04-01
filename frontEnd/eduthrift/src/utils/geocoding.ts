@@ -14,6 +14,11 @@ const locationCoordinates: { [key: string]: Coordinates } = {
   'randburg': { lat: -26.0939, lng: 28.0021 },
   'midrand': { lat: -25.9953, lng: 28.1289 },
   'centurion': { lat: -25.8601, lng: 28.1878 },
+  'kempton park': { lat: -26.1053, lng: 28.2317 },
+  'boksburg': { lat: -26.2137, lng: 28.2600 },
+  'benoni': { lat: -26.1870, lng: 28.3210 },
+  'germiston': { lat: -26.2128, lng: 28.1563 },
+  'edenvale': { lat: -26.1351, lng: 28.1573 },
   
   // Western Cape
   'cape town': { lat: -33.9249, lng: 18.4241 },
