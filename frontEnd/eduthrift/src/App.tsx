@@ -132,7 +132,7 @@ const App: React.FC = () => {
       <IonReactRouter>
         <IonRouterOutlet>
           <Route exact path="/">
-            <Welcome />
+            <Redirect to="/home" />
           </Route>
           <Route exact path="/login">
             <LoginRegisterPage />
