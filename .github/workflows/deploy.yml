@@ -1,0 +1,45 @@
+name: Deploy to Production
+
+on:
+  workflow_run:
+    workflows:
+      - Build Backend Image
+      - Build Frontend Image
+      - Build Admin Image
+    types:
+      - completed
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+    steps:
+      - name: Deploy to server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          script: |
+            set -e
+
+            cd ~/eduthrift
+
+            # Pull latest compose file and config from git
+            git pull origin main
+
+            # Ensure upload directory exists on host
+            mkdir -p ~/eduthrift-uploads/items
+            mkdir -p ~/eduthrift-uploads/id-documents
+            mkdir -p ~/eduthrift-uploads/proof-of-residence
+
+            # Pull new images
+            podman pull ghcr.io/antonswarts15/eduthrift-backend:latest
+            podman pull ghcr.io/antonswarts15/eduthrift-frontend:latest
+            podman pull ghcr.io/antonswarts15/eduthrift-admin:latest
+
+            # Restart containers without touching volumes
+            podman-compose up -d --force-recreate

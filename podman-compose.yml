@@ -19,7 +19,7 @@ services:
     networks:
       - eduthrift-net
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p${DB_ROOT_PASSWORD}"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1"]
       interval: 10s
       timeout: 20s
       retries: 10
@@ -52,7 +52,7 @@ services:
       TRADESAFE_CLIENT_SECRET: ${TRADESAFE_CLIENT_SECRET}
       TRADESAFE_API_URL: ${TRADESAFE_API_URL:-https://api.tradesafe.co.za}
     volumes:
-      - backend_uploads:/app/uploads
+      - /home/almalinux/eduthrift-uploads:/app/uploads
     depends_on:
       mysql:
         condition: service_healthy
@@ -79,7 +79,6 @@ services:
 
 volumes:
   mysql_data:
-  backend_uploads:
 
 networks:
   eduthrift-net:
