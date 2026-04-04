@@ -1,5 +1,7 @@
 package za.co.thrift.eduthrift.controller;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +18,8 @@ import java.util.Optional;
 
 @RestController
 public class TradeSafeController {
+
+    private static final Logger log = LoggerFactory.getLogger(TradeSafeController.class);
 
     private final TradeSafeService tradeSafeService;
     private final TCGShippingService tcgShippingService;
@@ -157,6 +161,7 @@ public class TradeSafeController {
             return ResponseEntity.ok(Map.of("received", true));
 
         } catch (Exception e) {
+            log.error("TradeSafe callback processing failed: {}", e.getMessage(), e);
             return ResponseEntity.status(500).body(Map.of("error", "Callback processing failed"));
         }
     }
@@ -214,7 +219,7 @@ public class TradeSafeController {
             ));
 
         } catch (Exception e) {
-            // Log the full cause so it appears in podman logs — helps diagnose API/credential issues
+            log.error("TradeSafe payment initiation failed for order {}: {}", request.get("orderNumber"), e.getMessage(), e);
             String cause = e.getCause() != null ? e.getCause().getMessage() : e.getMessage();
             return ResponseEntity.status(500).body(Map.of(
                 "error", "Failed to create TradeSafe transaction",
