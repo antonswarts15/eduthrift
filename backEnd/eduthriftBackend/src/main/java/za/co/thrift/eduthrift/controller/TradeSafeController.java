@@ -43,9 +43,16 @@ public class TradeSafeController {
     @PostMapping("/tradesafe/callback")
     public ResponseEntity<?> handleCallback(@RequestBody Map<String, Object> payload) {
         try {
-            String transactionId = (String) payload.get("id");
-            String state = (String) payload.get("state");
-            String reference = (String) payload.get("reference");
+            // TradeSafe wraps the transaction data under a "data" key:
+            // { "url": "...", "data": { "id": "...", "state": "...", "reference": "..." } }
+            @SuppressWarnings("unchecked")
+            Map<String, Object> data = payload.get("data") instanceof Map
+                    ? (Map<String, Object>) payload.get("data")
+                    : payload; // fall back to top-level for forward-compatibility
+
+            String transactionId = (String) data.get("id");
+            String state = (String) data.get("state");
+            String reference = (String) data.get("reference");
 
             if (transactionId == null || state == null) {
                 return ResponseEntity.badRequest().body(Map.of("error", "Missing id or state"));

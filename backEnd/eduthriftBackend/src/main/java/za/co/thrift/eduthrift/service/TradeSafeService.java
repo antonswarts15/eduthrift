@@ -184,7 +184,6 @@ public class TradeSafeService {
                     $title: String!,
                     $description: String!,
                     $industry: Industry!,
-                    $workflow: TransactionWorkflow!,
                     $value: Float,
                     $buyerToken: String,
                     $sellerToken: String
@@ -195,7 +194,6 @@ public class TradeSafeService {
                         industry: $industry
                         currency: ZAR
                         feeAllocation: SELLER
-                        workflow: $workflow
                         allocations: {
                             create: [
                                 {
@@ -237,7 +235,6 @@ public class TradeSafeService {
         variables.put("title", "Eduthrift Order " + order.getOrderNumber());
         variables.put("description", "Second-hand school item: " + order.getItem().getItemName());
         variables.put("industry", "GENERAL_GOODS_SERVICES");
-        variables.put("workflow", "GOODS_INSPECTION");
         variables.put("value", value);
         variables.put("buyerToken", buyerToken);
         variables.put("sellerToken", sellerToken);
@@ -253,16 +250,16 @@ public class TradeSafeService {
                 ? (String) allocations.get(0).get("id")
                 : null;
 
-        // Step 2: Get the deposit/checkout URL — this is a query, not a mutation
-        String checkoutQuery = """
-                query transactionCheckoutLink($id: ID!) {
-                    transactionCheckoutLink(id: $id)
+        // Step 2: Generate the checkout/deposit URL via the checkoutLink mutation
+        String checkoutMutation = """
+                mutation checkoutLink($transactionId: ID!) {
+                    checkoutLink(transactionId: $transactionId)
                 }
                 """;
 
-        Map<String, Object> checkoutResult = executeGraphQL(checkoutQuery, Map.of("id", transactionId));
+        Map<String, Object> checkoutResult = executeGraphQL(checkoutMutation, Map.of("transactionId", transactionId));
         Map<String, Object> checkoutData = (Map<String, Object>) checkoutResult.get("data");
-        String depositUrl = (String) checkoutData.get("transactionCheckoutLink");
+        String depositUrl = (String) checkoutData.get("checkoutLink");
 
         return new TradeSafeTransaction(transactionId, allocationId, depositUrl);
     }
