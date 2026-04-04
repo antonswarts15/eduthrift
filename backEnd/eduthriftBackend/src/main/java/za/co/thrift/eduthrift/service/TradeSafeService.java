@@ -34,6 +34,13 @@ public class TradeSafeService {
     @Value("${tradesafe.auth.url:https://auth.tradesafe.co.za}")
     private String authUrl;
 
+    // Cloudflare Access Service Token — only needed for sandbox (api.tradesafe.dev)
+    @Value("${tradesafe.cf.client.id:}")
+    private String cfClientId;
+
+    @Value("${tradesafe.cf.client.secret:}")
+    private String cfClientSecret;
+
     private final RestTemplate restTemplate = new RestTemplate();
     private final UserRepository userRepository;
 
@@ -85,6 +92,11 @@ public class TradeSafeService {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setBearerAuth(token);
+        // Cloudflare Access Service Token — bypasses CF Access on sandbox API
+        if (cfClientId != null && !cfClientId.isEmpty()) {
+            headers.set("CF-Access-Client-Id", cfClientId);
+            headers.set("CF-Access-Client-Secret", cfClientSecret);
+        }
 
         Map<String, Object> requestBody = new HashMap<>();
         requestBody.put("query", query);
