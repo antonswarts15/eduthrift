@@ -71,6 +71,7 @@ public class TradeSafeService {
         cachedToken = (String) response.get("access_token");
         int expiresIn = ((Number) response.get("expires_in")).intValue();
         tokenExpiry = Instant.now().plusSeconds(expiresIn - 60);
+        log.info("TradeSafe OAuth token obtained, expires in {}s", expiresIn);
 
         return cachedToken;
     }
@@ -78,6 +79,8 @@ public class TradeSafeService {
     @SuppressWarnings("unchecked")
     private Map<String, Object> executeGraphQL(String query, Map<String, Object> variables) {
         String token = getAccessToken();
+        log.info("TradeSafe GraphQL call to: {}/graphql — token starts with: {}", apiUrl,
+                token != null && token.length() > 10 ? token.substring(0, 10) + "..." : token);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -91,14 +94,19 @@ public class TradeSafeService {
 
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);
 
-        Map<String, Object> response = restTemplate.exchange(
+        org.springframework.http.ResponseEntity<Map<String, Object>> rawResponse = restTemplate.exchange(
                 apiUrl + "/graphql",
                 HttpMethod.POST,
                 request,
                 new ParameterizedTypeReference<Map<String, Object>>() {}
-        ).getBody();
+        );
+        log.info("TradeSafe GraphQL response status: {}", rawResponse.getStatusCode());
+
+        Map<String, Object> response = rawResponse.getBody();
 
         if (response == null) {
+            log.error("TradeSafe GraphQL returned null body. Status: {}, Headers: {}",
+                    rawResponse.getStatusCode(), rawResponse.getHeaders());
             throw new RuntimeException("Empty response from TradeSafe GraphQL API");
         }
 
