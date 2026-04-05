@@ -53,5 +53,13 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
+	<!-- Push notifications: allow app to receive notifications in background -->
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>remote-notification</string>
+	</array>
+	<!-- Push notifications: shown in iOS permission dialog -->
+	<key>NSUserNotificationUsageDescription</key>
+	<string>Eduthrift sends you updates about your orders, payments and deliveries.</string>
 </dict>
 </plist>
