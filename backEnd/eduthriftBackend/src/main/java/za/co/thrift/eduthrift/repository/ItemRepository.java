@@ -18,8 +18,12 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
     @Query("SELECT i FROM Item i WHERE " +
            "(:itemTypeId IS NULL OR i.itemType.id = :itemTypeId) AND " +
            "(:schoolName IS NULL OR i.schoolName = :schoolName) AND " +
-           "(:status IS NULL OR i.status = :status)")
+           "(:status IS NULL OR i.status = :status) AND " +
+           "(:keyword IS NULL OR LOWER(i.itemName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+           "LOWER(i.category) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+           "LOWER(i.schoolName) LIKE LOWER(CONCAT('%', :keyword, '%')))")
     List<Item> findByFilters(@Param("itemTypeId") Long itemTypeId,
                             @Param("schoolName") String schoolName,
-                            @Param("status") Item.ItemStatus status);
+                            @Param("status") Item.ItemStatus status,
+                            @Param("keyword") String keyword);
 }

@@ -47,6 +47,7 @@ import { Item } from '../types/models';
 const Home: React.FC = () => {
   const history = useHistory();
   const [recentItems, setRecentItems] = useState<Item[]>([]);
+  const [categoryCounts, setCategoryCounts] = useState<Record<string, number>>({});
   const [isLoading, setIsLoading] = useState(true);
 
   const categories = [
@@ -63,9 +64,16 @@ const Home: React.FC = () => {
   useEffect(() => {
     const fetchItems = async () => {
       try {
-        const response = await itemsApi.getItems({});
+        const response = await itemsApi.getItems({ status: 'available' });
         if (response.data && Array.isArray(response.data)) {
-          setRecentItems(response.data.slice(0, 10));
+          const all: Item[] = response.data;
+          setRecentItems(all.slice(0, 10));
+          const counts: Record<string, number> = {};
+          for (const item of all) {
+            const cat = (item as any).category;
+            if (cat) counts[cat] = (counts[cat] || 0) + 1;
+          }
+          setCategoryCounts(counts);
         }
       } catch (error) {
         // silently fail — just show nothing
@@ -178,7 +186,21 @@ const Home: React.FC = () => {
                       }}>
                         <IonIcon icon={cat.icon} style={{ fontSize: '26px', color: cat.color }} />
                       </div>
-                      <p style={{ margin: 0, fontSize: '10px', color: '#2C3E50', lineHeight: '1.3' }}>{cat.name}</p>
+                      <p style={{ margin: '0 0 3px', fontSize: '10px', color: '#2C3E50', lineHeight: '1.3' }}>{cat.name}</p>
+                      {categoryCounts[cat.name] > 0 && (
+                        <span style={{
+                          display: 'inline-block',
+                          backgroundColor: cat.color + '22',
+                          color: cat.color,
+                          fontSize: '9px',
+                          fontWeight: '600',
+                          padding: '1px 5px',
+                          borderRadius: '8px',
+                          lineHeight: '1.4'
+                        }}>
+                          {categoryCounts[cat.name]}
+                        </span>
+                      )}
                     </div>
                   </IonCol>
                 ))}
@@ -293,8 +315,8 @@ const Home: React.FC = () => {
                   <div style={{ display: 'flex', alignItems: 'center', padding: '8px' }}>
                     <IonIcon icon={locationOutline} style={{ fontSize: '24px', color: '#3498DB', marginRight: '12px' }} />
                     <div style={{ textAlign: 'left' }}>
-                      <h4 style={{ fontSize: '14px', margin: '0', color: '#2C3E50' }}>Pudo & Paxi Network</h4>
-                      <p style={{ fontSize: '12px', color: '#666', margin: '0' }}>2000+ lockers across South Africa</p>
+                      <h4 style={{ fontSize: '14px', margin: '0', color: '#2C3E50' }}>Pudo + The Courier Guy Network</h4>
+                      <p style={{ fontSize: '12px', color: '#666', margin: '0' }}>1400+ lockers across South Africa</p>
                     </div>
                   </div>
                 </IonCol>
@@ -302,8 +324,8 @@ const Home: React.FC = () => {
                   <div style={{ display: 'flex', alignItems: 'center', padding: '8px' }}>
                     <IonIcon icon={cardOutline} style={{ fontSize: '24px', color: '#E74C3C', marginRight: '12px' }} />
                     <div style={{ textAlign: 'left' }}>
-                      <h4 style={{ fontSize: '14px', margin: '0', color: '#2C3E50' }}>Multiple Payments</h4>
-                      <p style={{ fontSize: '12px', color: '#666', margin: '0' }}>PayFast, Ozow, manual EFT</p>
+                      <h4 style={{ fontSize: '14px', margin: '0', color: '#2C3E50' }}>Multiple Payment Methods</h4>
+                      <p style={{ fontSize: '12px', color: '#666', margin: '0' }}>PayFast, Ozow, Manual EFT, Credit & Debit Cards, SnapScan, PayJustNow & RCS Store Cards</p>
                     </div>
                   </div>
                 </IonCol>

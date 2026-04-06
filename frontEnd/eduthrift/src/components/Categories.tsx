@@ -901,7 +901,7 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
     }
   };
 
-  const renderGrid = (items: any[], onItemClick: (item: string) => void, hasIcons = false) => {
+  const renderGrid = (items: any[], onItemClick: (item: string) => void, hasIcons = false, getCount?: (name: string) => number) => {
     const isDarkTheme = false; // Force light theme
     
     // Darker rainbow colors array for better text contrast
@@ -974,10 +974,10 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
                       }} 
                     />
                   )}
-                  <div style={{ 
-                    position: 'relative', 
-                    zIndex: 2, 
-                    fontWeight: 'bold', 
+                  <div style={{
+                    position: 'relative',
+                    zIndex: 2,
+                    fontWeight: 'bold',
                     color: isDarkTheme ? '#e0e0e0' : '#333',
                     fontSize: '14px',
                     lineHeight: '1.2',
@@ -987,6 +987,25 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
                   }}>
                     {hasIcons ? item.name : item}
                   </div>
+                  {getCount && (() => {
+                    const count = getCount(hasIcons ? item.name : item);
+                    return count > 0 ? (
+                      <div style={{
+                        position: 'relative',
+                        zIndex: 2,
+                        marginTop: '4px',
+                        display: 'inline-block',
+                        backgroundColor: rainbowColors[index % rainbowColors.length] + '22',
+                        color: rainbowColors[index % rainbowColors.length],
+                        fontSize: '11px',
+                        fontWeight: '600',
+                        padding: '2px 8px',
+                        borderRadius: '10px'
+                      }}>
+                        {count} {count === 1 ? 'item' : 'items'}
+                      </div>
+                    ) : null;
+                  })()}
                 </IonCardContent>
               </IonCard>
             </IonCol>
@@ -1778,7 +1797,7 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
         </div>
       ) : (
         <>
-          {currentLevel === 'main' && renderGrid(mainCategories, handleMainCategoryClick, true)}
+          {currentLevel === 'main' && renderGrid(mainCategories, handleMainCategoryClick, true, getCategoryCount)}
           {currentLevel === 'uniform' && (
             <div style={{ padding: '16px' }}>
               {schoolName ? (

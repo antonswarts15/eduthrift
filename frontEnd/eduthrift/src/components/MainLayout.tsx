@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   IonPage,
   IonHeader,
@@ -23,6 +23,7 @@ import {
 } from '@ionic/react';
 import { useHistory, useLocation } from 'react-router-dom';
 import { isLoggedIn } from '../utils/auth';
+import { itemsApi } from '../services/api';
 import { useCartStore } from '../stores/cartStore';
 import { useNotificationStore } from '../stores/notificationStore';
 import { useUserStore } from '../stores/userStore';
@@ -63,6 +64,8 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { getCartItemCount } = useCartStore();
   const { notifications, removeNotification } = useNotificationStore();
   const { userProfile, fetchUserProfile } = useUserStore();
@@ -81,36 +84,35 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     removeNotification(id);
   };
   
-  // Mock search data - replace with real API calls
-  const mockItems = [
-    { id: 1, name: 'Kempton Park High School Uniform', category: 'School Uniform', price: 250, school: 'Kempton Park High' },
-    { id: 2, name: 'Grade 12 Mathematics Textbook', category: 'Textbooks', price: 180, school: 'Edenglen High' },
-    { id: 3, name: 'Rugby Jersey - Blue', category: 'Sports Uniform', price: 120, school: 'Norkem Park Primary' },
-    { id: 4, name: 'School Blazer - Navy', category: 'School Uniform', price: 300, school: 'Kempton Park High' },
-    { id: 5, name: 'Cricket Bat - Willow', category: 'Sports Equipment', price: 450, school: 'Terenure College' },
-    { id: 6, name: 'Scientific Calculator', category: 'Stationery', price: 85, school: 'Birchleigh North Primary' }
-  ];
-  
   const handleSearch = (term: string) => {
     setSearchTerm(term);
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
     if (term.trim().length > 2) {
-      const filtered = mockItems.filter(item => 
-        item.name.toLowerCase().includes(term.toLowerCase()) ||
-        item.category.toLowerCase().includes(term.toLowerCase()) ||
-        item.school.toLowerCase().includes(term.toLowerCase())
-      );
-      setSearchResults(filtered);
+      searchDebounceRef.current = setTimeout(async () => {
+        setIsSearching(true);
+        try {
+          const response = await itemsApi.getItems({ search: term.trim(), status: 'available' });
+          if (response.data && Array.isArray(response.data)) {
+            setSearchResults(response.data);
+          } else {
+            setSearchResults([]);
+          }
+        } catch {
+          setSearchResults([]);
+        } finally {
+          setIsSearching(false);
+        }
+      }, 300);
     } else {
       setSearchResults([]);
     }
   };
-  
+
   const selectSearchResult = (item: any) => {
     setShowSearchModal(false);
     setSearchTerm('');
     setSearchResults([]);
-    // Navigate to item details or category
-    history.push(`/item/${item.category}/${item.name}`);
+    history.push(`/item/${item.id}`);
   };
   
   const getCurrentTab = () => {
@@ -417,6 +419,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
           setShowSearchModal(false);
           setSearchTerm('');
           setSearchResults([]);
+          if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
         }}>
           <IonHeader>
             <IonToolbar>
@@ -445,23 +448,27 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
           <IonContent>
             {searchTerm.length > 2 && (
               <div>
-                {searchResults.length > 0 ? (
+                {isSearching ? (
+                  <div style={{ padding: '40px 20px', textAlign: 'center', color: '#666' }}>
+                    Searching...
+                  </div>
+                ) : searchResults.length > 0 ? (
                   <div>
                     <div style={{ padding: '16px', borderBottom: '1px solid #eee' }}>
-                      <h3 style={{ margin: '0', fontSize: '16px', color: '#333' }}>Search Results</h3>
+                      <h3 style={{ margin: '0', fontSize: '16px', color: '#333' }}>Search Results ({searchResults.length})</h3>
                     </div>
                     {searchResults.map(item => (
-                      <IonItem 
+                      <IonItem
                         key={item.id}
                         button
                         onClick={() => selectSearchResult(item)}
                       >
                         <div style={{ width: '100%' }}>
                           <div style={{ fontWeight: '500', fontSize: '14px', marginBottom: '4px' }}>
-                            {item.name}
+                            {item.item_name || item.name}
                           </div>
                           <div style={{ fontSize: '12px', color: '#666', marginBottom: '4px' }}>
-                            {item.category} • {item.school}
+                            {item.category}{item.school_name ? ` • ${item.school_name}` : ''}
                           </div>
                           <div style={{ fontWeight: 'bold', color: '#3880ff' }}>
                             R{item.price}

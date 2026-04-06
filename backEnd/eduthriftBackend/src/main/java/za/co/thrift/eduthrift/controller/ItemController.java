@@ -111,10 +111,12 @@ public class ItemController {
     public ResponseEntity<?> getAllItems(
             @RequestParam(required = false) Long itemTypeId,
             @RequestParam(required = false) String schoolName,
-            @RequestParam(required = false) String status) {
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String search) {
         try {
             Item.ItemStatus itemStatus = status != null ? Item.ItemStatus.valueOf(status.toUpperCase()) : null;
-            List<Item> items = itemRepository.findByFilters(itemTypeId, schoolName, itemStatus);
+            String keyword = (search != null && !search.isBlank()) ? search.trim() : null;
+            List<Item> items = itemRepository.findByFilters(itemTypeId, schoolName, itemStatus, keyword);
             List<Map<String, Object>> response = new ArrayList<>();
             for (Item item : items) {
                 response.add(toResponse(item, item.getUser()));
