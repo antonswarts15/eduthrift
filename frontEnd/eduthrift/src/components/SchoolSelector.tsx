@@ -292,7 +292,9 @@ const SchoolSelector: React.FC<SchoolSelectorProps> = ({ value, onSchoolChange, 
         });
       });
     });
-    setGlobalSearchResults(results.slice(0, 10)); // Limit to 10 results
+    // Always append a "use typed name" option so the user can select any school
+    results.push({ name: term.trim(), town: '', province: '' });
+    setGlobalSearchResults(results.slice(0, 11));
   };
 
   const handleGlobalSchoolSelect = (school: {name: string, town: string, province: string}) => {
@@ -325,22 +327,27 @@ const SchoolSelector: React.FC<SchoolSelectorProps> = ({ value, onSchoolChange, 
         <IonCard style={{ marginBottom: '16px' }}>
           <IonCardContent style={{ padding: '0' }}>
             <IonList>
-              {globalSearchResults.map((school, index) => (
-                <IonItem 
-                  key={`${school.province}-${school.town}-${school.name}-${index}`}
-                  button 
-                  onClick={() => handleGlobalSchoolSelect(school)}
-                  style={{ 
-                    backgroundColor: value === school.name ? '#e3f2fd' : 'transparent'
-                  }}
-                >
-                  <IonIcon icon={schoolOutline} slot="start" />
-                  <IonLabel>
-                    <h3>{school.name}</h3>
-                    <p>{school.town}, {school.province}</p>
-                  </IonLabel>
-                </IonItem>
-              ))}
+              {globalSearchResults.map((school, index) => {
+                const isCustom = school.town === '' && school.province === '';
+                return (
+                  <IonItem
+                    key={`${school.province}-${school.town}-${school.name}-${index}`}
+                    button
+                    onClick={() => handleGlobalSchoolSelect(school)}
+                    style={{
+                      backgroundColor: value === school.name ? '#e3f2fd' : isCustom ? '#f9f9f9' : 'transparent'
+                    }}
+                  >
+                    <IonIcon icon={schoolOutline} slot="start" style={{ color: isCustom ? '#004aad' : undefined }} />
+                    <IonLabel>
+                      <h3 style={{ color: isCustom ? '#004aad' : undefined }}>
+                        {isCustom ? `Use "${school.name}"` : school.name}
+                      </h3>
+                      {!isCustom && <p>{school.town}, {school.province}</p>}
+                    </IonLabel>
+                  </IonItem>
+                );
+              })}
             </IonList>
           </IonCardContent>
         </IonCard>

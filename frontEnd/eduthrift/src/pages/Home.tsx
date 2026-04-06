@@ -325,7 +325,7 @@ const Home: React.FC = () => {
                     <IonIcon icon={cardOutline} style={{ fontSize: '24px', color: '#E74C3C', marginRight: '12px' }} />
                     <div style={{ textAlign: 'left' }}>
                       <h4 style={{ fontSize: '14px', margin: '0', color: '#2C3E50' }}>Multiple Payment Methods</h4>
-                      <p style={{ fontSize: '12px', color: '#666', margin: '0' }}>PayFast, Ozow, Manual EFT, Credit & Debit Cards, SnapScan, PayJustNow & RCS Store Cards</p>
+                      <p style={{ fontSize: '12px', color: '#666', margin: '0' }}>PayFast, Ozow, Manual EFT, Credit & Debit Cards, SnapScan & PayJustNow</p>
                     </div>
                   </div>
                 </IonCol>

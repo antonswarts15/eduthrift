@@ -48,6 +48,15 @@ const trainingWearCategories: Record<string, { items: string[]; icon: string; co
   }
 };
 
+const SA_SPORTING_BRANDS = [
+  'Adidas', 'Nike', 'Puma', 'Under Armour', 'New Balance', 'ASICS', 'Reebok',
+  'Mizuno', 'Saucony', 'Brooks', 'Canterbury', 'Kooga', 'BLK', 'Grays',
+  'Hummel', 'Kappa', 'Umbro', 'Lotto', 'Errea', 'Joma', 'Kelme', 'Uhlsport',
+  'Select', 'Mitre', 'Precision', 'Patrick', 'Acelli', 'Super Rugby',
+  'Le Coq Sportif', 'Fila', 'Ellesse', 'Arena', 'Speedo', 'TYR',
+  'Other / Unknown'
+];
+
 const TrainingWearComponent: React.FC<TrainingWearProps> = ({ userType, onItemSelect }) => {
   const [selectedItem, setSelectedItem] = useState('');
   const [showItemDetails, setShowItemDetails] = useState(false);
@@ -56,6 +65,7 @@ const TrainingWearComponent: React.FC<TrainingWearProps> = ({ userType, onItemSe
   const [frontPhoto, setFrontPhoto] = useState<string | null>(null);
   const [backPhoto, setBackPhoto] = useState<string | null>(null);
   const [size, setSize] = useState('');
+  const [brand, setBrand] = useState('');
   const [selectedGender, setSelectedGender] = useState('');
   const [photoViewer, setPhotoViewer] = useState<string | null>(null);
   const [addedToCartId, setAddedToCartId] = useState<string | null>(null);
@@ -153,6 +163,7 @@ const TrainingWearComponent: React.FC<TrainingWearProps> = ({ userType, onItemSe
     setShowItemDetails(false);
     setSelectedItem('');
     setSize('');
+    setBrand('');
     setCondition(undefined);
     setPrice('');
     setFrontPhoto(null);
@@ -211,8 +222,8 @@ const TrainingWearComponent: React.FC<TrainingWearProps> = ({ userType, onItemSe
     const itemData = {
       id: Date.now().toString(),
       name: selectedItem,
-      description: `${selectedItem} - Size: ${size}`,
-      school: '',
+      description: `${selectedItem}${brand ? ` (${brand})` : ''} - Size: ${size}`,
+      school: brand || '',
       gender: selectedGender || 'Unisex',
       size,
       condition: condition || 1,
@@ -220,6 +231,7 @@ const TrainingWearComponent: React.FC<TrainingWearProps> = ({ userType, onItemSe
       frontPhoto: frontPhoto || '',
       backPhoto: backPhoto || '',
       category: 'Training wear',
+      subcategory: brand || undefined,
       dateCreated: new Date().toLocaleDateString(),
       quantity: 1
     };
@@ -346,6 +358,15 @@ const TrainingWearComponent: React.FC<TrainingWearProps> = ({ userType, onItemSe
                 <IonSelectOption value="Boy">Boy</IonSelectOption>
                 <IonSelectOption value="Girl">Girl</IonSelectOption>
                 <IonSelectOption value="Unisex">Unisex</IonSelectOption>
+              </IonSelect>
+            </IonItem>
+
+            <IonItem>
+              <IonLabel position="stacked">Brand</IonLabel>
+              <IonSelect value={brand} onIonChange={e => setBrand(e.detail.value)} placeholder="Select brand (optional)">
+                {SA_SPORTING_BRANDS.map(b => (
+                  <IonSelectOption key={b} value={b}>{b}</IonSelectOption>
+                ))}
               </IonSelect>
             </IonItem>
 

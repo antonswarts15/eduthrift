@@ -155,7 +155,9 @@ const ClubSelector: React.FC<ClubSelectorProps> = ({ value, onClubChange, placeh
         });
       });
     });
-    setGlobalSearchResults(results.slice(0, 10)); // Limit to 10 results
+    // Always append a "use typed name" option so the user can select any club
+    results.push({ name: term.trim(), town: '', province: '' });
+    setGlobalSearchResults(results.slice(0, 11));
   };
 
   const handleGlobalClubSelect = (club: {name: string, town: string, province: string}) => {
@@ -247,22 +249,27 @@ const ClubSelector: React.FC<ClubSelectorProps> = ({ value, onClubChange, placeh
         <IonCard style={{ marginBottom: '16px' }}>
           <IonCardContent style={{ padding: '0' }}>
             <IonList>
-              {globalSearchResults.map((club, index) => (
-                <IonItem 
-                  key={`${club.province}-${club.town}-${club.name}-${index}`}
-                  button 
-                  onClick={() => handleGlobalClubSelect(club)}
-                  style={{ 
-                    backgroundColor: value === club.name ? '#e3f2fd' : 'transparent'
-                  }}
-                >
-                  <IonIcon icon={fitnessOutline} slot="start" />
-                  <IonLabel>
-                    <h3>{club.name}</h3>
-                    <p>{club.town}, {club.province}</p>
-                  </IonLabel>
-                </IonItem>
-              ))}
+              {globalSearchResults.map((club, index) => {
+                const isCustom = club.town === '' && club.province === '';
+                return (
+                  <IonItem
+                    key={`${club.province}-${club.town}-${club.name}-${index}`}
+                    button
+                    onClick={() => handleGlobalClubSelect(club)}
+                    style={{
+                      backgroundColor: value === club.name ? '#e3f2fd' : isCustom ? '#f9f9f9' : 'transparent'
+                    }}
+                  >
+                    <IonIcon icon={fitnessOutline} slot="start" style={{ color: isCustom ? '#004aad' : undefined }} />
+                    <IonLabel>
+                      <h3 style={{ color: isCustom ? '#004aad' : undefined }}>
+                        {isCustom ? `Use "${club.name}"` : club.name}
+                      </h3>
+                      {!isCustom && <p>{club.town}, {club.province}</p>}
+                    </IonLabel>
+                  </IonItem>
+                );
+              })}
             </IonList>
           </IonCardContent>
         </IonCard>

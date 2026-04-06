@@ -1,19 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
 import { isLoggedIn } from '../utils/auth';
 import { useCartStore } from '../stores/cartStore';
-
-import { getNearestCollectionPoints } from '../utils/geolocation';
 import {
   IonContent,
   IonCard,
   IonCardContent,
   IonButton,
   IonIcon,
-  IonItem,
-  IonLabel,
-  IonSelect,
-  IonSelectOption,
   IonGrid,
   IonRow,
   IonCol
@@ -33,22 +27,6 @@ const Cart: React.FC = () => {
       history.push('/login');
     }
   }, [history]);
-  
-  const [selectedCollectionPoint, setSelectedCollectionPoint] = useState('');
-  
-  const userAddress = {
-    town: 'Johannesburg',
-    suburb: 'Sandton',
-    province: 'Gauteng'
-  };
-  
-  const collectionPoints = getNearestCollectionPoints(`${userAddress.suburb}, ${userAddress.town}`);
-  
-  useEffect(() => {
-    if (collectionPoints.length > 0) {
-      setSelectedCollectionPoint(collectionPoints[0]);
-    }
-  }, []);
   
   const getConditionText = (condition: number) => {
     const conditions = {
@@ -149,39 +127,6 @@ const Cart: React.FC = () => {
               </IonCard>
             ))}
             
-            <IonCard style={{ marginBottom: '16px' }}>
-              <IonCardContent>
-                <h3 style={{ margin: '0 0 12px 0' }}>Delivery Information</h3>
-                <p style={{ margin: '0 0 8px 0', fontSize: '14px', color: '#666' }}>
-                  <strong>Your Address:</strong> {userAddress.suburb}, {userAddress.town}, {userAddress.province}
-                </p>
-                <p style={{ margin: '0 0 12px 0', fontSize: '12px', color: '#888' }}>
-                  Note: Items are delivered to collection points only, not to your address.
-                </p>
-                
-                <IonItem style={{ marginBottom: '16px' }}>
-                  <IonLabel position="stacked">Select Collection Point</IonLabel>
-                  <IonSelect 
-                    value={selectedCollectionPoint} 
-                    onIonChange={e => setSelectedCollectionPoint(e.detail.value)}
-                    placeholder="Choose nearest collection point"
-                  >
-                    {collectionPoints.map((point, index) => (
-                      <IonSelectOption key={index} value={point}>
-                        {point} {index === 0 ? '(Nearest)' : ''}
-                      </IonSelectOption>
-                    ))}
-                  </IonSelect>
-                </IonItem>
-                
-                {selectedCollectionPoint === collectionPoints[0] && (
-                  <p style={{ fontSize: '12px', color: '#27AE60', marginBottom: '16px', paddingLeft: '16px' }}>
-                    ✓ Nearest collection point selected based on your address
-                  </p>
-                )}
-              </IonCardContent>
-            </IonCard>
-            
             <IonCard>
               <IonCardContent>
                 <h3 style={{ margin: '0 0 12px 0' }}>Order Summary</h3>
@@ -203,7 +148,6 @@ const Cart: React.FC = () => {
                 <IonButton 
                   expand="full" 
                   onClick={handleCheckout}
-                  disabled={!selectedCollectionPoint}
                   style={{ marginTop: '16px' }}
                 >
                   Proceed to Checkout
