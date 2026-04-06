@@ -19,7 +19,7 @@ const DivingEquipmentComponent: React.FC< DivingEquipmentProps > = (props) => {
     'Clothing': {
       items: ['Diving Swimsuit', 'Training Swimsuit', 'Swim Cap', 'Rash Guard'],
       icon: shirtOutline,
-      color: '#3498DB'
+      color: '#004aad'
     },
     'Protective Gear': {
       items: ['Diving Goggles', 'Nose Clip', 'Ear Plugs'],

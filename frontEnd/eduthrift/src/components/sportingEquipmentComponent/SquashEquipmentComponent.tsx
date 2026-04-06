@@ -20,7 +20,7 @@ const squashCategories = {
   'Clothing': {
     items: ['T-shirt', 'Shorts', 'Skirt', 'Training Top'],
     icon: shirtOutline,
-    color: '#3498DB'
+    color: '#004aad'
   },
   'Protective Gear': {
     items: ['Eye Protection', 'Sweatbands', 'Wrist Guards'],

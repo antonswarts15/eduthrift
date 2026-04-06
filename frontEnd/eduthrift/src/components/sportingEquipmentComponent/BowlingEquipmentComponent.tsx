@@ -20,7 +20,7 @@ const BowlingEquipmentComponent: React.FC< BowlingEquipmentProps > = (props) => 
     'Clothing': {
       items: ['Bowling Shirt', 'Bowling Slacks', 'Bowling Socks'],
       icon: shirtOutline,
-      color: '#3498DB'
+      color: '#004aad'
     },
     'Protective Gear': {
       items: ['Wrist Support', 'Bowling Glove', 'Thumb Guard'],

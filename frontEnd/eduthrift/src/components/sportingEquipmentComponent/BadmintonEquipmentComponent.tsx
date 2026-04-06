@@ -19,7 +19,7 @@ const BadmintonEquipmentComponent: React.FC< BadmintonEquipmentProps >=(props)=>
     'Clothing': {
       items: ['Badminton Shirt', 'Badminton Shorts', 'Training Vest'],
       icon: shirtOutline,
-      color: '#3498DB'
+      color: '#004aad'
     },
     'Protective Gear': {
       items: ['Wrist Support', 'Knee Support', 'Ankle Support'],

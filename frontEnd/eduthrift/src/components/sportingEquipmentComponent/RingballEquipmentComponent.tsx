@@ -12,7 +12,7 @@ const RingballEquipmentComponent: React.FC<any> = (props) => {
     'Clothing': {
       items: ['Ringball Jersey', 'Ringball Shorts', 'Training Shirt', 'Warm-up Jacket', 'Base Layer'],
       icon: shirtOutline,
-      color: '#3498DB'
+      color: '#004aad'
     },
     'Protective Gear': {
       items: ['Knee Pads', 'Ankle Guards', 'Mouthguards'],

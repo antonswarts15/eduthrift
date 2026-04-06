@@ -51,7 +51,7 @@ const Home: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   const categories = [
-    { name: 'School & sport uniform', icon: schoolOutline, color: '#3498DB' },
+    { name: 'School & sport uniform', icon: schoolOutline, color: '#004aad' },
     { name: 'Club clothing',          icon: shirtOutline,   color: '#E74C3C' },
     { name: 'Training wear',          icon: fitnessOutline, color: '#27AE60' },
     { name: 'Belts, bags & shoes',    icon: bagOutline,     color: '#8E44AD' },
@@ -109,7 +109,7 @@ const Home: React.FC = () => {
         {/* What is Eduthrift */}
         <IonCard>
           <IonCardContent style={{ textAlign: 'center', padding: '20px' }}>
-            <IonIcon icon={schoolOutline} style={{ fontSize: '48px', color: '#3498DB', marginBottom: '16px' }} />
+            <IonIcon icon={schoolOutline} style={{ fontSize: '48px', color: '#004aad', marginBottom: '16px' }} />
             <h2 style={{ color: '#2C3E50', marginBottom: '16px' }}>What is Eduthrift?</h2>
             <p style={{ color: '#666', lineHeight: '1.6' }}>
               A secure marketplace for second-hand educational items in South Africa.
@@ -220,7 +220,7 @@ const Home: React.FC = () => {
               <IonRow>
                 <IonCol size="6" sizeMd="3">
                   <div style={{ textAlign: 'center', padding: '16px' }}>
-                    <IonIcon icon={searchOutline} style={{ fontSize: '28px', color: '#3498DB', marginBottom: '8px' }} />
+                    <IonIcon icon={searchOutline} style={{ fontSize: '28px', color: '#004aad', marginBottom: '8px' }} />
                     <h4 style={{ fontSize: '12px', margin: '4px 0', color: '#2C3E50' }}>Browse & Search</h4>
                     <p style={{ fontSize: '10px', color: '#666', margin: '0' }}>Find items by category or school</p>
                   </div>
@@ -262,7 +262,7 @@ const Home: React.FC = () => {
               <IonRow>
                 <IonCol size="6" sizeMd="3">
                   <div style={{ textAlign: 'center', padding: '16px' }}>
-                    <IonIcon icon={cameraOutline} style={{ fontSize: '28px', color: '#3498DB', marginBottom: '8px' }} />
+                    <IonIcon icon={cameraOutline} style={{ fontSize: '28px', color: '#004aad', marginBottom: '8px' }} />
                     <h4 style={{ fontSize: '12px', margin: '4px 0', color: '#2C3E50' }}>List Items</h4>
                     <p style={{ fontSize: '10px', color: '#666', margin: '0' }}>Upload photos & set price</p>
                   </div>
@@ -313,7 +313,7 @@ const Home: React.FC = () => {
                 </IonCol>
                 <IonCol size="12" sizeMd="6">
                   <div style={{ display: 'flex', alignItems: 'center', padding: '8px' }}>
-                    <IonIcon icon={locationOutline} style={{ fontSize: '24px', color: '#3498DB', marginRight: '12px' }} />
+                    <IonIcon icon={locationOutline} style={{ fontSize: '24px', color: '#004aad', marginRight: '12px' }} />
                     <div style={{ textAlign: 'left' }}>
                       <h4 style={{ fontSize: '14px', margin: '0', color: '#2C3E50' }}>Pudo + The Courier Guy Network</h4>
                       <p style={{ fontSize: '12px', color: '#666', margin: '0' }}>1400+ lockers across South Africa</p>

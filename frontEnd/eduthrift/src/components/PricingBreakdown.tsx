@@ -98,7 +98,7 @@ const PricingBreakdown: React.FC<PricingBreakdownProps> = ({ itemPrice, shipping
 
           <IonItem lines="none">
             <IonLabel>
-              <p style={{ color: '#3498db' }}>Platform Revenue: R{currentModel.platformRevenue.toFixed(2)}</p>
+              <p style={{ color: '#004aad' }}>Platform Revenue: R{currentModel.platformRevenue.toFixed(2)}</p>
             </IonLabel>
           </IonItem>
         </div>

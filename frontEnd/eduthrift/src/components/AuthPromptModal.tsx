@@ -22,7 +22,7 @@ const AuthPromptModal: React.FC = () => {
     <IonModal isOpen={isOpen} onDidDismiss={hidePrompt} style={{ '--width': '90%', '--max-width': '400px', '--height': 'auto', '--border-radius': '16px' }} className="auth-prompt-modal">
       <div style={{ padding: '32px 24px', textAlign: 'center' }}>
         <div style={{ fontSize: '48px', marginBottom: '16px' }}>
-          <IonIcon icon={logInOutline} style={{ fontSize: '48px', color: '#3880ff' }} />
+          <IonIcon icon={logInOutline} style={{ fontSize: '48px', color: '#004aad' }} />
         </div>
         <h2 style={{ margin: '0 0 8px', color: '#333', fontSize: '20px' }}>Sign in required</h2>
         <p style={{ margin: '0 0 24px', color: '#666', fontSize: '15px', lineHeight: '1.5' }}>

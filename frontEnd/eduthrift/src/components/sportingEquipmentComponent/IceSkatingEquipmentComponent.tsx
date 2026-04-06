@@ -20,7 +20,7 @@ const IceSkatingEquipmentComponent: React.FC< IceSkatingEquipmentProps > = (prop
     'Clothing': {
       items: ['Thermal Layers', 'Warm Jacket', 'Thermal Pants', 'Practice Outfit'],
       icon: shirtOutline,
-      color: '#3498DB'
+      color: '#004aad'
     },
     'Protective Gear': {
       items: ['Helmet', 'Gloves', 'Knee Pads', 'Wrist Guards'],

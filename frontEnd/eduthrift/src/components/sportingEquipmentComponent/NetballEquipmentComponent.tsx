@@ -20,7 +20,7 @@ const NetballEquipmentComponent: React.FC<NetballEquipmentProps> = (props) => {
     'Clothing': {
       items: ['Netball Dress', 'Netball Skirt', 'Training Shirt', 'Warm-up Jacket', 'Training Shorts', 'Base Layer', 'Match Dress Home', 'Match Dress Away', 'Training Polo', 'Tracksuit Top', 'Tracksuit Pants', 'Team Hoodie', 'Windbreaker Jacket', 'Compression Tights', 'Team Blazer', 'Team Scarf', 'Warm-up Pants'],
       icon: shirtOutline,
-      color: '#3498DB'
+      color: '#004aad'
     },
     'Protective Gear': {
       items: ['Knee Pads', 'Ankle Guards', 'Mouthguards'],

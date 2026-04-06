@@ -19,7 +19,7 @@ const HorseRidingEquipmentComponent: React.FC< HorseRidingEquipmentProps > = (pr
     'Clothing': {
       items: ['Riding Pants (Jodhpurs)', 'Polo Shirt', 'Competition Jacket', 'Show Shirt'],
       icon: shirtOutline,
-      color: '#3498DB'
+      color: '#004aad'
     },
     'Protective Gear': {
       items: ['Helmet', 'Body Protector', 'Riding Gloves', 'Back Protector'],

@@ -19,7 +19,7 @@ const TargetShootingEquipmentComponent: React.FC< TargetShootingEquipmentProps >
     'Clothing': {
       items: ['Shooting Jacket', 'Shooting Trousers', 'Competition Shirt'],
       icon: shirtOutline,
-      color: '#3498DB'
+      color: '#004aad'
     },
     'Protective Gear': {
       items: ['Eye Protection', 'Ear Protection', 'Shooting Gloves'],

@@ -209,7 +209,7 @@ const ItemPage: React.FC = () => {
               <p style={{ textAlign: 'center', fontSize: '11px', color: '#aaa', margin: '0 0 8px' }}>Tap photo to enlarge</p>
               
               <div style={{ marginBottom: '16px' }}>
-                <h2 style={{ fontSize: '28px', color: '#3880ff', margin: '0' }}>R{listing.price}</h2>
+                <h2 style={{ fontSize: '28px', color: '#004aad', margin: '0' }}>R{listing.price}</h2>
               </div>
               
               <div style={{ marginBottom: '16px' }}>

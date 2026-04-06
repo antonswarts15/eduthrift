@@ -12,7 +12,7 @@ const SoftballEquipmentComponent: React.FC<any> = (props) => {
     'Clothing': {
       items: ['Softball Jersey', 'Softball Pants', 'Softball Cap', 'Training Shirt', 'Warm-up Jacket'],
       icon: shirtOutline,
-      color: '#3498DB'
+      color: '#004aad'
     },
     'Protective Gear': {
       items: ['Softball Helmet', 'Catcher Gear', 'Shin Guards', 'Chest Protector', 'Batting Gloves'],

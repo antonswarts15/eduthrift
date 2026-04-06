@@ -20,7 +20,7 @@ const MountainbikeEquipmentComponent: React.FC<MountainbikeEquipmentProps> = (pr
     'Clothing': {
       items: ['Cycling Jersey', 'Cycling Shorts', 'Cycling Tights', 'Base Layer', 'Rain Jacket', 'Windbreaker', 'Arm Warmers', 'Leg Warmers', 'Cycling Vest', 'Long Sleeve Jersey', 'Bib Shorts', 'Thermal Jersey', 'Softshell Jacket', 'Cycling Socks', 'Under Shorts', 'Team Jersey', 'Training Top', 'Casual Cycling Shirt', 'Winter Jacket', 'Gilet'],
       icon: shirtOutline,
-      color: '#3498DB'
+      color: '#004aad'
     },
     'Protective Gear': {
       items: ['Helmet', 'Knee Pads', 'Elbow Pads', 'Cycling Gloves', 'Back Protector', 'Shin Guards', 'Full Face Helmet', 'Body Armor', 'Wrist Guards'],

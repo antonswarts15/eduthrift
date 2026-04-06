@@ -34,7 +34,7 @@ const beltsBagsShoesCategories: Record<string, { items: string[]; icon: string; 
   'Boys': {
     items: ['School shoes', 'Sports shoes', 'Training shoes', 'School belt', 'School bag', 'Sports bag', 'Boot bag', 'Duffel bag'],
     icon: footstepsOutline,
-    color: '#3498DB'
+    color: '#004aad'
   },
   'Girls': {
     items: ['School shoes', 'Sports shoes', 'Training shoes', 'School belt', 'School bag', 'Sports bag', 'Ballet shoes', 'Duffel bag'],
@@ -313,7 +313,7 @@ const BeltsBagsShoesComponent: React.FC<BeltsBagsShoesProps> = ({ userType, onIt
                             <span>{getConditionText(item.condition)}</span>
                           </div>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <span style={{ fontSize: '16px', fontWeight: 'bold', color: '#3880ff' }}>R{item.price}</span>
+                            <span style={{ fontSize: '16px', fontWeight: 'bold', color: '#004aad' }}>R{item.price}</span>
                             <IonButton
                               size="small"
                               onClick={(e) => {
@@ -504,7 +504,7 @@ const BeltsBagsShoesComponent: React.FC<BeltsBagsShoesProps> = ({ userType, onIt
                           <IonIcon icon={imageOutline} size="large" style={{ marginBottom: '8px', opacity: 0.5 }} />
                           <div style={{ fontSize: '13px', fontWeight: 'bold' }}>{item}</div>
                           {userType === 'buyer' && getItemCount(item) > 0 && (
-                            <div style={{ fontSize: '11px', color: '#3498DB', marginTop: '4px' }}>
+                            <div style={{ fontSize: '11px', color: '#004aad', marginTop: '4px' }}>
                               {getItemCount(item)} available
                             </div>
                           )}

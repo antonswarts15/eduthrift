@@ -12,7 +12,7 @@ const VolleyballEquipmentComponent: React.FC<any> = (props) => {
     'Boys Clothing': {
       items: ['Volleyball Jersey', 'Volleyball Shorts', 'Training Shirt', 'Warm-up Jacket', 'Compression Shirt', 'Tracksuit Top', 'Tracksuit Pants', 'Team Hoodie'],
       icon: shirtOutline,
-      color: '#3498DB'
+      color: '#004aad'
     },
     'Girls Clothing': {
       items: ['Volleyball Jersey', 'Volleyball Shorts', 'Training Shirt', 'Warm-up Jacket', 'Compression Shirt', 'Tracksuit Top', 'Tracksuit Pants', 'Team Hoodie'],

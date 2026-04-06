@@ -387,7 +387,7 @@ const GenericSportEquipmentComponent: React.FC<GenericSportEquipmentProps> = ({
                           </div>
                           
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <span style={{ fontSize: '16px', fontWeight: 'bold', color: '#3880ff' }}>R{item.price}</span>
+                            <span style={{ fontSize: '16px', fontWeight: 'bold', color: '#004aad' }}>R{item.price}</span>
                             <IonButton 
                               size="small"
                               onClick={(e) => {
@@ -594,7 +594,7 @@ const GenericSportEquipmentComponent: React.FC<GenericSportEquipmentProps> = ({
           marginBottom: '20px', 
           textAlign: 'center', 
           backgroundColor: 'rgba(52, 152, 219, 0.1)', 
-          border: '2px solid #3498DB', 
+          border: '2px solid #004aad', 
           borderRadius: '12px', 
           padding: '16px' 
         }}>
@@ -602,13 +602,13 @@ const GenericSportEquipmentComponent: React.FC<GenericSportEquipmentProps> = ({
             icon={schoolOutline} 
             style={{ 
               fontSize: '32px', 
-              color: '#3498DB', 
+              color: '#004aad', 
               marginBottom: '8px' 
             }} 
           />
           <h2 style={{ 
             margin: '0', 
-            color: '#3498DB', 
+            color: '#004aad', 
             fontSize: '18px', 
             fontWeight: 'bold' 
           }}>
@@ -634,7 +634,7 @@ const GenericSportEquipmentComponent: React.FC<GenericSportEquipmentProps> = ({
                   button 
                   onClick={() => setOrganizationType('school')}
                   style={{
-                    border: organizationType === 'school' ? '2px solid #3498DB' : '1px solid #444',
+                    border: organizationType === 'school' ? '2px solid #004aad' : '1px solid #444',
                     backgroundColor: 'transparent'
                   }}
                 >
@@ -643,13 +643,13 @@ const GenericSportEquipmentComponent: React.FC<GenericSportEquipmentProps> = ({
                       icon={schoolOutline} 
                       size="large" 
                       style={{ 
-                        color: organizationType === 'school' ? '#3498DB' : '#666',
+                        color: organizationType === 'school' ? '#004aad' : '#666',
                         marginBottom: '8px' 
                       }} 
                     />
                     <div style={{ 
                       fontWeight: 'bold', 
-                      color: organizationType === 'school' ? '#3498DB' : '#333'
+                      color: organizationType === 'school' ? '#004aad' : '#333'
                     }}>
                       School
                     </div>
@@ -725,7 +725,7 @@ const GenericSportEquipmentComponent: React.FC<GenericSportEquipmentProps> = ({
                           <IonIcon icon={imageOutline} size="large" style={{ marginBottom: '8px', opacity: 0.5 }} />
                           <div style={{ fontSize: '13px', fontWeight: 'bold' }}>{item}</div>
                           {userType === 'buyer' && getItemCount(item) > 0 && (
-                            <div style={{ fontSize: '11px', color: '#3498DB', marginTop: '4px' }}>
+                            <div style={{ fontSize: '11px', color: '#004aad', marginTop: '4px' }}>
                               {getItemCount(item)} available
                             </div>
                           )}
@@ -779,7 +779,7 @@ const GenericSportEquipmentComponent: React.FC<GenericSportEquipmentProps> = ({
                               <IonIcon icon={imageOutline} size="large" style={{ marginBottom: '8px', opacity: 0.5 }} />
                               <div style={{ fontSize: '13px', fontWeight: 'bold' }}>{item}</div>
                               {userType === 'buyer' && getItemCount(item) > 0 && (
-                                <div style={{ fontSize: '11px', color: '#3498DB', marginTop: '4px' }}>
+                                <div style={{ fontSize: '11px', color: '#004aad', marginTop: '4px' }}>
                                   {getItemCount(item)} available
                                 </div>
                               )}

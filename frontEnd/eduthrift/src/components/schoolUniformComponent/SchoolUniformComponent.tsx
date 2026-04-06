@@ -122,7 +122,7 @@ const SchoolUniformComponent: React.FC<SchoolUniformProps> = ({ userType, onItem
     'Boys Uniform': {
       items: ['Short sleeve shirts', 'Long sleeve shirts', 'Trousers', 'Shorts', 'Jersey or pullover', 'Blazer', 'Tie'],
       icon: shirtOutline,
-      color: '#3498DB'
+      color: '#004aad'
     },
     'Girls Uniform': {
       items: ['Blouse','Short sleeve shirts', 'Long sleeve shirts', 'Trousers', 'Skirt or tunic', 'Dress', 'Jersey or pullover', 'Blazer', 'Tie', 'Tights'],
@@ -386,7 +386,7 @@ const SchoolUniformComponent: React.FC<SchoolUniformProps> = ({ userType, onItem
             marginBottom: '20px', 
             textAlign: 'center', 
             backgroundColor: 'rgba(52, 152, 219, 0.1)', 
-            border: '2px solid #3498DB', 
+            border: '2px solid #004aad', 
             borderRadius: '12px', 
             padding: '16px' 
           }}>
@@ -394,13 +394,13 @@ const SchoolUniformComponent: React.FC<SchoolUniformProps> = ({ userType, onItem
               icon={schoolOutline} 
               style={{ 
                 fontSize: '32px', 
-                color: '#3498DB', 
+                color: '#004aad', 
                 marginBottom: '8px' 
               }} 
             />
             <h2 style={{ 
               margin: '0', 
-              color: '#3498DB', 
+              color: '#004aad', 
               fontSize: '18px', 
               fontWeight: 'bold' 
             }}>
@@ -490,7 +490,7 @@ const SchoolUniformComponent: React.FC<SchoolUniformProps> = ({ userType, onItem
             marginBottom: '20px',
             textAlign: 'center',
             backgroundColor: 'rgba(52, 152, 219, 0.1)',
-            border: '2px solid #3498DB',
+            border: '2px solid #004aad',
             borderRadius: '12px',
             padding: '16px'
           }}>
@@ -498,13 +498,13 @@ const SchoolUniformComponent: React.FC<SchoolUniformProps> = ({ userType, onItem
               icon={schoolOutline}
               style={{
                 fontSize: '32px',
-                color: '#3498DB',
+                color: '#004aad',
                 marginBottom: '8px'
               }}
             />
             <h2 style={{
               margin: '0',
-              color: '#3498DB',
+              color: '#004aad',
               fontSize: '18px',
               fontWeight: 'bold'
             }}>
@@ -589,7 +589,7 @@ const SchoolUniformComponent: React.FC<SchoolUniformProps> = ({ userType, onItem
                             <span>{getConditionText(item.condition)}</span>
                           </div>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <span style={{ fontSize: '16px', fontWeight: 'bold', color: '#3880ff' }}>R{item.price}</span>
+                            <span style={{ fontSize: '16px', fontWeight: 'bold', color: '#004aad' }}>R{item.price}</span>
                             <IonButton
                               size="small"
                               onClick={() => {
@@ -693,7 +693,7 @@ const SchoolUniformComponent: React.FC<SchoolUniformProps> = ({ userType, onItem
           marginBottom: '20px', 
           textAlign: 'center', 
           backgroundColor: 'rgba(52, 152, 219, 0.1)', 
-          border: '2px solid #3498DB', 
+          border: '2px solid #004aad', 
           borderRadius: '12px', 
           padding: '16px' 
         }}>
@@ -701,13 +701,13 @@ const SchoolUniformComponent: React.FC<SchoolUniformProps> = ({ userType, onItem
             icon={schoolOutline} 
             style={{ 
               fontSize: '32px', 
-              color: '#3498DB', 
+              color: '#004aad', 
               marginBottom: '8px' 
             }} 
           />
           <h2 style={{ 
             margin: '0', 
-            color: '#3498DB', 
+            color: '#004aad', 
             fontSize: '18px', 
             fontWeight: 'bold' 
           }}>
@@ -771,7 +771,7 @@ const SchoolUniformComponent: React.FC<SchoolUniformProps> = ({ userType, onItem
                               <IonIcon icon={imageOutline} size="large" style={{ marginBottom: '8px', opacity: 0.5 }} />
                               <div style={{ fontSize: '13px', fontWeight: 'bold' }}>{item}</div>
                               {itemCount > 0 && (
-                                <div style={{ fontSize: '11px', color: '#3498DB', marginTop: '4px' }}>
+                                <div style={{ fontSize: '11px', color: '#004aad', marginTop: '4px' }}>
                                   {itemCount} available
                                 </div>
                               )}

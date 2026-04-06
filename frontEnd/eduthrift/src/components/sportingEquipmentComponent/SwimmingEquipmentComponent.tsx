@@ -21,7 +21,7 @@ const SwimmingEquipmentComponent: React.FC< SwimmingEquipmentProps > = (props) =
     'Clothing': {
       items: ['Swimsuit', 'Swimming Trunks', 'Rash Guard', 'Team Suit'],
       icon: shirtOutline,
-      color: '#3498DB'
+      color: '#004aad'
     },
     'Protective Gear': {
       items: ['Goggles', 'Swim Cap', 'Nose Clip', 'Ear Plugs'],

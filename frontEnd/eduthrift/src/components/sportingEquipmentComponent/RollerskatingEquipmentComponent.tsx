@@ -21,7 +21,7 @@ const RollerSkatingEquipmentComponent: React.FC< RollerSkatingEquipmentProps > =
     'Clothing': {
       items: ['Athletic Wear', 'Skating Dress', 'Training Shirt', 'Leggings'],
       icon: shirtOutline,
-      color: '#3498DB'
+      color: '#004aad'
     },
     'Protective Gear': {
       items: ['Helmet', 'Knee Pads', 'Elbow Pads', 'Wrist Guards', 'Gloves'],

@@ -18,7 +18,7 @@ const BoxingEquipmentComponent: React.FC< BoxingEquipmentProps > = (props) => {
     'Clothing': {
       items: ['Boxing Shorts', 'Boxing Tank Top', 'Boxing Robe', 'Training Shirt'],
       icon: shirtOutline,
-      color: '#3498DB'
+      color: '#004aad'
     },
     'Protective Gear': {
       items: ['Headgear', 'Mouthguard', 'Groin Guard', 'Chest Protector'],

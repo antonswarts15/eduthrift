@@ -19,7 +19,7 @@ const JukskeiEquipmentComponent: React.FC< JukskeiEquipmentProps > = (props) => 
     'Clothing': {
       items: ['Jukskei T-shirt', 'Jukskei Shorts', 'Team Polo', 'Training Shirt'],
       icon: shirtOutline,
-      color: '#3498DB'
+      color: '#004aad'
     },
     'Protective Gear': {
       items: ['Sun Hat', 'Sunglasses', 'Knee Pads'],

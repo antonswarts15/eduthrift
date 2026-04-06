@@ -318,9 +318,9 @@ const LoginRegisterPage: React.FC = () => {
                           </IonButton>
                           <p style={{ fontSize: '12px', color: '#666', textAlign: 'center', marginTop: '12px' }}>
                             By creating an account you agree to our{' '}
-                            <a href="/terms-of-service" style={{ color: '#3880ff' }}>Terms of Service</a>
+                            <a href="/terms-of-service" style={{ color: '#004aad' }}>Terms of Service</a>
                             {' '}and{' '}
-                            <a href="/privacy-policy" style={{ color: '#3880ff' }}>Privacy Policy</a>.
+                            <a href="/privacy-policy" style={{ color: '#004aad' }}>Privacy Policy</a>.
                           </p>
                         </>
                     )}
@@ -331,7 +331,7 @@ const LoginRegisterPage: React.FC = () => {
                   <IonButton
                     fill="solid"
                     onClick={() => history.goBack()}
-                    style={{ '--background': '#1a3a5c', '--color': 'white', '--border-radius': '20px', textTransform: 'none' }}
+                    style={{ '--background': '#004aad', '--color': 'white', '--border-radius': '5px', textTransform: 'none' }}
                   >
                     <IonIcon icon={arrowBackOutline} slot="start" />
                     Continue browsing without logging in

@@ -21,7 +21,7 @@ const RowingEquipmentComponent: React.FC< RowingEquipmentProps > = (props) => {
     'Clothing': {
       items: ['Unisuit', 'Athletic Gear', 'Training Shirt', 'Rowing Shorts'],
       icon: shirtOutline,
-      color: '#3498DB'
+      color: '#004aad'
     },
     'Protective Gear': {
       items: ['Life Jacket', 'Sunblock', 'Sun Hat', 'Gloves'],

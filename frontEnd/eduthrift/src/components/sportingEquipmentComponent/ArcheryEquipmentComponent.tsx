@@ -20,7 +20,7 @@ const ArcheryEquipmentComponent: React.FC<ArcheryEquipmentProps> = (props) => {
     'Clothing': {
       items: ['Archery Shirt', 'Archery Trousers', 'Training Vest'],
       icon: shirtOutline,
-      color: '#3498DB'
+      color: '#004aad'
     },
     'Protective Gear': {
       items: ['Arm Guard', 'Finger Tab', 'Chest Guard', 'Shooting Glove'],

@@ -21,7 +21,7 @@ const TableTennisEquipmentComponent: React.FC< TableTennisEquipmentProps > = (pr
     'Clothing': {
       items: ['Table Tennis Shirt', 'Table Tennis Shorts', 'Table Tennis Skirt', 'Training Top'],
       icon: shirtOutline,
-      color: '#3498DB'
+      color: '#004aad'
     },
     'Protective Gear': {
       items: ['Sweatband', 'Wrist Guards', 'Knee Support'],

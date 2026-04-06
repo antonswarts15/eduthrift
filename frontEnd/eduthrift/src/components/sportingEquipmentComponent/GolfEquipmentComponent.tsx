@@ -19,7 +19,7 @@ const GolfEquipmentComponent: React.FC< GolfEquipmentProps > = (props) => {
     'Clothing': {
       items: ['Golf Polo Shirt', 'Golf Trousers', 'Golf Shorts', 'Golf Vest'],
       icon: shirtOutline,
-      color: '#3498DB'
+      color: '#004aad'
     },
     'Protective Gear': {
       items: ['Golf Gloves', 'Sun Hat', 'Sunglasses'],

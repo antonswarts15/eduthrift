@@ -21,7 +21,7 @@ const TriathlonEquipmentComponent: React.FC< TriathlonEquipmentProps > = (props)
     'Clothing': {
       items: ['Tri-suit', 'Cycling Jersey', 'Running Shorts', 'Swim Cap'],
       icon: shirtOutline,
-      color: '#3498DB'
+      color: '#004aad'
     },
     'Protective Gear': {
       items: ['Helmet', 'Goggles', 'Sunglasses', 'Gloves'],

@@ -20,7 +20,7 @@ const RugbyEquipmentComponent: React.FC<RugbyEquipmentProps> = (props) => {
     'Clothing': {
       items: ['Rugby Jersey', 'Rugby Shorts', 'Rugby Socks', 'Training Shirt', 'Warm-up Jacket', 'Training Shorts', 'Compression Shirt', 'Base Layer', 'Rain Jacket', 'Match Jersey Home', 'Match Jersey Away', 'Training Polo', 'Tracksuit Top', 'Tracksuit Pants', 'Hoodie', 'Windbreaker', 'Thermal Underwear', 'Team Blazer', 'Team Tie', 'Team Scarf'],
       icon: shirtOutline,
-      color: '#3498DB'
+      color: '#004aad'
     },
     'Protective Gear': {
       items: ['Scrum Cap', 'Shoulder Pads', 'Mouthguards', 'Shin Guards', 'Body Armor', 'Knee Pads', 'Elbow Pads', 'Chest Guard', 'Thigh Guards'],

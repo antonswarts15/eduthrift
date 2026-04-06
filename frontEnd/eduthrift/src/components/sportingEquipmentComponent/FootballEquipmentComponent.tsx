@@ -20,7 +20,7 @@ const FootballEquipmentComponent: React.FC<FootballEquipmentProps> = (props) => 
     'Clothing': {
       items: ['Football Jersey', 'Football Shorts', 'Football Socks', 'Training Shirt', 'Warm-up Jacket', 'Training Shorts', 'Goalkeeper Jersey', 'Base Layer'],
       icon: shirtOutline,
-      color: '#3498DB'
+      color: '#004aad'
     },
     'Protective Gear': {
       items: ['Shin Guards', 'Goalkeeper Gloves', 'Mouthguards', 'Ankle Guards', 'Knee Pads'],

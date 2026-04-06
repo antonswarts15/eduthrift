@@ -39,7 +39,7 @@ const matricDanceCategories: Record<string, { items: string[]; icon: string; col
   'Boys Matric Dance': {
     items: ['Suit jacket', 'Suit pants', 'Dress shirt', 'Tie', 'Bow tie', 'Waistcoat', 'Dress shoes', 'Cufflinks'],
     icon: shirtOutline,
-    color: '#3498DB'
+    color: '#004aad'
   },
   'Accessories': {
     items: ['Corsage', 'Boutonniere', 'Hair accessories', 'Belt', 'Pocket square', 'Suspenders', 'Jewellery'],
@@ -316,7 +316,7 @@ const MatricDanceComponent: React.FC<MatricDanceProps> = ({ userType, onItemSele
                             <span>{getConditionText(item.condition)}</span>
                           </div>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <span style={{ fontSize: '16px', fontWeight: 'bold', color: '#3880ff' }}>R{item.price}</span>
+                            <span style={{ fontSize: '16px', fontWeight: 'bold', color: '#004aad' }}>R{item.price}</span>
                             <IonButton
                               size="small"
                               onClick={(e) => {

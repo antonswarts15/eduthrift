@@ -20,7 +20,7 @@ const athleticsCategories = {
   'Clothing': {
     items: ['Running Vest', 'Running Shorts', 'Running Tights', 'Track Suit'],
     icon: shirtOutline,
-    color: '#3498DB'
+    color: '#004aad'
   },
   'Protective Gear': {
     items: ['Sunblock', 'Knee Support', 'Ankle Support'],

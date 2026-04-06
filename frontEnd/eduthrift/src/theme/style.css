@@ -147,6 +147,7 @@ ion-button {
   --padding-bottom: 12px;
   --padding-start: 24px;
   --padding-end: 24px;
+  --border-radius: 10px;
   height: 48px;
   margin: 8px 0;
 }

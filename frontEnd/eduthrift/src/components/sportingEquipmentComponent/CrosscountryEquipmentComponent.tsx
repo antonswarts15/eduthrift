@@ -19,7 +19,7 @@ const CrosscountryEquipmentComponent: React.FC< CrossCountryEquipmentProps > = (
     'Clothing': {
       items: ['Running Vest', 'Running Shorts', 'Running Tights', 'Training Shirt'],
       icon: shirtOutline,
-      color: '#3498DB'
+      color: '#004aad'
     },
     'Footwear': {
       items: ['Running Shoes', 'Spikes', 'Cross Training Shoes'],

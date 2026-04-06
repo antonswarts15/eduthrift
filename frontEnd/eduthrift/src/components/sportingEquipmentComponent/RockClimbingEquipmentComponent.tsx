@@ -20,7 +20,7 @@ const RockClimbingEquipmentComponent: React.FC< RockClimbingEquipmentProps > = (
     'Clothing': {
       items: ['Athletic Shirt', 'Stretch Pants', 'Climbing Shorts', 'Base Layer'],
       icon: shirtOutline,
-      color: '#3498DB'
+      color: '#004aad'
     },
     'Protective Gear': {
       items: ['Harness', 'Helmet', 'Chalk Bag', 'Gloves', 'Knee Pads'],

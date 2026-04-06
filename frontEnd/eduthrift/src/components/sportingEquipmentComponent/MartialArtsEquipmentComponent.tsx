@@ -21,7 +21,7 @@ const MartialArtsEquipmentComponent: React.FC< MartialArtsEquipmentProps > = (pr
     'Clothing': {
       items: ['Gi/Uniform', 'Belt', 'Training Shirt', 'Martial Arts Pants'],
       icon: shirtOutline,
-      color: '#3498DB'
+      color: '#004aad'
     },
     'Protective Gear': {
       items: ['Sparring Gloves', 'Shin Guards', 'Headgear', 'Chest Protector', 'Groin Guard'],

@@ -8,7 +8,7 @@ const sportConfigs = {
   'Football': {
     categories: {
       'Equipment': { items: ['Football', 'Goal posts', 'Training cones', 'Bibs'], icon: 'constructOutline', color: '#E74C3C' },
-      'Clothing': { items: ['Football jersey', 'Football shorts', 'Football socks', 'Training shirt'], icon: 'shirtOutline', color: '#3498DB' },
+      'Clothing': { items: ['Football jersey', 'Football shorts', 'Football socks', 'Training shirt'], icon: 'shirtOutline', color: '#004aad' },
       'Protective Gear': { items: ['Shin guards', 'Goalkeeper gloves', 'Mouthguard'], icon: 'shieldOutline', color: '#27AE60' },
       'Footwear': { items: ['Football boots', 'Training shoes'], icon: 'footstepsOutline', color: '#8E44AD' },
       'Accessories': { items: ['Water bottle', 'Kit bag', 'Captain armband'], icon: 'bagOutline', color: '#F39C12' }
@@ -22,7 +22,7 @@ const sportConfigs = {
   'Athletics': {
     categories: {
       'Equipment': { items: ['Javelin', 'Shot put', 'Discus', 'Starting blocks'], icon: 'constructOutline', color: '#E74C3C' },
-      'Clothing': { items: ['Running vest', 'Running shorts', 'Track suit'], icon: 'shirtOutline', color: '#3498DB' },
+      'Clothing': { items: ['Running vest', 'Running shorts', 'Track suit'], icon: 'shirtOutline', color: '#004aad' },
       'Footwear': { items: ['Spikes', 'Running shoes', 'Field event shoes'], icon: 'footstepsOutline', color: '#8E44AD' },
       'Accessories': { items: ['Water bottle', 'Kit bag', 'Stopwatch'], icon: 'bagOutline', color: '#F39C12' }
     },
@@ -35,7 +35,7 @@ const sportConfigs = {
   'Basketball': {
     categories: {
       'Equipment': { items: ['Basketball', 'Basketball hoop', 'Training cones'], icon: 'constructOutline', color: '#E74C3C' },
-      'Clothing': { items: ['Basketball jersey', 'Basketball shorts', 'Compression shirt'], icon: 'shirtOutline', color: '#3498DB' },
+      'Clothing': { items: ['Basketball jersey', 'Basketball shorts', 'Compression shirt'], icon: 'shirtOutline', color: '#004aad' },
       'Footwear': { items: ['Basketball shoes', 'Training shoes'], icon: 'footstepsOutline', color: '#8E44AD' },
       'Accessories': { items: ['Water bottle', 'Kit bag', 'Sweatbands'], icon: 'bagOutline', color: '#F39C12' }
     },
@@ -48,7 +48,7 @@ const sportConfigs = {
   'Cricket': {
     categories: {
       'Equipment': { items: ['Cricket bat', 'Cricket ball', 'Wickets', 'Stumps'], icon: 'constructOutline', color: '#E74C3C' },
-      'Clothing': { items: ['Cricket whites', 'Cricket shirt', 'Cricket trousers'], icon: 'shirtOutline', color: '#3498DB' },
+      'Clothing': { items: ['Cricket whites', 'Cricket shirt', 'Cricket trousers'], icon: 'shirtOutline', color: '#004aad' },
       'Protective Gear': { items: ['Batting pads', 'Batting gloves', 'Helmet', 'Box'], icon: 'shieldOutline', color: '#27AE60' },
       'Footwear': { items: ['Cricket spikes', 'Training shoes'], icon: 'footstepsOutline', color: '#8E44AD' },
       'Accessories': { items: ['Kit bag', 'Water bottle', 'Grip tape'], icon: 'bagOutline', color: '#F39C12' }
@@ -240,7 +240,7 @@ ${categoriesCode}
             marginBottom: '20px', 
             textAlign: 'center', 
             backgroundColor: 'rgba(52, 152, 219, 0.1)', 
-            border: '2px solid #3498DB', 
+            border: '2px solid #004aad', 
             borderRadius: '12px', 
             padding: '16px' 
           }}>
@@ -248,13 +248,13 @@ ${categoriesCode}
               icon={schoolOutline} 
               style={{ 
                 fontSize: '32px', 
-                color: '#3498DB', 
+                color: '#004aad', 
                 marginBottom: '8px' 
               }} 
             />
             <h2 style={{ 
               margin: '0', 
-              color: '#3498DB', 
+              color: '#004aad', 
               fontSize: '18px', 
               fontWeight: 'bold' 
             }}>
@@ -331,7 +331,7 @@ ${categoriesCode}
             marginBottom: '20px', 
             textAlign: 'center', 
             backgroundColor: 'rgba(52, 152, 219, 0.1)', 
-            border: '2px solid #3498DB', 
+            border: '2px solid #004aad', 
             borderRadius: '12px', 
             padding: '16px' 
           }}>
@@ -339,13 +339,13 @@ ${categoriesCode}
               icon={schoolOutline} 
               style={{ 
                 fontSize: '32px', 
-                color: '#3498DB', 
+                color: '#004aad', 
                 marginBottom: '8px' 
               }} 
             />
             <h2 style={{ 
               margin: '0', 
-              color: '#3498DB', 
+              color: '#004aad', 
               fontSize: '18px', 
               fontWeight: 'bold' 
             }}>
@@ -456,7 +456,7 @@ ${categoriesCode}
           marginBottom: '20px', 
           textAlign: 'center', 
           backgroundColor: 'rgba(52, 152, 219, 0.1)', 
-          border: '2px solid #3498DB', 
+          border: '2px solid #004aad', 
           borderRadius: '12px', 
           padding: '16px' 
         }}>
@@ -464,13 +464,13 @@ ${categoriesCode}
             icon={schoolOutline} 
             style={{ 
               fontSize: '32px', 
-              color: '#3498DB', 
+              color: '#004aad', 
               marginBottom: '8px' 
             }} 
           />
           <h2 style={{ 
             margin: '0', 
-            color: '#3498DB', 
+            color: '#004aad', 
             fontSize: '18px', 
             fontWeight: 'bold' 
           }}>
@@ -496,7 +496,7 @@ ${categoriesCode}
                   button 
                   onClick={() => setOrganizationType('school')}
                   style={{
-                    border: organizationType === 'school' ? '2px solid #3498DB' : '1px solid #444',
+                    border: organizationType === 'school' ? '2px solid #004aad' : '1px solid #444',
                     backgroundColor: 'transparent'
                   }}
                 >
@@ -505,13 +505,13 @@ ${categoriesCode}
                       icon={schoolOutline} 
                       size="large" 
                       style={{ 
-                        color: organizationType === 'school' ? '#3498DB' : '#666',
+                        color: organizationType === 'school' ? '#004aad' : '#666',
                         marginBottom: '8px' 
                       }} 
                     />
                     <div style={{ 
                       fontWeight: 'bold', 
-                      color: organizationType === 'school' ? '#3498DB' : '#333'
+                      color: organizationType === 'school' ? '#004aad' : '#333'
                     }}>
                       School
                     </div>

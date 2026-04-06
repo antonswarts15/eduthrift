@@ -21,7 +21,7 @@ const WaterpoloEquipmentComponent: React.FC< WaterpoloEquipmentProps > = (props)
     'Boys Clothing': {
       items: ['Water Polo Suit', 'Swimming Trunks', 'Rash Guard', 'Warm-up Jacket', 'Team Polo', 'Tracksuit Top', 'Tracksuit Pants'],
       icon: shirtOutline,
-      color: '#3498DB'
+      color: '#004aad'
     },
     'Girls Clothing': {
       items: ['Water Polo Suit', 'Swimming Costume', 'Rash Guard', 'Warm-up Jacket', 'Team Polo', 'Tracksuit Top', 'Tracksuit Pants'],

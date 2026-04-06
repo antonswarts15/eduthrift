@@ -12,7 +12,7 @@ const BaseballEquipmentComponent: React.FC<any> = (props) => {
     'Clothing': {
       items: ['Baseball Jersey', 'Baseball Pants', 'Baseball Cap', 'Training Shirt', 'Warm-up Jacket'],
       icon: shirtOutline,
-      color: '#3498DB'
+      color: '#004aad'
     },
     'Protective Gear': {
       items: ['Baseball Helmet', 'Catcher Gear', 'Shin Guards', 'Chest Protector', 'Batting Gloves'],

@@ -217,7 +217,7 @@ const CropModal: React.FC<{
                   top: Math.min(cropArea.y, imageSize.height - cropArea.height),
                   width: Math.min(cropArea.width, imageSize.width),
                   height: Math.min(cropArea.height, imageSize.height),
-                  border: '3px solid #3880ff',
+                  border: '3px solid #004aad',
                   backgroundColor: 'rgba(56, 128, 255, 0.2)',
                   cursor: isDragging ? 'grabbing' : 'grab',
                   borderRadius: '4px'
@@ -246,7 +246,7 @@ const CropModal: React.FC<{
                   top: '50%',
                   left: '50%',
                   transform: 'translate(-50%, -50%)',
-                  color: '#3880ff',
+                  color: '#004aad',
                   fontSize: '12px',
                   fontWeight: 'bold',
                   textShadow: '0 1px 2px rgba(255,255,255,0.8)',
@@ -572,7 +572,7 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
         { name: "Ring tennis", icon: tennisballOutline }
       ],
       icon: tennisballOutline,
-      color: '#3498DB'
+      color: '#004aad'
     },
     'Water Sports': {
       sports: [
@@ -908,14 +908,14 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
     const rainbowColors = [
       '#E74C3C', // Darker Red
       '#16A085', // Darker Teal
-      '#2980B9', // Darker Blue
+      '#004aad', // Darker Blue
       '#27AE60', // Darker Green
       '#F39C12', // Darker Yellow/Orange
       '#8E44AD', // Darker Purple
       '#1ABC9C', // Darker Mint
       '#E67E22', // Darker Orange
       '#9B59B6', // Darker Purple
-      '#3498DB', // Darker Blue
+      '#004aad', // Darker Blue
       '#D35400', // Darker Orange
       '#229954'  // Darker Green
     ];
@@ -1192,7 +1192,7 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
               marginBottom: '20px', 
               textAlign: 'center', 
               backgroundColor: 'rgba(52, 152, 219, 0.1)', 
-              border: '2px solid #3498DB', 
+              border: '2px solid #004aad', 
               borderRadius: '12px', 
               padding: '16px' 
             }}>
@@ -1200,13 +1200,13 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
                 icon={schoolOutline} 
                 style={{ 
                   fontSize: '32px', 
-                  color: '#3498DB', 
+                  color: '#004aad', 
                   marginBottom: '8px' 
                 }} 
               />
               <h2 style={{ 
                 margin: '0', 
-                color: '#3498DB', 
+                color: '#004aad', 
                 fontSize: '18px', 
                 fontWeight: 'bold' 
               }}>
@@ -1806,7 +1806,7 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
                     marginBottom: '20px', 
                     textAlign: 'center', 
                     backgroundColor: 'rgba(52, 152, 219, 0.1)', 
-                    border: '2px solid #3498DB', 
+                    border: '2px solid #004aad', 
                     borderRadius: '12px', 
                     padding: '16px' 
                   }}>
@@ -1814,13 +1814,13 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
                       icon={schoolOutline} 
                       style={{ 
                         fontSize: '32px', 
-                        color: '#3498DB', 
+                        color: '#004aad', 
                         marginBottom: '8px' 
                       }} 
                     />
                     <h2 style={{ 
                       margin: '0', 
-                      color: '#3498DB', 
+                      color: '#004aad', 
                       fontSize: '18px', 
                       fontWeight: 'bold' 
                     }}>
@@ -1841,7 +1841,7 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
                           button 
                           onClick={() => handleUniformTypeClick('School Uniform')}
                           style={{
-                            border: selectedSubcategory === 'School Uniform' ? '2px solid #3498DB' : '1px solid #444',
+                            border: selectedSubcategory === 'School Uniform' ? '2px solid #004aad' : '1px solid #444',
                             backgroundColor: 'transparent',
                             transition: 'all 0.2s ease',
                             height: '120px',
@@ -1862,13 +1862,13 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
                               icon={schoolOutline} 
                               size="large" 
                               style={{ 
-                                color: selectedSubcategory === 'School Uniform' ? '#3498DB' : '#666',
+                                color: selectedSubcategory === 'School Uniform' ? '#004aad' : '#666',
                                 marginBottom: '8px' 
                               }} 
                             />
                             <div style={{ 
                               fontWeight: 'bold', 
-                              color: selectedSubcategory === 'School Uniform' ? '#3498DB' : '#333',
+                              color: selectedSubcategory === 'School Uniform' ? '#004aad' : '#333',
                               fontSize: '14px'
                             }}>
                               School Uniform
@@ -1936,7 +1936,7 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
                 marginBottom: '16px', 
                 textAlign: 'center', 
                 backgroundColor: 'rgba(52, 152, 219, 0.1)', 
-                border: '1px solid #3498DB', 
+                border: '1px solid #004aad', 
                 borderRadius: '8px', 
                 padding: '12px' 
               }}>
@@ -1944,12 +1944,12 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
                   icon={schoolOutline} 
                   style={{ 
                     fontSize: '20px', 
-                    color: '#3498DB', 
+                    color: '#004aad', 
                     marginRight: '8px' 
                   }} 
                 />
                 <span style={{ 
-                  color: '#3498DB', 
+                  color: '#004aad', 
                   fontSize: '16px', 
                   fontWeight: 'bold' 
                 }}>

@@ -20,7 +20,7 @@ const IceHockeyEquipmentComponent: React.FC< IceHockeyEquipmentProps > = (props)
     'Clothing': {
       items: ['Jersey', 'Padded Shorts', 'Practice Jersey', 'Team Socks'],
       icon: shirtOutline,
-      color: '#3498DB'
+      color: '#004aad'
     },
     'Protective Gear': {
       items: ['Helmet', 'Pads', 'Gloves', 'Neck Guard', 'Shin Guards'],

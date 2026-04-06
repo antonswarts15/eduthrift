@@ -136,7 +136,7 @@ const PaymentAccountingTab: React.FC = () => {
           <IonCol size="6">
             <IonCard>
               <IonCardContent style={{ textAlign: 'center' }}>
-                <h2 style={{ margin: '0', color: '#3498DB' }}>R{totals.totalVolume}</h2>
+                <h2 style={{ margin: '0', color: '#004aad' }}>R{totals.totalVolume}</h2>
                 <p style={{ margin: '4px 0 0 0', fontSize: '14px' }}>Total Volume</p>
               </IonCardContent>
             </IonCard>

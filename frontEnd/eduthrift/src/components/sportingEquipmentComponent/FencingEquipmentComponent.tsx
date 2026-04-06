@@ -18,7 +18,7 @@ const FencingEquipmentComponent: React.FC< FencingEquipmentProps > = (props) => 
     'Clothing': {
       items: ['Fencing Jacket', 'Fencing Pants', 'Under Plastron'],
       icon: shirtOutline,
-      color: '#3498DB'
+      color: '#004aad'
     },
     'Protective Gear': {
       items: ['Fencing Mask', 'Fencing Glove', 'Chest Protector', 'Body Cord'],

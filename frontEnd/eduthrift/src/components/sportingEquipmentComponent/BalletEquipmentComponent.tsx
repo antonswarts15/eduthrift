@@ -21,7 +21,7 @@ const BalletEquipmentComponent: React.FC< BalletEquipmentProps > = (props) => {
     'Clothing': {
       items: ['Leotard', 'Tights', 'Wrap Skirt', 'Warm-up Jacket', 'Leg Warmers'],
       icon: shirtOutline,
-      color: '#3498DB'
+      color: '#004aad'
     },
     'Protective Gear': {
       items: ['Toe Pads', 'Blister Plasters', 'Ankle Support'],

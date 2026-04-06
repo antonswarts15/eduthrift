@@ -20,7 +20,7 @@ const GymnasticsEquipmentComponent: React.FC< GymnasticsEquipmentProps > = (prop
     'Clothing': {
       items: ['Leotard', 'Unitard', 'Gymnastics Shorts', 'Training Top'],
       icon: shirtOutline,
-      color: '#3498DB'
+      color: '#004aad'
     },
     'Protective Gear': {
       items: ['Wrist Guards', 'Grips', 'Knee Pads', 'Ankle Support'],

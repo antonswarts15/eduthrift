@@ -12,7 +12,7 @@ const KorfbalEquipmentComponent: React.FC<any> = (props) => {
     'Clothing': {
       items: ['Korfball Jersey', 'Korfball Shorts', 'Training Shirt', 'Warm-up Jacket', 'Base Layer'],
       icon: shirtOutline,
-      color: '#3498DB'
+      color: '#004aad'
     },
     'Protective Gear': {
       items: ['Knee Pads', 'Ankle Guards', 'Mouthguards'],

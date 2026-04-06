@@ -20,7 +20,7 @@ const RoboticsEquipmentComponent: React.FC< RoboticsEquipmentProps > = (props) =
     'Clothing': {
       items: ['Team T-shirt', 'Team Hoodie', 'Competition Shirt'],
       icon: shirtOutline,
-      color: '#3498DB'
+      color: '#004aad'
     },
     'Protective Gear': {
       items: ['Safety Glasses', 'Work Gloves', 'Lab Coat'],

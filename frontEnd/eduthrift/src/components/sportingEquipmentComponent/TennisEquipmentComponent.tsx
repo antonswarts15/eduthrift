@@ -20,7 +20,7 @@ const TennisEquipmentComponent: React.FC< TennisEquipmentProps > = (props) => {
     'Boys Clothing': {
       items: ['Tennis Shirt', 'Tennis Shorts', 'Tennis Polo', 'Training Shirt', 'Warm-up Jacket', 'Tracksuit Top', 'Tracksuit Pants', 'Team Hoodie', 'Windbreaker'],
       icon: shirtOutline,
-      color: '#3498DB'
+      color: '#004aad'
     },
     'Girls Clothing': {
       items: ['Tennis Shirt', 'Tennis Shorts', 'Tennis Skirt', 'Tennis Dress', 'Tennis Polo', 'Training Shirt', 'Warm-up Jacket', 'Tracksuit Top', 'Tracksuit Pants', 'Team Hoodie', 'Windbreaker'],

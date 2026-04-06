@@ -200,7 +200,7 @@ const ItemsList: React.FC<ItemsListProps> = ({ category, subcategory, sport, ite
                 </div>
                 
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '16px', fontWeight: 'bold', color: '#3880ff' }}>R{listing.price}</span>
+                  <span style={{ fontSize: '16px', fontWeight: 'bold', color: '#004aad' }}>R{listing.price}</span>
                   <div style={{ display: 'flex', gap: '8px' }}>
                     {listing.soldOut || listing.quantity === 0 ? (
                       <IonButton 

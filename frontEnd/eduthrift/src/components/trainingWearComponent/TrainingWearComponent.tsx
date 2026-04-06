@@ -34,7 +34,7 @@ const trainingWearCategories: Record<string, { items: string[]; icon: string; co
   'Boys Training Wear': {
     items: ['Training shorts', 'Training shirt', 'Warm-up jacket', 'Tracksuit top', 'Tracksuit pants', 'Compression shirt', 'Base layer', 'Running vest', 'Windbreaker', 'Gym shorts', 'Sports socks'],
     icon: shirtOutline,
-    color: '#3498DB'
+    color: '#004aad'
   },
   'Girls Training Wear': {
     items: ['Training shorts', 'Training shirt', 'Warm-up jacket', 'Tracksuit top', 'Tracksuit pants', 'Compression shirt', 'Base layer', 'Running vest', 'Windbreaker', 'Gym shorts', 'Sports bra', 'Sports socks'],
@@ -307,7 +307,7 @@ const TrainingWearComponent: React.FC<TrainingWearProps> = ({ userType, onItemSe
                             <span>{getConditionText(item.condition)}</span>
                           </div>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <span style={{ fontSize: '16px', fontWeight: 'bold', color: '#3880ff' }}>R{item.price}</span>
+                            <span style={{ fontSize: '16px', fontWeight: 'bold', color: '#004aad' }}>R{item.price}</span>
                             <IonButton
                               size="small"
                               onClick={(e) => {
@@ -510,7 +510,7 @@ const TrainingWearComponent: React.FC<TrainingWearProps> = ({ userType, onItemSe
                           <IonIcon icon={imageOutline} size="large" style={{ marginBottom: '8px', opacity: 0.5 }} />
                           <div style={{ fontSize: '13px', fontWeight: 'bold' }}>{item}</div>
                           {userType === 'buyer' && getItemCount(item) > 0 && (
-                            <div style={{ fontSize: '11px', color: '#3498DB', marginTop: '4px' }}>
+                            <div style={{ fontSize: '11px', color: '#004aad', marginTop: '4px' }}>
                               {getItemCount(item)} available
                             </div>
                           )}

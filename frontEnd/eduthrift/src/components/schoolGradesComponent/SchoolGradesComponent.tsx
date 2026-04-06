@@ -653,7 +653,7 @@ const SchoolGradesComponent: React.FC<SchoolGradesComponentProps> = ({
           marginBottom: '20px', 
           textAlign: 'center', 
           backgroundColor: 'rgba(52, 152, 219, 0.1)', 
-          border: '2px solid #3498DB', 
+          border: '2px solid #004aad', 
           borderRadius: '12px', 
           padding: '16px' 
         }}>
@@ -661,13 +661,13 @@ const SchoolGradesComponent: React.FC<SchoolGradesComponentProps> = ({
             icon={schoolOutline} 
             style={{ 
               fontSize: '32px', 
-              color: '#3498DB', 
+              color: '#004aad', 
               marginBottom: '8px' 
             }} 
           />
           <h2 style={{ 
             margin: '0', 
-            color: '#3498DB', 
+            color: '#004aad', 
             fontSize: '18px', 
             fontWeight: 'bold' 
           }}>
@@ -708,7 +708,7 @@ const SchoolGradesComponent: React.FC<SchoolGradesComponentProps> = ({
             const getGroupColor = (name: string) => {
               switch(name) {
                 case 'Languages': return '#E74C3C';
-                case 'Mathematics': return '#3498DB';
+                case 'Mathematics': return '#004aad';
                 case 'Sciences': return '#27AE60';
                 case 'Social Studies': return '#F39C12';
                 case 'Business & Economics': return '#8E44AD';

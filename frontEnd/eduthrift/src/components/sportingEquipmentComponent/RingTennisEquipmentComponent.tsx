@@ -20,7 +20,7 @@ const RingTennisEquipmentComponent: React.FC< RingTennisEquipmentProps > = (prop
     'Clothing': {
       items: ['T-shirt', 'Shorts', 'Training Shirt', 'Team Jersey'],
       icon: shirtOutline,
-      color: '#3498DB'
+      color: '#004aad'
     },
     'Protective Gear': {
       items: ['Knee Pads', 'Wrist Guards'],

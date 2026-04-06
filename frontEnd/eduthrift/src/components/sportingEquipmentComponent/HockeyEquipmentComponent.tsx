@@ -20,7 +20,7 @@ const HockeyEquipmentComponent: React.FC<HockeyEquipmentProps> = (props) => {
     'Boys Clothing': {
       items: ['Hockey Jersey', 'Hockey Shorts', 'Training Shirt', 'Warm-up Jacket', 'Goalkeeper Jersey', 'Match Jersey Home', 'Match Jersey Away', 'Training Polo', 'Tracksuit Top', 'Tracksuit Pants', 'Team Hoodie', 'Windbreaker', 'Compression Shirt', 'Team Blazer', 'Team Tie', 'Warm-up Pants', 'Training Vest'],
       icon: shirtOutline,
-      color: '#3498DB'
+      color: '#004aad'
     },
     'Girls Clothing': {
       items: ['Hockey Jersey', 'Hockey Skirt', 'Hockey Shorts', 'Training Shirt', 'Warm-up Jacket', 'Goalkeeper Jersey', 'Match Jersey Home', 'Match Jersey Away', 'Training Polo', 'Tracksuit Top', 'Tracksuit Pants', 'Team Hoodie', 'Windbreaker', 'Compression Shirt', 'Team Blazer', 'Warm-up Pants', 'Training Vest'],

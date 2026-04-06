@@ -37,7 +37,7 @@ const StationerySeller: React.FC = () => {
     'Writing Instruments': {
       items: ['HB Pencils', '2B Pencils (Art)', 'Blue ballpoint pens', 'Black ballpoint pens', 'Red ballpoint pens', 'Highlighters (assorted colours)', 'Whiteboard markers', 'Permanent markers'],
       icon: pencilOutline,
-      color: '#3498DB'
+      color: '#004aad'
     },
     'Paper & Books': {
       items: ['A4 exercise books (72-page)', 'A4 exercise books (192-page)', 'A4 hardcover books', 'A4 exam pads (punched)', 'A5 exercise books', 'Flip file (30 pocket)', 'Flip file (50 pocket)', 'Scrapbook'],

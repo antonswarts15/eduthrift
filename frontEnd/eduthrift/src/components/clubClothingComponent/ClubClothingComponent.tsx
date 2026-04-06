@@ -150,7 +150,7 @@ const ClubClothingComponent: React.FC<ClubClothingProps> = ({ userType, onItemSe
     'Boys Club Wear': {
       items: ['Club jersey', 'Training shirt', 'Club shorts', 'Club socks', 'Warm-up jacket', 'Club polo', 'Training vest', 'Club hoodie'],
       icon: shirtOutline,
-      color: '#3498DB'
+      color: '#004aad'
     },
     'Girls Club Wear': {
       items: ['Club jersey', 'Training shirt', 'Club shorts', 'Club skirt', 'Club socks', 'Warm-up jacket', 'Club polo', 'Training vest', 'Club hoodie'],

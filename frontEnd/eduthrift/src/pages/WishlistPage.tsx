@@ -110,8 +110,8 @@ const WishlistPage: React.FC = () => {
                     </p>
                     {item.notifyWhenAvailable && (
                       <div style={{ display: 'flex', alignItems: 'center', marginTop: '8px' }}>
-                        <IonIcon icon={notificationsOutline} style={{ fontSize: '16px', color: '#3880ff', marginRight: '4px' }} />
-                        <span style={{ fontSize: '12px', color: '#3880ff' }}>Notifications enabled</span>
+                        <IonIcon icon={notificationsOutline} style={{ fontSize: '16px', color: '#004aad', marginRight: '4px' }} />
+                        <span style={{ fontSize: '12px', color: '#004aad' }}>Notifications enabled</span>
                       </div>
                     )}
                   </div>

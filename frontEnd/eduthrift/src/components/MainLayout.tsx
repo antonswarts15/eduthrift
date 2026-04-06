@@ -257,7 +257,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                   fill="outline"
                   size="small"
                   onClick={() => history.push('/login')}
-                  style={{ textTransform: 'none', '--border-radius': '20px', '--background': 'white', '--color': '#3880ff', '--border-color': '#3880ff' }}
+                  style={{ textTransform: 'none', '--border-radius': '10px', '--background': 'white', '--color': '#004aad', '--border-color': '#004aad' }}
                 >
                   Login / Register
                 </IonButton>
@@ -278,34 +278,34 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
           <IonTabButton 
             tab="home" 
             onClick={() => history.push('/home')}
-            style={{ color: getCurrentTab() === 'home' ? '#3880ff' : '#92949c' }}
+            style={{ color: getCurrentTab() === 'home' ? '#004aad' : '#92949c' }}
           >
-            <IonIcon aria-hidden="true" icon={homeOutline} style={{ color: getCurrentTab() === 'home' ? '#3880ff' : '#92949c' }} />
-            <IonLabel style={{ color: getCurrentTab() === 'home' ? '#3880ff' : '#92949c' }}>Home</IonLabel>
+            <IonIcon aria-hidden="true" icon={homeOutline} style={{ color: getCurrentTab() === 'home' ? '#004aad' : '#92949c' }} />
+            <IonLabel style={{ color: getCurrentTab() === 'home' ? '#004aad' : '#92949c' }}>Home</IonLabel>
           </IonTabButton>
           <IonTabButton 
             tab="buyer" 
             onClick={() => history.push('/buyer')}
-            style={{ color: getCurrentTab() === 'buyer' ? '#3880ff' : '#92949c' }}
+            style={{ color: getCurrentTab() === 'buyer' ? '#004aad' : '#92949c' }}
           >
-            <IonIcon aria-hidden="true" icon={bagOutline} style={{ color: getCurrentTab() === 'buyer' ? '#3880ff' : '#92949c' }} />
-            <IonLabel style={{ color: getCurrentTab() === 'buyer' ? '#3880ff' : '#92949c' }}>Buy</IonLabel>
+            <IonIcon aria-hidden="true" icon={bagOutline} style={{ color: getCurrentTab() === 'buyer' ? '#004aad' : '#92949c' }} />
+            <IonLabel style={{ color: getCurrentTab() === 'buyer' ? '#004aad' : '#92949c' }}>Buy</IonLabel>
           </IonTabButton>
           <IonTabButton 
             tab="seller" 
             onClick={() => history.push('/seller')}
-            style={{ color: getCurrentTab() === 'seller' ? '#3880ff' : '#92949c' }}
+            style={{ color: getCurrentTab() === 'seller' ? '#004aad' : '#92949c' }}
           >
-            <IonIcon aria-hidden="true" icon={cashOutline} style={{ color: getCurrentTab() === 'seller' ? '#3880ff' : '#92949c' }} />
-            <IonLabel style={{ color: getCurrentTab() === 'seller' ? '#3880ff' : '#92949c' }}>Sell</IonLabel>
+            <IonIcon aria-hidden="true" icon={cashOutline} style={{ color: getCurrentTab() === 'seller' ? '#004aad' : '#92949c' }} />
+            <IonLabel style={{ color: getCurrentTab() === 'seller' ? '#004aad' : '#92949c' }}>Sell</IonLabel>
           </IonTabButton>
           <IonTabButton 
             tab="cart" 
             onClick={() => history.push('/cart')}
-            style={{ color: getCurrentTab() === 'cart' ? '#3880ff' : '#92949c', position: 'relative' }}
+            style={{ color: getCurrentTab() === 'cart' ? '#004aad' : '#92949c', position: 'relative' }}
           >
-            <IonIcon aria-hidden="true" icon={cartOutline} style={{ color: getCurrentTab() === 'cart' ? '#3880ff' : '#92949c' }} />
-            <IonLabel style={{ color: getCurrentTab() === 'cart' ? '#3880ff' : '#92949c' }}>Cart</IonLabel>
+            <IonIcon aria-hidden="true" icon={cartOutline} style={{ color: getCurrentTab() === 'cart' ? '#004aad' : '#92949c' }} />
+            <IonLabel style={{ color: getCurrentTab() === 'cart' ? '#004aad' : '#92949c' }}>Cart</IonLabel>
             {getCartItemCount() > 0 && (
               <IonBadge 
                 style={{ 
@@ -325,10 +325,10 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
           <IonTabButton 
             tab="profile" 
             onClick={() => history.push('/profile')}
-            style={{ color: getCurrentTab() === 'profile' ? '#3880ff' : '#92949c' }}
+            style={{ color: getCurrentTab() === 'profile' ? '#004aad' : '#92949c' }}
           >
-            <IonIcon aria-hidden="true" icon={personOutline} style={{ color: getCurrentTab() === 'profile' ? '#3880ff' : '#92949c' }} />
-            <IonLabel style={{ color: getCurrentTab() === 'profile' ? '#3880ff' : '#92949c' }}>Profile</IonLabel>
+            <IonIcon aria-hidden="true" icon={personOutline} style={{ color: getCurrentTab() === 'profile' ? '#004aad' : '#92949c' }} />
+            <IonLabel style={{ color: getCurrentTab() === 'profile' ? '#004aad' : '#92949c' }}>Profile</IonLabel>
           </IonTabButton>
         </IonTabBar>
         
@@ -470,7 +470,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                           <div style={{ fontSize: '12px', color: '#666', marginBottom: '4px' }}>
                             {item.category}{item.school_name ? ` • ${item.school_name}` : ''}
                           </div>
-                          <div style={{ fontWeight: 'bold', color: '#3880ff' }}>
+                          <div style={{ fontWeight: 'bold', color: '#004aad' }}>
                             R{item.price}
                           </div>
                         </div>

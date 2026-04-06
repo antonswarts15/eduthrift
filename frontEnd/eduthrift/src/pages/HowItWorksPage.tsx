@@ -43,7 +43,7 @@ const HowItWorksPage: React.FC = () => {
             <IonCardContent style={{ textAlign: 'center', padding: '24px' }}>
               <IonIcon 
                 icon={schoolOutline} 
-                style={{ fontSize: '48px', color: '#3498db', marginBottom: '16px' }} 
+                style={{ fontSize: '48px', color: '#004aad', marginBottom: '16px' }} 
               />
               <h1 style={{ margin: '0 0 8px 0', color: '#2c3e50' }}>Welcome to Eduthrift</h1>
               <p style={{ margin: '0', color: '#666', fontSize: '16px' }}>
@@ -84,7 +84,7 @@ const HowItWorksPage: React.FC = () => {
                   <IonCol size="2">
                     <div style={{ 
                       width: '32px', height: '32px', borderRadius: '50%', 
-                      backgroundColor: '#3498db', color: 'white', 
+                      backgroundColor: '#004aad', color: 'white', 
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       fontSize: '14px', fontWeight: 'bold'
                     }}>1</div>

@@ -21,7 +21,7 @@ const RoadBikeEquipmentComponent: React.FC< RoadBikeEquipmentProps > = (props) =
     'Clothing': {
       items: ['Cycling Jersey', 'Bib Shorts', 'Cycling Jacket', 'Base Layer'],
       icon: shirtOutline,
-      color: '#3498DB'
+      color: '#004aad'
     },
     'Protective Gear': {
       items: ['Helmet', 'Cycling Gloves', 'Sunglasses', 'Knee Warmers'],

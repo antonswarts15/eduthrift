@@ -19,7 +19,7 @@ const PadelEquipmentComponent: React.FC< PadelEquipmentProps > = (props) => {
     'Clothing': {
       items: ['Sport Shirt', 'Padel Shorts', 'Padel Skirt', 'Training Top'],
       icon: shirtOutline,
-      color: '#3498DB'
+      color: '#004aad'
     },
     'Protective Gear': {
       items: ['Sweatbands', 'Wrist Guards', 'Sunglasses', 'Sun Hat'],

@@ -18,7 +18,7 @@ const DancingEquipmentComponent: React.FC< DancingEquipmentProps > = (props) => 
     'Clothing': {
       items: ['Leotard', 'Tights', 'Practice Skirt', 'Dance Top'],
       icon: shirtOutline,
-      color: '#3498DB'
+      color: '#004aad'
     },
     'Footwear': {
       items: ['Ballet Shoes', 'Jazz Shoes', 'Tap Shoes', 'Contemporary Shoes'],
