@@ -254,13 +254,26 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                 </IonButton>
               ) : (
                 <IonButton
-                  fill="outline"
-                  size="small"
-                  onClick={() => history.push('/login')}
-                  style={{ textTransform: 'none', '--border-radius': '10px', '--background': 'white', '--color': '#004aad', '--border-color': '#004aad', '--padding-start': '10px', '--padding-end': '10px', '--padding-top': '4px', '--padding-bottom': '4px', fontSize: '11px', height: '30px' }}
-                >
-                  Login / Register
-                </IonButton>
+  fill="outline"
+  size="small"
+  onClick={() => history.push('/login')}
+  style={{
+    textTransform: 'none',
+    '--border-radius': '10px',
+    '--background': 'white',
+    '--color': '#004aad',
+    '--border-color': '#004aad',
+    '--border-width': '1px',
+    '--padding-start': '5px',
+    '--padding-end': '5px',
+    '--padding-top': '4px',
+    '--padding-bottom': '4px',
+    fontSize: '10px',
+    height: '25px'
+  }}
+>
+  Login / Register
+</IonButton>
               )}
               <IonButton id="notifications-trigger" onClick={() => setShowNotifications(true)}>
                 <IonIcon icon={notificationsOutline} />
