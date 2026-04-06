@@ -35,8 +35,6 @@ const SchoolSelector: React.FC<SchoolSelectorProps> = ({ value, onSchoolChange, 
   const [filteredSchools, setFilteredSchools] = useState<string[]>([]);
   const [showCustomInput, setShowCustomInput] = useState(false);
   const [customSchoolName, setCustomSchoolName] = useState('');
-  const [globalSearchTerm, setGlobalSearchTerm] = useState('');
-  const [globalSearchResults, setGlobalSearchResults] = useState<{name: string, town: string, province: string}[]>([]);
 
   const [nearbySchools, setNearbySchools] = useState<School[]>([]);
   const [filteredNearbySchools, setFilteredNearbySchools] = useState<School[]>([]);
@@ -275,84 +273,9 @@ const SchoolSelector: React.FC<SchoolSelectorProps> = ({ value, onSchoolChange, 
     return localSchools;
   };
 
-  const handleGlobalSearch = (term: string) => {
-    setGlobalSearchTerm(term);
-    if (term.trim() === '') {
-      setGlobalSearchResults([]);
-      return;
-    }
-
-    const results: {name: string, town: string, province: string}[] = [];
-    Object.entries(schoolDatabase).forEach(([province, towns]) => {
-      Object.entries(towns).forEach(([town, schools]) => {
-        schools.forEach(school => {
-          if (school.toLowerCase().includes(term.toLowerCase())) {
-            results.push({ name: school, town, province });
-          }
-        });
-      });
-    });
-    // Always append a "use typed name" option so the user can select any school
-    results.push({ name: term.trim(), town: '', province: '' });
-    setGlobalSearchResults(results.slice(0, 11));
-  };
-
-  const handleGlobalSchoolSelect = (school: {name: string, town: string, province: string}) => {
-    onSchoolChange(school.name);
-    setGlobalSearchTerm('');
-    setGlobalSearchResults([]);
-  };
-
   return (
     <div>
-      <IonItem style={{ marginBottom: '16px' }}>
-        <IonInput 
-          label="Type to search..." 
-          labelPlacement="stacked"
-          placeholder="Search for any school by name"
-          value={globalSearchTerm}
-          onIonChange={e => handleGlobalSearch(e.detail.value!)}
-        />
-        <IonButton 
-          slot="end" 
-          fill="clear" 
-          size="small"
-          onClick={() => handleGlobalSearch(globalSearchTerm)}
-        >
-          Search
-        </IonButton>
-      </IonItem>
-      
-      {globalSearchResults.length > 0 && (
-        <IonCard style={{ marginBottom: '16px' }}>
-          <IonCardContent style={{ padding: '0' }}>
-            <IonList>
-              {globalSearchResults.map((school, index) => {
-                const isCustom = school.town === '' && school.province === '';
-                return (
-                  <IonItem
-                    key={`${school.province}-${school.town}-${school.name}-${index}`}
-                    button
-                    onClick={() => handleGlobalSchoolSelect(school)}
-                    style={{
-                      backgroundColor: value === school.name ? '#e3f2fd' : isCustom ? '#f9f9f9' : 'transparent'
-                    }}
-                  >
-                    <IonIcon icon={schoolOutline} slot="start" style={{ color: isCustom ? '#004aad' : undefined }} />
-                    <IonLabel>
-                      <h3 style={{ color: isCustom ? '#004aad' : undefined }}>
-                        {isCustom ? `Use "${school.name}"` : school.name}
-                      </h3>
-                      {!isCustom && <p>{school.town}, {school.province}</p>}
-                    </IonLabel>
-                  </IonItem>
-                );
-              })}
-            </IonList>
-          </IonCardContent>
-        </IonCard>
-      )}
-      
+
       <IonItem style={{ marginBottom: '16px' }}>
         <IonLabel>Use nearby schools</IonLabel>
         <IonToggle 

@@ -33,8 +33,6 @@ const ClubSelector: React.FC<ClubSelectorProps> = ({ value, onClubChange, placeh
   const [filteredClubs, setFilteredClubs] = useState<string[]>([]);
   const [showCustomInput, setShowCustomInput] = useState(false);
   const [customClubName, setCustomClubName] = useState('');
-  const [globalSearchTerm, setGlobalSearchTerm] = useState('');
-  const [globalSearchResults, setGlobalSearchResults] = useState<{name: string, town: string, province: string}[]>([]);
 
   const [nearbyClubs, setNearbyClubs] = useState<Club[]>([]);
   const [filteredNearbyClubs, setFilteredNearbyClubs] = useState<Club[]>([]);
@@ -138,34 +136,6 @@ const ClubSelector: React.FC<ClubSelectorProps> = ({ value, onClubChange, placeh
     return localClubs;
   };
 
-  const handleGlobalSearch = (term: string) => {
-    setGlobalSearchTerm(term);
-    if (term.trim() === '') {
-      setGlobalSearchResults([]);
-      return;
-    }
-
-    const results: {name: string, town: string, province: string}[] = [];
-    Object.entries(clubDatabase).forEach(([province, towns]) => {
-      Object.entries(towns).forEach(([town, clubs]) => {
-        clubs.forEach(club => {
-          if (club.toLowerCase().includes(term.toLowerCase())) {
-            results.push({ name: club, town, province });
-          }
-        });
-      });
-    });
-    // Always append a "use typed name" option so the user can select any club
-    results.push({ name: term.trim(), town: '', province: '' });
-    setGlobalSearchResults(results.slice(0, 11));
-  };
-
-  const handleGlobalClubSelect = (club: {name: string, town: string, province: string}) => {
-    onClubChange(club.name);
-    setGlobalSearchTerm('');
-    setGlobalSearchResults([]);
-  };
-
   const handleProvinceChange = (province: string) => {
     setSelectedProvince(province);
     setSelectedTown('');
@@ -227,54 +197,6 @@ const ClubSelector: React.FC<ClubSelectorProps> = ({ value, onClubChange, placeh
 
   return (
     <div>
-      <IonItem style={{ marginBottom: '16px' }}>
-        <IonInput 
-          label="Type to search..." 
-          labelPlacement="stacked"
-          placeholder="Search for any club by name"
-          value={globalSearchTerm}
-          onIonChange={e => handleGlobalSearch(e.detail.value!)}
-        />
-        <IonButton 
-          slot="end" 
-          fill="clear" 
-          size="small"
-          onClick={() => handleGlobalSearch(globalSearchTerm)}
-        >
-          Search
-        </IonButton>
-      </IonItem>
-      
-      {globalSearchResults.length > 0 && (
-        <IonCard style={{ marginBottom: '16px' }}>
-          <IonCardContent style={{ padding: '0' }}>
-            <IonList>
-              {globalSearchResults.map((club, index) => {
-                const isCustom = club.town === '' && club.province === '';
-                return (
-                  <IonItem
-                    key={`${club.province}-${club.town}-${club.name}-${index}`}
-                    button
-                    onClick={() => handleGlobalClubSelect(club)}
-                    style={{
-                      backgroundColor: value === club.name ? '#e3f2fd' : isCustom ? '#f9f9f9' : 'transparent'
-                    }}
-                  >
-                    <IonIcon icon={fitnessOutline} slot="start" style={{ color: isCustom ? '#004aad' : undefined }} />
-                    <IonLabel>
-                      <h3 style={{ color: isCustom ? '#004aad' : undefined }}>
-                        {isCustom ? `Use "${club.name}"` : club.name}
-                      </h3>
-                      {!isCustom && <p>{club.town}, {club.province}</p>}
-                    </IonLabel>
-                  </IonItem>
-                );
-              })}
-            </IonList>
-          </IonCardContent>
-        </IonCard>
-      )}
-      
       <IonItem style={{ marginBottom: '16px' }}>
         <IonLabel>Use nearby clubs</IonLabel>
         <IonToggle 
