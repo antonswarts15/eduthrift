@@ -257,7 +257,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                   fill="outline"
                   size="small"
                   onClick={() => history.push('/login')}
-                  style={{ textTransform: 'none', '--border-radius': '10px', '--background': 'white', '--color': '#004aad', '--border-color': '#004aad' }}
+                  style={{ textTransform: 'none', '--border-radius': '10px', '--background': 'white', '--color': '#004aad', '--border-color': '#004aad', '--padding-start': '10px', '--padding-end': '10px', '--padding-top': '4px', '--padding-bottom': '4px', fontSize: '11px', height: '30px' }}
                 >
                   Login / Register
                 </IonButton>
