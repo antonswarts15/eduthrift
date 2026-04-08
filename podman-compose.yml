@@ -51,6 +51,7 @@ services:
       TRADESAFE_CLIENT_ID: ${TRADESAFE_CLIENT_ID}
       TRADESAFE_CLIENT_SECRET: ${TRADESAFE_CLIENT_SECRET}
       TRADESAFE_API_URL: ${TRADESAFE_API_URL:-https://api.tradesafe.co.za}
+      TRADESAFE_AUTH_URL: ${TRADESAFE_AUTH_URL:-https://auth.tradesafe.co.za}
     volumes:
       - /home/almalinux/eduthrift-uploads:/app/uploads:z
     depends_on:

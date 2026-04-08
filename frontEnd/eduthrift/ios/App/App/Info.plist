@@ -28,9 +28,7 @@
 	<string>Eduthrift uses your camera to take photos of items you want to sell.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Eduthrift needs access to your photo library to select photos of items you want to sell.</string>
-	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>Eduthrift may save item photos to your photo library.</string>
-	<key>UILaunchStoryboardName</key>
+<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
 	<string>Main</string>

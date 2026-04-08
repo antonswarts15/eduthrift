@@ -51,7 +51,8 @@ services:
       # TradeSafe
       TRADESAFE_CLIENT_ID: ${TRADESAFE_CLIENT_ID}
       TRADESAFE_CLIENT_SECRET: ${TRADESAFE_CLIENT_SECRET}
-      TRADESAFE_API_URL: ${TRADESAFE_API_URL:-https://api.tradesafe.dev}
+      TRADESAFE_API_URL: ${TRADESAFE_API_URL:-https://api-developer.tradesafe.dev}
+      TRADESAFE_AUTH_URL: ${TRADESAFE_AUTH_URL:-https://auth.tradesafe.dev}
     ports:
       - "${BACKEND_PORT:-8080}:8080"
     depends_on:
