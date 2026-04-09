@@ -109,7 +109,10 @@ const ItemPage: React.FC = () => {
       subcategory: listing.subcategory,
       sport: listing.sport,
       frontPhoto: listing.frontPhoto,
-      backPhoto: listing.backPhoto
+      backPhoto: listing.backPhoto,
+      sellerId: listing.userId || listing.seller_id || listing.sellerId,
+      sellerName: listing.sellerName || listing.seller_name,
+      largeItem: listing.largeItem || false
     };
 
     addToCart(cartItem, showToast);

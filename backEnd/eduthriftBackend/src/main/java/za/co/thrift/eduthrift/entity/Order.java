@@ -55,6 +55,9 @@ public class Order {
     @Column(name = "escrow_amount")
     private BigDecimal escrowAmount;
 
+    @Column(name = "buyer_protection_fee")
+    private BigDecimal buyerProtectionFee;
+
     @Column(name = "platform_fee")
     private BigDecimal platformFee;
 
@@ -125,12 +128,21 @@ public class Order {
     private void calculateFees() {
         if (itemPrice != null && quantity != null) {
             BigDecimal itemTotal = itemPrice.multiply(BigDecimal.valueOf(quantity));
-            // 10% platform fee covers TradeSafe escrow fees + Eduthrift margin, charged to seller
-            platformFee = itemTotal.multiply(BigDecimal.valueOf(0.10))
+
+            // Vinted model: seller pays nothing, buyer pays a protection fee
+            // Protection fee: 10% of item price, min R5, max R50
+            BigDecimal rawFee = itemTotal.multiply(BigDecimal.valueOf(0.10))
                     .setScale(2, java.math.RoundingMode.HALF_UP);
+            buyerProtectionFee = rawFee
+                    .max(BigDecimal.valueOf(5.00))
+                    .min(BigDecimal.valueOf(50.00));
+
+            platformFee = buyerProtectionFee;       // platform earns the protection fee
             paymentProcessingFee = BigDecimal.ZERO; // absorbed in platform fee
-            sellerPayout = itemTotal.subtract(platformFee);
-            escrowAmount = itemTotal; // shipping is a pass-through to the carrier, not held in escrow
+            sellerPayout = itemTotal;               // seller gets full item price
+
+            // Total buyer pays = item + protection fee + shipping (shipping added at checkout)
+            escrowAmount = itemTotal.add(buyerProtectionFee);
         }
     }
 

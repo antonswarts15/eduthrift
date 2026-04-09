@@ -136,14 +136,16 @@ const Cart: React.FC = () => {
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', color: '#666' }}>
                   <span>PUDO Delivery:</span>
-                  <span style={{ fontSize: '12px' }}>Calculated at checkout</span>
+                  <span style={{ fontSize: '12px' }}>Calculated per seller at checkout</span>
                 </div>
                 <hr style={{ margin: '12px 0' }} />
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '18px', fontWeight: 'bold' }}>
                   <span>Subtotal:</span>
                   <span style={{ color: '#27AE60' }}>R{totalAmount}</span>
                 </div>
-                <p style={{ fontSize: '12px', color: '#888', marginTop: '8px', marginBottom: '0' }}>Final total including shipping will be shown at checkout</p>
+                <p style={{ fontSize: '12px', color: '#888', marginTop: '8px', marginBottom: '0' }}>
+                  {cartItems.length > 1 ? `${cartItems.length} items from ${new Set(cartItems.map(i => (i as any).sellerId).filter(Boolean)).size || cartItems.length} seller(s) — shipping calculated per seller at checkout` : 'Shipping calculated at checkout'}
+                </p>
                 
                 <IonButton 
                   expand="full" 

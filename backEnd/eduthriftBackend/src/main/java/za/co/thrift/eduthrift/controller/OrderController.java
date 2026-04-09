@@ -26,16 +26,19 @@ public class OrderController {
     private final EscrowService escrowService;
     private final TradeSafeService tradeSafeService;
     private final FCMNotificationService fcmNotificationService;
+    private final EmailService emailService;
 
     public OrderController(OrderRepository orderRepository, UserRepository userRepository,
                            ItemRepository itemRepository, EscrowService escrowService,
-                           TradeSafeService tradeSafeService, FCMNotificationService fcmNotificationService) {
+                           TradeSafeService tradeSafeService, FCMNotificationService fcmNotificationService,
+                           EmailService emailService) {
         this.orderRepository = orderRepository;
         this.userRepository = userRepository;
         this.itemRepository = itemRepository;
         this.escrowService = escrowService;
         this.tradeSafeService = tradeSafeService;
         this.fcmNotificationService = fcmNotificationService;
+        this.emailService = emailService;
     }
 
     @PostMapping
@@ -80,6 +83,10 @@ public class OrderController {
                 "New Order Received",
                 "You have a new order for " + item.getItemName() + " (" + saved.getOrderNumber() + ")"
         );
+
+        // Send confirmation emails to buyer and seller
+        emailService.sendBuyerOrderConfirmation(saved);
+        emailService.sendSellerOrderNotification(saved);
 
         return ResponseEntity.ok(toResponse(saved));
     }
@@ -201,6 +208,7 @@ public class OrderController {
         map.put("itemImage", order.getItem().getFrontPhoto());
         map.put("itemPrice", order.getItemPrice());
         map.put("shippingCost", order.getShippingCost());
+        map.put("buyerProtectionFee", order.getBuyerProtectionFee());
         map.put("quantity", order.getQuantity());
         map.put("totalAmount", order.getTotalAmount());
         map.put("orderStatus", order.getOrderStatus().name());

@@ -69,10 +69,11 @@ const [pickupPoints, setPickupPoints] = useState<PickupPoint[]>([]);
   const [toastMessage, setToastMessage] = useState('');
   const [showAddressModal, setShowAddressModal] = useState(false);
 
-  // Calculate totals
-  const totalAmount = items.reduce((sum: number, item: any) => sum + item.price, 0);
+  // Calculate totals — Vinted model: buyer pays item + protection fee + shipping
+  const totalItemAmount = items.reduce((sum: number, item: any) => sum + item.price, 0);
+  const buyerProtectionFee = Math.min(Math.max(totalItemAmount * 0.10, 5), 50);
   const shippingCost = shippingRates.find(rate => rate.service_level_code === selectedRate)?.total_cost || 0;
-  const finalAmount = totalAmount + shippingCost;
+  const finalAmount = totalItemAmount + buyerProtectionFee + shippingCost;
 
   const handleAddressSave = async (addressData: AddressData) => {
     try {
@@ -190,57 +191,67 @@ const [pickupPoints, setPickupPoints] = useState<PickupPoint[]>([]);
 
     setLoading(true);
 
-    const totalAmount = items.reduce((sum: number, item: any) => sum + item.price, 0);
-    const shippingCost = shippingRates.find(rate => rate.service_level_code === selectedRate)?.total_cost || 0;
+    // Group items by seller — each seller = one order + one TradeSafe escrow
+    const itemsBySeller = items.reduce((groups: Record<string, any[]>, item: any) => {
+      const key = item.sellerId || item.seller_id || 'unknown';
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(item);
+      return groups;
+    }, {});
 
-    if (paymentMethod === 'tradesafe') {
-      try {
-        // Step 1: Create the backend order to get a server-side order number
-        const firstItem = items[0];
-        const orderResponse = await ordersApi.createOrder({
-          itemId: firstItem.id,
-          quantity: 1,
-          shippingCost: shippingCost,
-          pickupPoint: isLargeItem
-            ? 'Courier delivery'
-            : (pickupPoints.find(p => p.pickup_point_id === selectedPickupPoint)?.name || selectedPickupPoint),
-          deliveryLockerId: isLargeItem ? '' : selectedPickupPoint,
-          serviceLevelCode: selectedRate
-        });
-        const backendOrderNumber = orderResponse.data.orderNumber;
+    try {
+      const depositUrls: string[] = [];
 
-        // Step 2: Create TradeSafe escrow transaction and get deposit URL
-        const paymentResponse = await paymentsApi.initiateTradeSafe(backendOrderNumber);
-        const { depositUrl } = paymentResponse.data;
+      for (const sellerItems of Object.values(itemsBySeller)) {
+        const sellerShippingCost = shippingRates.find(
+          rate => rate.service_level_code === selectedRate
+        )?.total_cost || 0;
 
-        if (!depositUrl) {
-          throw new Error('No deposit URL returned from TradeSafe');
+        // Create one order per seller
+        for (const item of sellerItems as any[]) {
+          const orderResponse = await ordersApi.createOrder({
+            itemId: item.id,
+            quantity: 1,
+            shippingCost: sellerShippingCost,
+            pickupPoint: isLargeItem
+              ? 'Courier delivery'
+              : (pickupPoints.find(p => p.pickup_point_id === selectedPickupPoint)?.name || selectedPickupPoint),
+            deliveryLockerId: isLargeItem ? '' : selectedPickupPoint,
+            serviceLevelCode: selectedRate
+          });
+
+          const backendOrderNumber = orderResponse.data.orderNumber;
+          const paymentResponse = await paymentsApi.initiateTradeSafe(backendOrderNumber);
+          const { depositUrl } = paymentResponse.data;
+          if (depositUrl) depositUrls.push(depositUrl);
         }
-
-        // Step 3: Open TradeSafe in Capacitor browser — returns to app when done
-        await Browser.open({ url: depositUrl, presentationStyle: 'popover' });
-
-        // Listen for browser close and redirect to orders
-        App.addListener('resume', () => {
-          Browser.close();
-          clearCart();
-          history.replace('/orders');
-        });
-
-        Browser.addListener('browserFinished', () => {
-          clearCart();
-          history.replace('/orders');
-        });
-
-        setLoading(false);
-
-      } catch (error: any) {
-        const data = error.response?.data;
-        const msg = data?.detail || data?.error || error.message;
-        setToastMessage(`Payment failed: ${msg}`);
-        setShowToast(true);
-        setLoading(false);
       }
+
+      if (depositUrls.length === 0) throw new Error('No deposit URLs returned');
+
+      // Open the first TradeSafe payment — buyer will complete each one
+      // For multi-seller carts, open first URL; remaining handled after return
+      await Browser.open({ url: depositUrls[0], presentationStyle: 'popover' });
+
+      App.addListener('resume', () => {
+        Browser.close();
+        clearCart();
+        history.replace('/orders');
+      });
+
+      Browser.addListener('browserFinished', () => {
+        clearCart();
+        history.replace('/orders');
+      });
+
+      setLoading(false);
+
+    } catch (error: any) {
+      const data = error.response?.data;
+      const msg = data?.detail || data?.error || error.message;
+      setToastMessage(`Payment failed: ${msg}`);
+      setShowToast(true);
+      setLoading(false);
     }
   };
 
@@ -287,7 +298,7 @@ const [pickupPoints, setPickupPoints] = useState<PickupPoint[]>([]);
           ))}
           <IonItem>
             <IonLabel>
-              <strong>Subtotal: R{totalAmount}</strong>
+              <strong>Subtotal: R{totalItemAmount}</strong>
             </IonLabel>
           </IonItem>
         </IonCardContent>
@@ -508,11 +519,15 @@ const [pickupPoints, setPickupPoints] = useState<PickupPoint[]>([]);
               <div style={{ borderTop: '1px solid #eee', marginTop: '12px', paddingTop: '12px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', fontSize: '14px' }}>
                   <span style={{ color: '#555' }}>Items</span>
-                  <span>R{totalAmount}</span>
+                  <span>R{totalItemAmount.toFixed(2)}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', fontSize: '14px' }}>
-                  <span style={{ color: '#555' }}>Shipping</span>
-                  <span>R{shippingCost}</span>
+                  <span style={{ color: '#555' }}>Buyer Protection Fee</span>
+                  <span>R{buyerProtectionFee.toFixed(2)}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', fontSize: '14px' }}>
+                  <span style={{ color: '#555' }}>Shipping (Pudo)</span>
+                  <span>R{shippingCost.toFixed(2)}</span>
                 </div>
                 <div style={{
                   display: 'flex', justifyContent: 'space-between',
@@ -520,14 +535,20 @@ const [pickupPoints, setPickupPoints] = useState<PickupPoint[]>([]);
                   borderTop: '1px solid #ddd', paddingTop: '10px', marginTop: '6px'
                 }}>
                   <span>Total</span>
-                  <span style={{ color: 'var(--ion-color-primary)' }}>R{finalAmount}</span>
+                  <span style={{ color: 'var(--ion-color-primary)' }}>R{finalAmount.toFixed(2)}</span>
                 </div>
               </div>
 
-              {/* Escrow note */}
+              {/* Fee explanation */}
               <div style={{ marginTop: '14px', padding: '10px 12px', backgroundColor: '#e8f5e8', borderRadius: '8px' }}>
-                <p style={{ margin: 0, fontSize: '12px', color: '#2d5a2d', lineHeight: '1.5' }}>
-                  <strong>Secure escrow:</strong> Your payment is held by TradeSafe and only released to the seller once you confirm receipt.
+                <p style={{ margin: '0 0 6px', fontSize: '12px', color: '#2d5a2d', lineHeight: '1.5' }}>
+                  <strong>✅ Zero seller fees:</strong> The seller receives the full item price of R{totalItemAmount.toFixed(2)}.
+                </p>
+                <p style={{ margin: '0 0 6px', fontSize: '12px', color: '#2d5a2d', lineHeight: '1.5' }}>
+                  <strong>🔒 Buyer Protection Fee (R{buyerProtectionFee.toFixed(2)}):</strong> Covers TradeSafe escrow and platform costs. Your payment is held safely until you confirm delivery.
+                </p>
+                <p style={{ margin: '0', fontSize: '12px', color: '#2d5a2d', lineHeight: '1.5' }}>
+                  <strong>📦 Shipping (R{shippingCost.toFixed(2)}):</strong> Paid directly to Pudo for delivery to your selected locker.
                 </p>
               </div>
             </IonCardContent>

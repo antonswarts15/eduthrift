@@ -18,6 +18,9 @@ export interface CartItem {
   frontPhoto: string;
   backPhoto: string;
   quantity?: number;
+  sellerId?: string;
+  sellerName?: string;
+  largeItem?: boolean;
 }
 
 interface CartStore {
