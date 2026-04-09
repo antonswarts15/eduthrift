@@ -14,7 +14,8 @@ import {
   bagOutline,
   listOutline,
   chevronForwardOutline,
-  logOutOutline
+  logOutOutline,
+  trashOutline
 } from 'ionicons/icons';
 import { useHistory } from 'react-router-dom';
 
@@ -68,6 +69,11 @@ const MyProfile: React.FC = () => {
           <IonItem button onClick={handleLogout} style={{ marginTop: '20px' }}>
             <IonIcon icon={logOutOutline} slot="start" />
             <IonLabel>Logout</IonLabel>
+          </IonItem>
+
+          <IonItem button onClick={() => history.push('/delete-account')} style={{ marginTop: '8px' }}>
+            <IonIcon icon={trashOutline} slot="start" color="danger" />
+            <IonLabel color="danger">Delete Account</IonLabel>
           </IonItem>
         </IonList>
       </div>

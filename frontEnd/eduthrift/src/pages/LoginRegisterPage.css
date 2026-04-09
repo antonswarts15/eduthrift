@@ -1,11 +1,11 @@
 .login-register-page .background-video {
   position: fixed;
   top: 0;
-  left: 50%; /* Center horizontally */
-  transform: translateX(-50%); /* Adjust for true centering */
-  width: 100vw; /* Take full viewport width */
-  height: 100vh; /* Take full viewport height */
-  object-fit: cover; /* Cover the entire area, cropping if necessary */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100vw;
+  height: 100vh;
+  object-fit: cover;
   z-index: -1;
 }
 
@@ -18,16 +18,25 @@
 
 .login-register-page ion-grid {
   width: 100%;
-  height: 100%; /* Ensure grid takes full height for centering */
+  max-width: 600px;
+  height: 100%;
   display: flex;
   justify-content: center;
-  align-items: center; /* Center content vertically within the grid */
+  align-items: center;
+  padding: 16px;
+}
+
+.login-register-page ion-col {
+  width: 100%;
+  max-width: 560px;
 }
 
 .login-register-page ion-card {
-  background: rgb(255, 255, 255); /* Changed to solid white */
+  background: rgb(255, 255, 255);
   border-radius: 15px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  width: 100%;
+  margin: 0 auto;
 }
 
 .login-register-page .login-logo {
@@ -39,4 +48,18 @@
 
 .login-register-page ion-card-header {
   text-align: center;
+}
+
+/* Tablet and larger */
+@media (min-width: 768px) {
+  .login-register-page ion-grid {
+    max-width: 680px;
+  }
+}
+
+/* Large screens */
+@media (min-width: 1024px) {
+  .login-register-page ion-grid {
+    max-width: 720px;
+  }
 }

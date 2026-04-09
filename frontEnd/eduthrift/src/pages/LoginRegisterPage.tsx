@@ -172,7 +172,7 @@ const LoginRegisterPage: React.FC = () => {
           {/* Foreground content */}
           <IonGrid className="ion-padding content-overlay">
             <IonRow className="ion-justify-content-center" style={{ paddingTop: '40px' }}>
-              <IonCol size="12" size-md="8" size-lg="6">
+              <IonCol size="12" sizeMd="8" sizeLg="6" sizeXl="5">
                 <IonCard>
                   <IonCardHeader className="ion-text-center">
                     <img

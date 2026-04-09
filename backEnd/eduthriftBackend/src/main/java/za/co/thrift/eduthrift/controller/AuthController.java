@@ -205,6 +205,27 @@ public class AuthController {
         return ResponseEntity.ok(Map.of("message", "FCM token saved"));
     }
 
+    @DeleteMapping("/account")
+    public ResponseEntity<?> deleteAccount(@RequestBody(required = false) Map<String, String> body,
+                                           Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(401).body(new ErrorResponse("Not authenticated"));
+        }
+        String email = authentication.getName();
+        Optional<User> userOpt = userRepository.findByEmail(email);
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.status(404).body(new ErrorResponse("User not found"));
+        }
+        User user = userOpt.get();
+        // Verify password before deletion
+        String password = body != null ? body.get("password") : null;
+        if (password == null || !passwordEncoder.matches(password, user.getPasswordHash())) {
+            return ResponseEntity.status(401).body(new ErrorResponse("Incorrect password"));
+        }
+        userRepository.delete(user);
+        return ResponseEntity.ok(Map.of("message", "Account deleted successfully"));
+    }
+
     @PostMapping("/upload-id-document")
     public ResponseEntity<?> uploadIdDocument(
             @RequestParam("idDocument") MultipartFile file,

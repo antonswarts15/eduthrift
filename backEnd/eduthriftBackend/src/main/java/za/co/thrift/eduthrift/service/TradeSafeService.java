@@ -152,7 +152,7 @@ public class TradeSafeService {
                 mutation tokenCreate(
                     $givenName: String,
                     $familyName: String,
-                    $email: String,
+                    $email: Email,
                     $mobile: String,
                     $idNumber: String
                 ) {

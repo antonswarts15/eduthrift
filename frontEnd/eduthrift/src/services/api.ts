@@ -65,6 +65,7 @@ export const userApi = {
   },
 
   saveFcmToken: (fcmToken: string) => api.put('/auth/fcm-token', { fcmToken }),
+  deleteAccount: (password: string) => api.delete('/auth/account', { data: { password } }),
 };
 
 // Wishlist API
