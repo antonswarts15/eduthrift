@@ -13,7 +13,10 @@ const PaymentSuccess: React.FC = () => {
 
   useEffect(() => {
     clearCart();
-  }, [clearCart]);
+    // Auto-redirect to orders after 3 seconds
+    const timer = setTimeout(() => history.replace('/orders'), 3000);
+    return () => clearTimeout(timer);
+  }, [clearCart, history]);
 
   return (
     <IonPage>
@@ -31,11 +34,9 @@ const PaymentSuccess: React.FC = () => {
               )}
               <p>Your funds are now held in TradeSafe escrow.</p>
               <p>They will be released to the seller once you confirm delivery.</p>
-              <IonButton expand="block" onClick={() => history.push('/orders')} style={{ marginTop: '20px' }}>
-                View Orders
-              </IonButton>
-              <IonButton expand="block" fill="outline" onClick={() => history.push('/buyer')}>
-                Continue Shopping
+              <p style={{ fontSize: '13px', color: '#888' }}>Redirecting to your orders...</p>
+              <IonButton expand="block" onClick={() => history.replace('/orders')} style={{ marginTop: '20px' }}>
+                View My Orders
               </IonButton>
             </IonCardContent>
           </IonCard>

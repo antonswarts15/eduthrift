@@ -198,6 +198,9 @@ public class OrderController {
         Map<String, Object> map = new HashMap<>();
         map.put("orderNumber", order.getOrderNumber());
         map.put("itemName", order.getItem().getItemName());
+        map.put("itemImage", order.getItem().getFrontPhoto());
+        map.put("itemPrice", order.getItemPrice());
+        map.put("shippingCost", order.getShippingCost());
         map.put("quantity", order.getQuantity());
         map.put("totalAmount", order.getTotalAmount());
         map.put("orderStatus", order.getOrderStatus().name());
@@ -208,6 +211,8 @@ public class OrderController {
         map.put("deliveryConfirmed", order.getDeliveryConfirmed());
         map.put("pickupPoint", order.getPickupPoint());
         map.put("trackingNumber", order.getTrackingNumber());
+        map.put("sellerName", order.getSeller().getFirstName() + " " + order.getSeller().getLastName());
+        map.put("buyerName", order.getBuyer().getFirstName() + " " + order.getBuyer().getLastName());
         map.put("createdAt", order.getCreatedAt().toString());
         return map;
     }

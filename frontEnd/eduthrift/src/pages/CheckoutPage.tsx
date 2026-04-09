@@ -14,6 +14,8 @@ import {
 } from '@ionic/react';
 import { locationOutline, timeOutline, cashOutline, checkmarkCircleOutline, arrowUndoOutline } from 'ionicons/icons';
 import { useHistory, useLocation } from 'react-router-dom';
+import { Browser } from '@capacitor/browser';
+import { App } from '@capacitor/app';
 import ShippingService, { PickupPoint, ShippingRate } from '../services/shipping';
 import { useCartStore } from '../stores/cartStore';
 import { useUserStore } from '../stores/userStore';
@@ -215,8 +217,22 @@ const [pickupPoints, setPickupPoints] = useState<PickupPoint[]>([]);
           throw new Error('No deposit URL returned from TradeSafe');
         }
 
-        // Step 3: Redirect buyer to TradeSafe to fund the escrow
-        window.location.href = depositUrl;
+        // Step 3: Open TradeSafe in Capacitor browser — returns to app when done
+        await Browser.open({ url: depositUrl, presentationStyle: 'popover' });
+
+        // Listen for browser close and redirect to orders
+        App.addListener('resume', () => {
+          Browser.close();
+          clearCart();
+          history.replace('/orders');
+        });
+
+        Browser.addListener('browserFinished', () => {
+          clearCart();
+          history.replace('/orders');
+        });
+
+        setLoading(false);
 
       } catch (error: any) {
         const data = error.response?.data;

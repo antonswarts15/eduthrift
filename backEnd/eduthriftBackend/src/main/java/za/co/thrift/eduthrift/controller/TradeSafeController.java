@@ -85,41 +85,45 @@ public class TradeSafeController {
                             "Payment Received",
                             "Your payment for order " + order.getOrderNumber() + " is held in escrow. The seller will ship your item shortly."
                     );
-                    fcmNotificationService.send(
-                            order.getSeller().getFcmToken(),
-                            "Payment Secured — Please Ship",
-                            "Funds for order " + order.getOrderNumber() + " are held in escrow. Please ship the item."
-                    );
 
                     // Create TCG shipment now that funds are secured in escrow
+                    String trackingRef = null;
                     if (order.getDeliveryLockerId() != null && order.getServiceLevelCode() != null) {
                         try {
                             Map<String, Object> shipment = tcgShippingService.createShipment(
                                     order, order.getSeller(), order.getBuyer());
-                            Object trackingRef = shipment.get("short_tracking_reference");
-                            if (trackingRef == null) trackingRef = shipment.get("tracking_reference");
-                            if (trackingRef != null) {
-                                order.setTrackingNumber(trackingRef.toString());
+                            Object tRef = shipment.get("short_tracking_reference");
+                            if (tRef == null) tRef = shipment.get("tracking_reference");
+                            if (tRef != null) {
+                                trackingRef = tRef.toString();
+                                order.setTrackingNumber(trackingRef);
                             }
                             Object shipmentId = shipment.get("id");
                             if (shipmentId != null) {
                                 order.setTcgShipmentId(shipmentId.toString());
                             }
-                            // Signal to TradeSafe that delivery has started
                             if (order.getTradeSafeAllocationId() != null) {
                                 try {
                                     tradeSafeService.startDelivery(order.getTradeSafeAllocationId());
-                                } catch (Exception ignored) {
-                                    // startDelivery failed — admin should manually mark delivery
-                                    // started in TradeSafe portal for transaction: order.getTradeSafeTransactionId()
-                                }
+                                } catch (Exception ignored) {}
                             }
-                        } catch (Exception ignored) {
-                            // Shipment creation failed — order is still paid and in escrow.
-                            // Admin should manually create the shipment in the TCG portal
-                            // for order: order.getOrderNumber()
-                        }
+                        } catch (Exception ignored) {}
                     }
+
+                    // Notify seller with Pudo drop-off instructions
+                    String sellerMsg = "Funds for order " + order.getOrderNumber()
+                            + " are secured in escrow. Please drop off the item at your nearest Pudo locker.";
+                    if (trackingRef != null) {
+                        sellerMsg += " Waybill/tracking: " + trackingRef
+                                + ". The buyer's locker is: " + (order.getPickupPoint() != null ? order.getPickupPoint() : "see order details") + ".";
+                    } else {
+                        sellerMsg += " Open your orders in the app for the waybill and drop-off instructions.";
+                    }
+                    fcmNotificationService.send(
+                            order.getSeller().getFcmToken(),
+                            "Action Required: Ship Your Item",
+                            sellerMsg
+                    );
                 }
                 case "DELIVERY_ACCEPTED" -> {
                     order.setOrderStatus(Order.OrderStatus.DELIVERED);
