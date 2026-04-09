@@ -10,6 +10,7 @@ import za.co.thrift.eduthrift.repository.ItemRepository;
 import za.co.thrift.eduthrift.repository.OrderRepository;
 import za.co.thrift.eduthrift.repository.UserRepository;
 import za.co.thrift.eduthrift.service.EscrowService;
+import za.co.thrift.eduthrift.service.EmailService;
 import za.co.thrift.eduthrift.service.FCMNotificationService;
 import za.co.thrift.eduthrift.service.TradeSafeService;
 
