@@ -10,6 +10,7 @@ import za.co.thrift.eduthrift.entity.User;
 import za.co.thrift.eduthrift.repository.OrderRepository;
 import za.co.thrift.eduthrift.repository.UserRepository;
 import za.co.thrift.eduthrift.service.FCMNotificationService;
+import za.co.thrift.eduthrift.service.OrderExpiryService;
 import za.co.thrift.eduthrift.service.TCGShippingService;
 import za.co.thrift.eduthrift.service.TradeSafeService;
 
@@ -26,17 +27,20 @@ public class TradeSafeController {
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
     private final FCMNotificationService fcmNotificationService;
+    private final OrderExpiryService orderExpiryService;
 
     public TradeSafeController(TradeSafeService tradeSafeService,
                                 TCGShippingService tcgShippingService,
                                 OrderRepository orderRepository,
                                 UserRepository userRepository,
-                                FCMNotificationService fcmNotificationService) {
+                                FCMNotificationService fcmNotificationService,
+                                OrderExpiryService orderExpiryService) {
         this.tradeSafeService = tradeSafeService;
         this.tcgShippingService = tcgShippingService;
         this.orderRepository = orderRepository;
         this.userRepository = userRepository;
         this.fcmNotificationService = fcmNotificationService;
+        this.orderExpiryService = orderExpiryService;
     }
 
     /**
@@ -140,13 +144,7 @@ public class TradeSafeController {
                     );
                 }
                 case "CANCELLED", "DECLINED" -> {
-                    order.setPaymentStatus(Order.PaymentStatus.FAILED);
-                    order.setOrderStatus(Order.OrderStatus.CANCELLED);
-                    fcmNotificationService.send(
-                            order.getBuyer().getFcmToken(),
-                            "Order Cancelled",
-                            "Your order " + order.getOrderNumber() + " has been cancelled."
-                    );
+                    orderExpiryService.cancelOrderAndRestoreItem(order, "Payment was cancelled or declined via TradeSafe");
                 }
                 case "REFUNDED" -> {
                     order.setPaymentStatus(Order.PaymentStatus.REFUNDED);

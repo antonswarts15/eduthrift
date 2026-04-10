@@ -189,6 +189,46 @@ public class EmailService {
         }
     }
 
+    public void sendOrderCancellationEmail(Order order, String reason) {
+        try {
+            String html = """
+                    <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px">
+                      <div style="background:#e74c3c;padding:20px;border-radius:8px 8px 0 0;text-align:center">
+                        <h1 style="color:white;margin:0;font-size:24px">Order Cancelled</h1>
+                        <p style="color:rgba(255,255,255,0.85);margin:8px 0 0">Eduthrift Secure Marketplace</p>
+                      </div>
+                      <div style="background:#f9f9f9;padding:24px;border:1px solid #eee">
+                        <p style="font-size:16px">Hi <strong>%s</strong>,</p>
+                        <p>Your order <strong>%s</strong> for <strong>%s</strong> has been cancelled.</p>
+                        <div style="background:#fff3cd;border-radius:8px;padding:14px;margin:16px 0">
+                          <p style="margin:0;font-size:13px;color:#856404">
+                            <strong>Reason:</strong> %s<br><br>
+                            The item has been returned to the listings and is available for purchase again.
+                          </p>
+                        </div>
+                        <div style="text-align:center;margin:24px 0">
+                          <a href="%s/buyer" style="background:#004aad;color:white;padding:12px 28px;border-radius:6px;text-decoration:none;font-weight:bold">
+                            Browse Listings
+                          </a>
+                        </div>
+                      </div>
+                      <div style="text-align:center;padding:16px;font-size:12px;color:#999">
+                        Eduthrift &middot; support@eduthrift.co.za
+                      </div>
+                    </div>
+                    """.formatted(
+                    order.getBuyer().getFirstName(),
+                    order.getOrderNumber(),
+                    order.getItem().getItemName(),
+                    reason,
+                    appBaseUrl
+            );
+            send(order.getBuyer().getEmail(), "Order Cancelled — " + order.getOrderNumber(), html);
+        } catch (Exception e) {
+            log.warn("Failed to send cancellation email for order {}: {}", order.getOrderNumber(), e.getMessage());
+        }
+    }
+
     private void send(String to, String subject, String html) throws Exception {
         MimeMessage message = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");

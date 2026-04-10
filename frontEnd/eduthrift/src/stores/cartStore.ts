@@ -21,6 +21,7 @@ export interface CartItem {
   sellerId?: string;
   sellerAlias?: string;
   largeItem?: boolean;
+  addedAt?: number; // timestamp for cart expiry
 }
 
 interface CartStore {

@@ -5,6 +5,7 @@ import org.springframework.stereotype.Repository;
 import za.co.thrift.eduthrift.entity.Order;
 import za.co.thrift.eduthrift.entity.User;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -16,4 +17,5 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     Optional<Order> findByTradeSafeTransactionId(String tradeSafeTransactionId);
     Optional<Order> findByTrackingNumber(String trackingNumber);
     Optional<Order> findByTcgShipmentId(String tcgShipmentId);
+    List<Order> findByOrderStatusAndCreatedAtBefore(Order.OrderStatus status, LocalDateTime cutoff);
 }
