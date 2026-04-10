@@ -84,8 +84,9 @@ public class OrderController {
                 .map(Item::getPrice)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        // Enforce minimum bundle value of R500
-        if (itemTotal.compareTo(BigDecimal.valueOf(500)) < 0) {
+        // Enforce minimum bundle value of R500 only once platform has 100+ listings
+        long totalListings = itemRepository.countByStatus(Item.ItemStatus.AVAILABLE);
+        if (totalListings >= 100 && itemTotal.compareTo(BigDecimal.valueOf(500)) < 0) {
             return ResponseEntity.badRequest().body(Map.of(
                 "error", "Minimum bundle value is R500. Current total: R" + itemTotal.toPlainString()
             ));

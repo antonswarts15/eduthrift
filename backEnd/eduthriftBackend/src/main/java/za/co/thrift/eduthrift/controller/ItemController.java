@@ -137,6 +137,12 @@ public class ItemController {
         return ResponseEntity.ok(toResponse(item, item.getUser()));
     }
 
+    @GetMapping("/count")
+    public ResponseEntity<?> getItemCount() {
+        long count = itemRepository.countByStatus(Item.ItemStatus.AVAILABLE);
+        return ResponseEntity.ok(Map.of("count", count, "minimumActive", count >= 100));
+    }
+
     @GetMapping("/mine")
     public ResponseEntity<?> getMyItems(Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated()) {

@@ -14,6 +14,7 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
     List<Item> findBySchoolName(String schoolName);
     List<Item> findByStatus(Item.ItemStatus status);
     List<Item> findByUserOrderByCreatedAtDesc(User user);
+    long countByStatus(Item.ItemStatus status);
     List<Item> findByUserAndStatusAndIdNotOrderByCreatedAtDesc(User user, Item.ItemStatus status, Long excludeId);
 
     @Query("SELECT i FROM Item i WHERE i.user.id = :sellerId AND i.status = 'AVAILABLE' AND i.id != :excludeId ORDER BY i.createdAt DESC")

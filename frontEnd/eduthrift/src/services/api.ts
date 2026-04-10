@@ -91,6 +91,7 @@ export const itemsApi = {
   getItems: (filters: any) => api.get('/items', { params: filters }),
   getMyItems: (params?: Record<string, string>) => api.get('/items/mine', { params }),
   getSellerItems: (itemId: string) => api.get(`/items/${itemId}/seller-items`),
+  getItemCount: () => api.get('/items/count'),
 };
 
 // Payments API
