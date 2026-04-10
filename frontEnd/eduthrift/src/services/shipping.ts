@@ -15,7 +15,59 @@ export interface ShippingRate {
   service_level_name: string;
   total_cost: number;
   delivery_date: string;
+  max_weight_kg?: number;
+  dimensions?: string;
+  description?: string;
 }
+
+// Fixed Pudo locker-to-locker box sizes and pricing
+export const PUDO_BOX_SIZES: ShippingRate[] = [
+  {
+    service_level_code: 'PUDO_XS',
+    service_level_name: 'XS Locker Box',
+    total_cost: 60,
+    delivery_date: '',
+    max_weight_kg: 2,
+    dimensions: '19 x 38 x 64 cm',
+    description: 'Fits: small items, books, accessories'
+  },
+  {
+    service_level_code: 'PUDO_S',
+    service_level_name: 'S Locker Box',
+    total_cost: 70,
+    delivery_date: '',
+    max_weight_kg: 5,
+    dimensions: '38 x 38 x 64 cm',
+    description: 'Fits: 1-2 clothing items, small uniform pieces'
+  },
+  {
+    service_level_code: 'PUDO_M',
+    service_level_name: 'M Locker Box',
+    total_cost: 100,
+    delivery_date: '',
+    max_weight_kg: 10,
+    dimensions: '38 x 38 x 64 cm',
+    description: 'Fits: 3-5 clothing items, full uniform set'
+  },
+  {
+    service_level_code: 'PUDO_L',
+    service_level_name: 'L Locker Box',
+    total_cost: 150,
+    delivery_date: '',
+    max_weight_kg: 15,
+    dimensions: '57 x 38 x 64 cm',
+    description: 'Fits: large bundle, sports kit + uniform'
+  },
+  {
+    service_level_code: 'PUDO_XL',
+    service_level_name: 'XL Locker Box',
+    total_cost: 200,
+    delivery_date: '',
+    max_weight_kg: 20,
+    dimensions: '76 x 38 x 64 cm',
+    description: 'Fits: full school bundle, multiple items'
+  }
+];
 
 export interface Parcel {
   parcel_description: string;

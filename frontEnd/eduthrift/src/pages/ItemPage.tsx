@@ -1,27 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useHistory } from 'react-router-dom';
 import {
-  IonContent,
-  IonPage,
-  IonHeader,
-  IonToolbar,
-  IonTitle,
-  IonButtons,
-  IonBackButton,
-  IonButton,
-  IonIcon,
-  IonCard,
-  IonCardContent,
-  IonBadge,
-  IonToast,
-  IonModal,
-  IonSpinner
+  IonContent, IonPage, IonHeader, IonToolbar, IonTitle, IonButtons,
+  IonBackButton, IonButton, IonIcon, IonCard, IonCardContent, IonBadge,
+  IonToast, IonModal, IonSpinner, IonCardHeader, IonCardTitle
 } from '@ionic/react';
-import { cartOutline, checkmarkCircleOutline, closeCircleOutline, closeOutline, imageOutline } from 'ionicons/icons';
+import { cartOutline, checkmarkCircleOutline, closeCircleOutline, closeOutline, imageOutline, addOutline, removeOutline } from 'ionicons/icons';
 import { useListingsStore } from '../stores/listingsStore';
 import { useCartStore } from '../stores/cartStore';
 import { useToast } from '../hooks/useToast';
+import { itemsApi } from '../services/api';
 import { Item } from '../types/models';
+
+const BUNDLE_MINIMUM = 500;
 
 const ItemPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -111,8 +102,8 @@ const ItemPage: React.FC = () => {
       frontPhoto: listing.frontPhoto,
       backPhoto: listing.backPhoto,
       sellerId: listing.userId || listing.seller_id || listing.sellerId,
-      sellerName: listing.sellerName || listing.seller_name,
-      largeItem: listing.largeItem || false
+      sellerAlias: listing.seller_alias || listing.sellerAlias,
+      largeItem: listing.largeItem || listing.large_item || false
     };
 
     addToCart(cartItem, showToast);

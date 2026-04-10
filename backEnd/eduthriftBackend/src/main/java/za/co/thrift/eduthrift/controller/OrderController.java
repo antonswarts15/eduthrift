@@ -50,42 +50,76 @@ public class OrderController {
 
         String email = authentication.getName();
         Optional<User> buyerOpt = userRepository.findByEmail(email);
-        if (buyerOpt.isEmpty()) {
-            return ResponseEntity.status(404).body(Map.of("error", "User not found"));
+        if (buyerOpt.isEmpty()) return ResponseEntity.status(404).body(Map.of("error", "User not found"));
+
+        // Support both single itemId and bundle itemIds
+        List<Long> itemIds = new ArrayList<>();
+        if (request.itemIds != null && !request.itemIds.isEmpty()) {
+            itemIds.addAll(request.itemIds);
+        } else if (request.itemId != null) {
+            itemIds.add(request.itemId);
+        } else {
+            return ResponseEntity.badRequest().body(Map.of("error", "itemId or itemIds required"));
         }
 
-        Optional<Item> itemOpt = itemRepository.findById(request.itemId);
-        if (itemOpt.isEmpty()) {
-            return ResponseEntity.status(404).body(Map.of("error", "Item not found"));
+        // Validate all items exist and belong to the same seller
+        List<Item> items = new ArrayList<>();
+        for (Long itemId : itemIds) {
+            Optional<Item> itemOpt = itemRepository.findById(itemId);
+            if (itemOpt.isEmpty()) return ResponseEntity.status(404).body(Map.of("error", "Item not found: " + itemId));
+            items.add(itemOpt.get());
         }
 
-        Item item = itemOpt.get();
+        User seller = items.get(0).getUser();
+        for (Item item : items) {
+            if (!item.getUser().getId().equals(seller.getId())) {
+                return ResponseEntity.badRequest().body(Map.of("error", "All items in a bundle must be from the same seller"));
+            }
+        }
+
         User buyer = buyerOpt.get();
-        User seller = item.getUser();
+
+        // Calculate bundle total
+        BigDecimal itemTotal = items.stream()
+                .map(Item::getPrice)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        // Enforce minimum bundle value of R500
+        if (itemTotal.compareTo(BigDecimal.valueOf(500)) < 0) {
+            return ResponseEntity.badRequest().body(Map.of(
+                "error", "Minimum bundle value is R500. Current total: R" + itemTotal.toPlainString()
+            ));
+        }
+
+        // Use first item as the primary item for the order entity
+        Item primaryItem = items.get(0);
 
         Order order = new Order();
         order.setBuyer(buyer);
         order.setSeller(seller);
-        order.setItem(item);
-        order.setQuantity(request.quantity);
-        order.setItemPrice(item.getPrice());
-        order.setShippingCost(BigDecimal.valueOf(request.shippingCost));
-        order.setTotalAmount(item.getPrice().multiply(BigDecimal.valueOf(request.quantity))
-                .add(BigDecimal.valueOf(request.shippingCost)));
+        order.setItem(primaryItem);
+        order.setQuantity(items.size());
+        order.setItemPrice(itemTotal); // store bundle total as item price
+        order.setShippingCost(BigDecimal.valueOf(request.shippingCost != null ? request.shippingCost : 0));
+        order.setTotalAmount(itemTotal.add(BigDecimal.valueOf(request.shippingCost != null ? request.shippingCost : 0)));
         order.setPickupPoint(request.pickupPoint);
         order.setDeliveryLockerId(request.deliveryLockerId);
         order.setServiceLevelCode(request.serviceLevelCode);
 
         Order saved = orderRepository.save(order);
 
-        // Notify seller about new order
+        // Mark all items as RESERVED
+        for (Item item : items) {
+            item.setStatus(Item.ItemStatus.RESERVED);
+            itemRepository.save(item);
+        }
+
         fcmNotificationService.send(
                 seller.getFcmToken(),
-                "New Order Received",
-                "You have a new order for " + item.getItemName() + " (" + saved.getOrderNumber() + ")"
+                "New Bundle Order!",
+                "You have a new bundle order of " + items.size() + " item(s) totalling R" + itemTotal.toPlainString() + " (" + saved.getOrderNumber() + ")"
         );
 
-        // Send confirmation emails to buyer and seller
         emailService.sendBuyerOrderConfirmation(saved);
         emailService.sendSellerOrderNotification(saved);
 
@@ -220,14 +254,15 @@ public class OrderController {
         map.put("deliveryConfirmed", order.getDeliveryConfirmed());
         map.put("pickupPoint", order.getPickupPoint());
         map.put("trackingNumber", order.getTrackingNumber());
-        map.put("sellerName", order.getSeller().getFirstName() + " " + order.getSeller().getLastName());
-        map.put("buyerName", order.getBuyer().getFirstName() + " " + order.getBuyer().getLastName());
+        map.put("sellerAlias", "Seller #" + Long.toHexString(order.getSeller().getId()).toUpperCase());
+        map.put("buyerAlias", "Buyer #" + Long.toHexString(order.getBuyer().getId()).toUpperCase());
         map.put("createdAt", order.getCreatedAt().toString());
         return map;
     }
 
     public static class CreateOrderRequest {
-        public Long itemId;
+        public Long itemId;           // single item (legacy)
+        public List<Long> itemIds;    // bundle of items
         public Integer quantity;
         public Double shippingCost;
         public String pickupPoint;

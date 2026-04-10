@@ -144,7 +144,9 @@ const Cart: React.FC = () => {
                   <span style={{ color: '#27AE60' }}>R{totalAmount}</span>
                 </div>
                 <p style={{ fontSize: '12px', color: '#888', marginTop: '8px', marginBottom: '0' }}>
-                  {cartItems.length > 1 ? `${cartItems.length} items from ${new Set(cartItems.map(i => (i as any).sellerId).filter(Boolean)).size || cartItems.length} seller(s) — shipping calculated per seller at checkout` : 'Shipping calculated at checkout'}
+                  {cartItems.length > 1
+                    ? `${cartItems.length} items — shipping calculated per seller bundle at checkout`
+                    : 'Shipping calculated at checkout'}
                 </p>
                 
                 <IonButton 

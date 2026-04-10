@@ -158,6 +158,17 @@ public class ItemController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/{id}/seller-items")
+    public ResponseEntity<?> getSellerItems(@PathVariable Long id) {
+        Optional<Item> itemOpt = itemRepository.findById(id);
+        if (itemOpt.isEmpty()) return ResponseEntity.status(404).body(Map.of("error", "Item not found"));
+        Item item = itemOpt.get();
+        List<Item> sellerItems = itemRepository.findOtherItemsBySeller(item.getUser().getId(), id);
+        List<Map<String, Object>> response = new ArrayList<>();
+        for (Item si : sellerItems) response.add(toResponse(si, si.getUser()));
+        return ResponseEntity.ok(response);
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<?> updateItem(@PathVariable Long id, @RequestBody Map<String, Object> updates, Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated()) {
@@ -263,6 +274,8 @@ public class ItemController {
         map.put("created_at", item.getCreatedAt() != null ? item.getCreatedAt().toString() : null);
         map.put("updated_at", item.getUpdatedAt() != null ? item.getUpdatedAt().toString() : null);
         map.put("large_item", item.getLargeItem() != null && item.getLargeItem());
+        map.put("seller_id", user.getId());
+        map.put("seller_alias", "Seller #" + Long.toHexString(user.getId()).toUpperCase());
         map.put("seller_town", user.getTown());
         map.put("seller_province", user.getProvince());
         return map;

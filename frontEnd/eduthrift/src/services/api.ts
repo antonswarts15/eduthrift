@@ -90,6 +90,7 @@ export const itemsApi = {
   getItem: (id: string) => api.get(`/items/${id}`),
   getItems: (filters: any) => api.get('/items', { params: filters }),
   getMyItems: (params?: Record<string, string>) => api.get('/items/mine', { params }),
+  getSellerItems: (itemId: string) => api.get(`/items/${itemId}/seller-items`),
 };
 
 // Payments API

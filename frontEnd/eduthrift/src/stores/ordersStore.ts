@@ -11,10 +11,12 @@ export interface Order {
   paymentMethod: string;
   paymentStatus: 'pending' | 'completed' | 'failed';
   orderDate: string;
-  deliveryAddress?: string;
   pickupPoint?: string;
   trackingNumber?: string;
   shippingProvider?: 'pudo' | 'courierguy';
+  sellerAlias?: string;
+  buyerAlias?: string;
+  isBuyer?: boolean;
 }
 
 interface OrdersStore {
@@ -49,8 +51,8 @@ export const useOrdersStore = create<OrdersStore>()(
       const response = await api.get('/orders');
       const data = response.data;
       const backendOrders: Order[] = [
-        ...(data.buyerOrders || []),
-        ...(data.sellerOrders || [])
+        ...(data.buyerOrders || []).map((o: any) => ({ ...o, isBuyer: true })),
+        ...(data.sellerOrders || []).map((o: any) => ({ ...o, isBuyer: false }))
       ].map((o: any) => ({
         id: o.orderNumber,
         items: [],
@@ -60,7 +62,10 @@ export const useOrdersStore = create<OrdersStore>()(
         paymentStatus: (o.paymentStatus?.toLowerCase() === 'captured' ? 'completed' : o.paymentStatus?.toLowerCase() === 'failed' ? 'failed' : 'pending') as Order['paymentStatus'],
         orderDate: o.createdAt || new Date().toISOString(),
         pickupPoint: o.pickupPoint,
-        trackingNumber: o.trackingNumber
+        trackingNumber: o.trackingNumber,
+        sellerAlias: o.sellerAlias,
+        buyerAlias: o.buyerAlias,
+        isBuyer: o.isBuyer
       }));
       set({ orders: backendOrders });
     } catch {
