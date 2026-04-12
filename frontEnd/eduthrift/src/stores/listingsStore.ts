@@ -55,6 +55,8 @@ export interface Listing {
   expiryDate: string;
   isExpired?: boolean;
   largeItem?: boolean;
+  sellerId?: string;
+  sellerAlias?: string;
   // Location-based fields
   sellerLocation?: string;
   locationPriority?: number;
@@ -109,6 +111,8 @@ const mapBackendItem = (item: any): Listing => ({
   expiryDate: item.expiry_date || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
   isExpired: item.is_expired || false,
   largeItem: item.large_item || false,
+  sellerId: item.user_id?.toString() || item.seller_id?.toString() || undefined,
+  sellerAlias: item.seller_alias || item.seller_name || undefined,
   sellerLocation: item.seller_town && item.seller_province ? `${item.seller_town}, ${item.seller_province}` : undefined,
   locationPriority: item.location_priority || 3
 });

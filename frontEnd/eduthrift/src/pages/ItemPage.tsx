@@ -3,28 +3,61 @@ import { useParams, useHistory } from 'react-router-dom';
 import {
   IonContent, IonPage, IonHeader, IonToolbar, IonTitle, IonButtons,
   IonBackButton, IonButton, IonIcon, IonCard, IonCardContent, IonBadge,
-  IonToast, IonModal, IonSpinner, IonCardHeader, IonCardTitle
+  IonToast, IonModal, IonSpinner
 } from '@ionic/react';
-import { cartOutline, checkmarkCircleOutline, closeCircleOutline, closeOutline, imageOutline, addOutline, removeOutline } from 'ionicons/icons';
+import { cartOutline, checkmarkCircleOutline, closeCircleOutline, closeOutline, imageOutline } from 'ionicons/icons';
 import { useListingsStore } from '../stores/listingsStore';
 import { useCartStore } from '../stores/cartStore';
 import { useToast } from '../hooks/useToast';
 import { itemsApi } from '../services/api';
-import { Item } from '../types/models';
+import { Listing } from '../stores/listingsStore';
 
 const BUNDLE_MINIMUM = 500;
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+
+const toAbsoluteUrl = (path: string | null | undefined): string => {
+  if (!path) return '';
+  if (path.startsWith('http') || path.startsWith('data:')) return path;
+  return `${API_BASE_URL}${path}`;
+};
+
+const mapSellerItem = (item: any): Listing => ({
+  id: item.id.toString(),
+  name: item.item_name || item.name || 'Unknown Item',
+  description: item.description || '',
+  price: parseFloat(item.price),
+  condition: item.condition_grade || 3,
+  school: item.school_name || item.club_name || '',
+  size: item.size || 'Standard',
+  gender: item.gender || 'Unisex',
+  category: item.category || '',
+  subcategory: item.subcategory || undefined,
+  sport: item.sport || undefined,
+  frontPhoto: toAbsoluteUrl(item.front_photo),
+  backPhoto: toAbsoluteUrl(item.back_photo),
+  dateCreated: item.created_at ? new Date(item.created_at).toLocaleDateString() : new Date().toLocaleDateString(),
+  quantity: item.quantity || 1,
+  soldOut: item.sold_out || item.quantity === 0 || item.status === 'sold',
+  expiryDate: item.expiry_date || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+  isExpired: item.is_expired || false,
+  largeItem: item.large_item || false,
+  sellerId: item.user_id?.toString() || item.seller_id?.toString() || undefined,
+  sellerAlias: item.seller_alias || item.seller_name || undefined,
+});
 
 const ItemPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const history = useHistory();
   const { getListingById, fetchListingById, decreaseQuantity } = useListingsStore();
-  const { addToCart } = useCartStore();
+  const { addToCart, cartItems } = useCartStore();
   const { isOpen, message, color, showToast, hideToast } = useToast();
 
   const [zoomPhoto, setZoomPhoto] = useState<string | null>(null);
   const [zoomLabel, setZoomLabel] = useState('');
   const [loading, setLoading] = useState(false);
   const [fetchedListing, setFetchedListing] = useState<any>(null);
+  const [sellerItems, setSellerItems] = useState<Listing[]>([]);
 
   const storeListing = getListingById(id);
   const listing = storeListing || fetchedListing;
@@ -39,6 +72,22 @@ const ItemPage: React.FC = () => {
       });
     }
   }, [id, storeListing]);
+
+  // Fetch other items from the same seller
+  useEffect(() => {
+    if (id) {
+      itemsApi.getSellerItems(id)
+        .then((response) => {
+          const items: Listing[] = response.data
+            .map(mapSellerItem)
+            .filter((item: Listing) => item.id !== id && !item.soldOut && !item.isExpired);
+          setSellerItems(items);
+        })
+        .catch(() => {
+          // Silently ignore — seller items section simply won't appear
+        });
+    }
+  }, [id]);
 
   if (loading) {
     return (
@@ -81,33 +130,37 @@ const ItemPage: React.FC = () => {
     );
   }
 
+  const buildCartItem = (item: any) => ({
+    id: item.id,
+    name: item.name,
+    description: item.description,
+    price: item.price,
+    condition: item.condition,
+    school: item.school,
+    size: item.size,
+    gender: item.gender,
+    category: item.category,
+    subcategory: item.subcategory,
+    sport: item.sport,
+    frontPhoto: item.frontPhoto,
+    backPhoto: item.backPhoto,
+    sellerId: item.sellerId || item.userId || item.seller_id,
+    sellerAlias: item.sellerAlias || item.seller_alias,
+    largeItem: item.largeItem || item.large_item || false
+  });
+
   const handleAddToCart = () => {
     if (listing.soldOut || listing.quantity === 0) {
       showToast('This item is sold out!', 'danger');
       return;
     }
-
-    const cartItem = {
-      id: listing.id,
-      name: listing.name,
-      description: listing.description,
-      price: listing.price,
-      condition: listing.condition,
-      school: listing.school,
-      size: listing.size,
-      gender: listing.gender,
-      category: listing.category,
-      subcategory: listing.subcategory,
-      sport: listing.sport,
-      frontPhoto: listing.frontPhoto,
-      backPhoto: listing.backPhoto,
-      sellerId: listing.userId || listing.seller_id || listing.sellerId,
-      sellerAlias: listing.seller_alias || listing.sellerAlias,
-      largeItem: listing.largeItem || listing.large_item || false
-    };
-
-    addToCart(cartItem, showToast);
+    addToCart(buildCartItem(listing), showToast);
     decreaseQuantity(listing.id);
+  };
+
+  const handleAddSellerItemToCart = (item: Listing) => {
+    addToCart(buildCartItem(item), showToast);
+    decreaseQuantity(item.id);
   };
 
   const getConditionText = (condition: number) => {
@@ -252,6 +305,57 @@ const ItemPage: React.FC = () => {
           </IonCard>
         </div>
         
+        {/* More from this seller */}
+        {sellerItems.length > 0 && (
+          <div style={{ padding: '0 16px 16px' }}>
+            <h2 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '12px', color: '#333' }}>
+              More from this seller
+            </h2>
+            <p style={{ margin: '0 0 12px', fontSize: '13px', color: '#666' }}>
+              Add multiple items from the same seller to save on delivery costs.
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {sellerItems.map((item) => {
+                const alreadyInCart = cartItems.some(c => c.id === item.id);
+                return (
+                  <IonCard key={item.id} style={{ margin: 0 }}>
+                    <IonCardContent style={{ padding: '10px' }}>
+                      <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                        {item.frontPhoto ? (
+                          <img
+                            src={item.frontPhoto}
+                            alt={item.name}
+                            style={{ width: '64px', height: '78px', objectFit: 'cover', borderRadius: '6px', border: '1px solid #ddd', flexShrink: 0 }}
+                            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                          />
+                        ) : (
+                          <div style={{ width: '64px', height: '78px', backgroundColor: '#f0f0f0', borderRadius: '6px', border: '1px solid #ddd', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                            <IonIcon icon={imageOutline} style={{ fontSize: '24px', color: '#999' }} />
+                          </div>
+                        )}
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <p style={{ margin: '0 0 2px', fontWeight: 'bold', fontSize: '14px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.name}</p>
+                          <p style={{ margin: '0 0 2px', fontSize: '13px', color: '#666' }}>{item.school} · {item.size}</p>
+                          <p style={{ margin: '0 0 6px', fontSize: '16px', color: '#004aad', fontWeight: 'bold' }}>R{item.price}</p>
+                          <IonButton
+                            size="small"
+                            expand="block"
+                            disabled={alreadyInCart}
+                            onClick={() => handleAddSellerItemToCart(item)}
+                          >
+                            <IonIcon icon={cartOutline} slot="start" />
+                            {alreadyInCart ? 'In Cart' : 'Add to Cart'}
+                          </IonButton>
+                        </div>
+                      </div>
+                    </IonCardContent>
+                  </IonCard>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         <IonToast
           isOpen={isOpen}
           onDidDismiss={hideToast}
