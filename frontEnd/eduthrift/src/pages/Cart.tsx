@@ -117,7 +117,7 @@ const Cart: React.FC = () => {
                         <p style={{ margin: '0 0 4px 0', fontSize: '16px', fontWeight: 'bold', color: '#27AE60' }}>
                           R{(item.price * (item.selectedQuantity ?? 1)).toFixed(2)}
                         </p>
-                        {item.selectedQuantity > 1 && (
+                        {(item.selectedQuantity ?? 1) > 1 && (
                           <p style={{ margin: '0 0 4px 0', fontSize: '11px', color: '#888' }}>R{item.price} each</p>
                         )}
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
