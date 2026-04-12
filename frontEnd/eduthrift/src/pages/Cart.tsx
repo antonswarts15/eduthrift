@@ -10,7 +10,7 @@ import { trashOutline, warningOutline } from 'ionicons/icons';
 
 const Cart: React.FC = () => {
   const history = useHistory();
-  const { cartItems, removeFromCart } = useCartStore();
+  const { cartItems, removeFromCart, updateQuantity } = useCartStore();
   const [itemCount, setItemCount] = useState<number>(0);
   const [minimumActive, setMinimumActive] = useState<boolean>(false);
 
@@ -56,7 +56,7 @@ const Cart: React.FC = () => {
     }
   };
   
-  const totalAmount = cartItems.reduce((sum, item) => sum + item.price, 0);
+  const totalAmount = cartItems.reduce((sum, item) => sum + item.price * (item.selectedQuantity ?? 1), 0);
   
   const handleCheckout = () => {
     if (!isLoggedIn()) {
@@ -114,15 +114,31 @@ const Cart: React.FC = () => {
                         <p style={{ margin: '0', fontSize: '12px' }}><strong>Condition:</strong> {item.condition} - {getConditionText(item.condition)}</p>
                       </IonCol>
                       <IonCol size="2" style={{ textAlign: 'right' }}>
-                        <p style={{ margin: '0 0 8px 0', fontSize: '18px', fontWeight: 'bold', color: '#27AE60' }}>R{item.price}</p>
-                        <IonButton 
-                          fill="clear" 
-                          color="danger" 
-                          size="small"
-                          onClick={() => removeItem(item.id)}
-                        >
-                          <IonIcon icon={trashOutline} />
-                        </IonButton>
+                        <p style={{ margin: '0 0 4px 0', fontSize: '16px', fontWeight: 'bold', color: '#27AE60' }}>
+                          R{(item.price * (item.selectedQuantity ?? 1)).toFixed(2)}
+                        </p>
+                        {item.selectedQuantity > 1 && (
+                          <p style={{ margin: '0 0 4px 0', fontSize: '11px', color: '#888' }}>R{item.price} each</p>
+                        )}
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <IonButton size="small" fill="outline" style={{ '--padding-start': '5px', '--padding-end': '5px', height: '24px' }}
+                              onClick={() => updateQuantity(item.id, Math.max(1, (item.selectedQuantity ?? 1) - 1))}
+                              disabled={(item.selectedQuantity ?? 1) <= 1}>−</IonButton>
+                            <span style={{ fontSize: '14px', fontWeight: 'bold', minWidth: '16px', textAlign: 'center' }}>{item.selectedQuantity ?? 1}</span>
+                            <IonButton size="small" fill="outline" style={{ '--padding-start': '5px', '--padding-end': '5px', height: '24px' }}
+                              onClick={() => updateQuantity(item.id, Math.min(item.quantity ?? 99, (item.selectedQuantity ?? 1) + 1))}
+                              disabled={(item.selectedQuantity ?? 1) >= (item.quantity ?? 99)}>+</IonButton>
+                          </div>
+                          <IonButton
+                            fill="clear"
+                            color="danger"
+                            size="small"
+                            onClick={() => removeItem(item.id)}
+                          >
+                            <IonIcon icon={trashOutline} />
+                          </IonButton>
+                        </div>
                       </IonCol>
                     </IonRow>
                   </IonGrid>
@@ -134,8 +150,8 @@ const Cart: React.FC = () => {
               <IonCardContent>
                 <h3 style={{ margin: '0 0 12px 0' }}>Order Summary</h3>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                  <span>Items ({cartItems.length}):</span>
-                  <span>R{totalAmount}</span>
+                  <span>Items ({cartItems.reduce((s, i) => s + (i.selectedQuantity ?? 1), 0)}):</span>
+                  <span>R{totalAmount.toFixed(2)}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', color: '#666' }}>
                   <span>PUDO Delivery:</span>
@@ -144,7 +160,7 @@ const Cart: React.FC = () => {
                 <hr style={{ margin: '12px 0' }} />
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '18px', fontWeight: 'bold' }}>
                   <span>Subtotal:</span>
-                  <span style={{ color: '#27AE60' }}>R{totalAmount}</span>
+                  <span style={{ color: '#27AE60' }}>R{totalAmount.toFixed(2)}</span>
                 </div>
                 <p style={{ fontSize: '12px', color: '#888', marginTop: '8px', marginBottom: '0' }}>
                   {cartItems.length > 1

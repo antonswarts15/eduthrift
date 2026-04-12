@@ -51,8 +51,8 @@ const DeleteAccountPage: React.FC = () => {
           <IonCard>
             <IonCardContent style={{ textAlign: 'center', padding: '40px 20px' }}>
               <IonIcon icon={trashOutline} style={{ fontSize: '64px', color: '#666' }} />
-              <h2>Account Deleted</h2>
-              <p>Your account and all associated data have been permanently deleted.</p>
+              <h2>Account Closed</h2>
+              <p>Your personal details and active listings have been removed. Transaction history has been retained for compliance purposes. You can re-register at any time.</p>
               <IonButton expand="block" onClick={() => history.push('/login')} style={{ marginTop: '20px' }}>
                 Back to Home
               </IonButton>
@@ -86,15 +86,15 @@ const DeleteAccountPage: React.FC = () => {
               <IonText color="danger">
                 <p><strong>This action is permanent and cannot be undone.</strong></p>
               </IonText>
-              <p>Deleting your account will permanently remove:</p>
+              <p>Deleting your account will remove:</p>
               <ul>
-                <li>Your profile and personal details</li>
-                <li>All your listings</li>
-                <li>Your wishlist and saved items</li>
+                <li>Your profile, name, and contact details</li>
+                <li>Your active listings (they will be delisted)</li>
                 <li>Your uploaded verification documents</li>
+                <li>Your bank and payment details</li>
               </ul>
               <p style={{ fontSize: '13px', color: '#666' }}>
-                Transaction records may be retained for up to 5 years for legal and financial compliance purposes.
+                Your transaction history is retained for legal and financial compliance purposes as required by South African law. You will be able to register a new account with the same email address in future.
               </p>
               <IonButton
                 expand="block"
@@ -117,7 +117,7 @@ const DeleteAccountPage: React.FC = () => {
               <IonCardTitle>Confirm Your Password</IonCardTitle>
             </IonCardHeader>
             <IonCardContent>
-              <p>Enter your password to permanently delete your account.</p>
+              <p>Enter your password to close your account.</p>
               <IonItem>
                 <IonLabel position="floating">Password</IonLabel>
                 <IonInput

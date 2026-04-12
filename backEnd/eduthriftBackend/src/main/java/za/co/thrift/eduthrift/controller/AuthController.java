@@ -9,7 +9,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import za.co.thrift.eduthrift.entity.Item;
 import za.co.thrift.eduthrift.entity.User;
+import za.co.thrift.eduthrift.repository.ItemRepository;
 import za.co.thrift.eduthrift.repository.UserRepository;
 import za.co.thrift.eduthrift.security.JwtUtil;
 
@@ -18,6 +20,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -27,6 +30,7 @@ import java.util.UUID;
 public class AuthController {
 
     private final UserRepository userRepository;
+    private final ItemRepository itemRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
@@ -35,10 +39,12 @@ public class AuthController {
     private String uploadDir;
 
     public AuthController(UserRepository userRepository,
+                          ItemRepository itemRepository,
                           PasswordEncoder passwordEncoder,
                           AuthenticationManager authenticationManager,
                           JwtUtil jwtUtil) {
         this.userRepository = userRepository;
+        this.itemRepository = itemRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
@@ -222,7 +228,39 @@ public class AuthController {
         if (password == null || !passwordEncoder.matches(password, user.getPasswordHash())) {
             return ResponseEntity.status(401).body(new ErrorResponse("Incorrect password"));
         }
-        userRepository.delete(user);
+        // Delist all active items so they no longer appear to buyers
+        List<Item> userItems = itemRepository.findByUserOrderByCreatedAtDesc(user);
+        userItems.stream()
+                .filter(item -> item.getStatus() == Item.ItemStatus.AVAILABLE)
+                .forEach(item -> item.setStatus(Item.ItemStatus.SOLD));
+        itemRepository.saveAll(userItems);
+
+        // Soft-delete: anonymise PII so the record survives for compliance,
+        // but free the email so the user can re-register in future.
+        String anonymisedEmail = "deleted_" + user.getId() + "@deleted.eduthrift.co.za";
+        user.setEmail(anonymisedEmail);
+        user.setPasswordHash(passwordEncoder.encode(UUID.randomUUID().toString()));
+        user.setFirstName("Deleted");
+        user.setLastName("User");
+        user.setPhone(null);
+        user.setSchoolName(null);
+        user.setTown(null);
+        user.setSuburb(null);
+        user.setProvince(null);
+        user.setStreetAddress(null);
+        user.setPostalCode(null);
+        user.setIdNumber(null);
+        user.setIdDocumentUrl(null);
+        user.setProofOfAddressUrl(null);
+        user.setBankName(null);
+        user.setBankAccountNumber(null);
+        user.setBankAccountType(null);
+        user.setBankBranchCode(null);
+        user.setTradeSafeToken(null);
+        user.setFcmToken(null);
+        user.setStatus("deleted");
+        userRepository.save(user);
+
         return ResponseEntity.ok(Map.of("message", "Account deleted successfully"));
     }
 

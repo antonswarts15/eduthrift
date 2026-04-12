@@ -17,7 +17,8 @@ export interface CartItem {
   sport?: string;
   frontPhoto: string;
   backPhoto: string;
-  quantity?: number;
+  quantity?: number;        // stock available
+  selectedQuantity: number; // how many the buyer wants
   sellerId?: string;
   sellerAlias?: string;
   largeItem?: boolean;
@@ -27,6 +28,7 @@ export interface CartItem {
 interface CartStore {
   cartItems: CartItem[];
   addToCart: (item: CartItem, showToast?: (message: string, color?: 'success' | 'warning' | 'danger') => void) => void;
+  updateQuantity: (id: string, selectedQuantity: number) => void;
   removeFromCart: (id: string, onInventoryUpdate?: (id: string) => void) => void;
   clearCart: () => void;
   getCartItemCount: () => number;
@@ -45,15 +47,30 @@ export const useCartStore = create<CartStore>()(
 
     const { cartItems } = get();
 
-    // Check if item already exists in cart
     const existingItem = cartItems.find(cartItem => cartItem.id === item.id);
     if (existingItem) {
-      showToast?.(`${item.name} is already in your cart!`, 'warning');
+      // Update quantity instead of blocking
+      set({
+        cartItems: cartItems.map(cartItem =>
+          cartItem.id === item.id
+            ? { ...cartItem, selectedQuantity: item.selectedQuantity }
+            : cartItem
+        )
+      });
+      showToast?.(`${item.name} quantity updated to ${item.selectedQuantity}!`, 'success');
       return;
     }
 
-    set({ cartItems: [...cartItems, item] });
-    showToast?.(`${item.name} is added to cart!`, 'success');
+    set({ cartItems: [...cartItems, { ...item, selectedQuantity: item.selectedQuantity ?? 1 }] });
+    showToast?.(`${item.name} added to cart!`, 'success');
+  },
+
+  updateQuantity: (id: string, selectedQuantity: number) => {
+    set((state) => ({
+      cartItems: state.cartItems.map(item =>
+        item.id === id ? { ...item, selectedQuantity } : item
+      )
+    }));
   },
 
   removeFromCart: (id: string, onInventoryUpdate?: (id: string) => void) => {
@@ -65,7 +82,7 @@ export const useCartStore = create<CartStore>()(
 
   clearCart: () => set({ cartItems: [] }),
 
-  getCartItemCount: () => get().cartItems.length
+  getCartItemCount: () => get().cartItems.reduce((sum, item) => sum + (item.selectedQuantity ?? 1), 0)
     }),
     {
       name: 'eduthrift-cart', // localStorage key

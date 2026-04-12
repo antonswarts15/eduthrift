@@ -58,6 +58,8 @@ const ItemPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [fetchedListing, setFetchedListing] = useState<any>(null);
   const [sellerItems, setSellerItems] = useState<Listing[]>([]);
+  const [mainQty, setMainQty] = useState(1);
+  const [sellerQtys, setSellerQtys] = useState<Record<string, number>>({});
 
   const storeListing = getListingById(id);
   const listing = storeListing || fetchedListing;
@@ -82,6 +84,9 @@ const ItemPage: React.FC = () => {
             .map(mapSellerItem)
             .filter((item: Listing) => item.id !== id && !item.soldOut && !item.isExpired);
           setSellerItems(items);
+          const initial: Record<string, number> = {};
+          items.forEach(item => { initial[item.id] = 1; });
+          setSellerQtys(initial);
         })
         .catch(() => {
           // Silently ignore — seller items section simply won't appear
@@ -130,7 +135,7 @@ const ItemPage: React.FC = () => {
     );
   }
 
-  const buildCartItem = (item: any) => ({
+  const buildCartItem = (item: any, selectedQuantity: number) => ({
     id: item.id,
     name: item.name,
     description: item.description,
@@ -144,6 +149,8 @@ const ItemPage: React.FC = () => {
     sport: item.sport,
     frontPhoto: item.frontPhoto,
     backPhoto: item.backPhoto,
+    quantity: item.quantity,
+    selectedQuantity,
     sellerId: item.sellerId || item.userId || item.seller_id,
     sellerAlias: item.sellerAlias || item.seller_alias,
     largeItem: item.largeItem || item.large_item || false
@@ -154,12 +161,13 @@ const ItemPage: React.FC = () => {
       showToast('This item is sold out!', 'danger');
       return;
     }
-    addToCart(buildCartItem(listing), showToast);
+    addToCart(buildCartItem(listing, mainQty), showToast);
     decreaseQuantity(listing.id);
   };
 
   const handleAddSellerItemToCart = (item: Listing) => {
-    addToCart(buildCartItem(item), showToast);
+    const qty = sellerQtys[item.id] ?? 1;
+    addToCart(buildCartItem(item, qty), showToast);
     decreaseQuantity(item.id);
   };
 
@@ -290,21 +298,24 @@ const ItemPage: React.FC = () => {
                   {listing.sport && ` > ${listing.sport}`}
                 </p>
               </div>
-              
-              <IonButton 
-                expand="full" 
-                size="large"
-                onClick={handleAddToCart}
-                disabled={listing.soldOut || listing.quantity === 0}
-                style={{ marginTop: '20px' }}
-              >
-                <IonIcon icon={cartOutline} slot="start" />
-                {listing.soldOut || listing.quantity === 0 ? 'Sold Out' : 'Add to Cart'}
-              </IonButton>
+
+              {/* Quantity stepper */}
+              {!listing.soldOut && listing.quantity > 0 && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '4px' }}>
+                  <span style={{ fontWeight: 'bold', color: '#666' }}>Quantity:</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <IonButton size="small" fill="outline" onClick={() => setMainQty(q => Math.max(1, q - 1))} disabled={mainQty <= 1}>−</IonButton>
+                    <span style={{ minWidth: '24px', textAlign: 'center', fontSize: '16px', fontWeight: 'bold' }}>{mainQty}</span>
+                    <IonButton size="small" fill="outline" onClick={() => setMainQty(q => Math.min(listing.quantity, q + 1))} disabled={mainQty >= listing.quantity}>+</IonButton>
+                  </div>
+                  <span style={{ fontSize: '13px', color: '#888' }}>{listing.quantity} available</span>
+                </div>
+              )}
+
             </IonCardContent>
           </IonCard>
         </div>
-        
+
         {/* More from this seller */}
         {sellerItems.length > 0 && (
           <div style={{ padding: '0 16px 16px' }}>
@@ -335,8 +346,18 @@ const ItemPage: React.FC = () => {
                         )}
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <p style={{ margin: '0 0 2px', fontWeight: 'bold', fontSize: '14px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.name}</p>
-                          <p style={{ margin: '0 0 2px', fontSize: '13px', color: '#666' }}>{item.school} · {item.size}</p>
+                          <p style={{ margin: '0 0 4px', fontSize: '13px', color: '#666' }}>{item.school} · {item.size}</p>
                           <p style={{ margin: '0 0 6px', fontSize: '16px', color: '#004aad', fontWeight: 'bold' }}>R{item.price}</p>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+                            <IonButton size="small" fill="outline" style={{ '--padding-start': '6px', '--padding-end': '6px' }}
+                              onClick={() => setSellerQtys(q => ({ ...q, [item.id]: Math.max(1, (q[item.id] ?? 1) - 1) }))}
+                              disabled={(sellerQtys[item.id] ?? 1) <= 1}>−</IonButton>
+                            <span style={{ minWidth: '20px', textAlign: 'center', fontSize: '15px', fontWeight: 'bold' }}>{sellerQtys[item.id] ?? 1}</span>
+                            <IonButton size="small" fill="outline" style={{ '--padding-start': '6px', '--padding-end': '6px' }}
+                              onClick={() => setSellerQtys(q => ({ ...q, [item.id]: Math.min(item.quantity, (q[item.id] ?? 1) + 1) }))}
+                              disabled={(sellerQtys[item.id] ?? 1) >= item.quantity}>+</IonButton>
+                            <span style={{ fontSize: '12px', color: '#888' }}>{item.quantity} available</span>
+                          </div>
                           <IonButton
                             size="small"
                             expand="block"
@@ -355,6 +376,19 @@ const ItemPage: React.FC = () => {
             </div>
           </div>
         )}
+
+        {/* Main Add to Cart button */}
+        <div style={{ padding: '0 16px 24px' }}>
+          <IonButton
+            expand="full"
+            size="large"
+            onClick={handleAddToCart}
+            disabled={listing.soldOut || listing.quantity === 0}
+          >
+            <IonIcon icon={cartOutline} slot="start" />
+            {listing.soldOut || listing.quantity === 0 ? 'Sold Out' : 'Add to Cart'}
+          </IonButton>
+        </div>
 
         <IonToast
           isOpen={isOpen}
