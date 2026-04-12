@@ -79,22 +79,26 @@ const DeleteAccountPage: React.FC = () => {
           <IonCard>
             <IonCardHeader>
               <IonCardTitle style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#c62828' }}>
-                <IonIcon icon={warningOutline} /> Permanently Delete Account
+                <IonIcon icon={warningOutline} /> Delete Account
               </IonCardTitle>
             </IonCardHeader>
             <IonCardContent>
               <IonText color="danger">
-                <p><strong>This action is permanent and cannot be undone.</strong></p>
+                <p><strong>This action cannot be undone.</strong></p>
               </IonText>
-              <p>Deleting your account will remove:</p>
+              <p>The following will be permanently deleted:</p>
               <ul>
                 <li>Your profile, name, and contact details</li>
-                <li>Your active listings (they will be delisted)</li>
-                <li>Your uploaded verification documents</li>
+                <li>Your active listings (they will be removed)</li>
+                <li>Your uploaded ID and verification documents</li>
                 <li>Your bank and payment details</li>
               </ul>
-              <p style={{ fontSize: '13px', color: '#666' }}>
-                Your transaction history is retained for legal and financial compliance purposes as required by South African law. You will be able to register a new account with the same email address in future.
+              <p style={{ fontWeight: 'bold', marginBottom: '4px' }}>What is retained:</p>
+              <ul>
+                <li style={{ fontSize: '13px', color: '#555' }}>Order and transaction records — kept for up to 5 years as required by South African financial and consumer protection law (POPIA / Consumer Protection Act). This data is not used for marketing and cannot be accessed by you.</li>
+              </ul>
+              <p style={{ fontSize: '13px', color: '#666', marginTop: '8px' }}>
+                Your email address will be released immediately, so you can create a new account at any time.
               </p>
               <IonButton
                 expand="block"

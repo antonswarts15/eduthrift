@@ -17,8 +17,8 @@ export interface CartItem {
   sport?: string;
   frontPhoto: string;
   backPhoto: string;
-  quantity?: number;        // stock available
-  selectedQuantity: number; // how many the buyer wants
+  quantity?: number;         // stock available
+  selectedQuantity?: number; // how many the buyer wants (defaults to 1)
   sellerId?: string;
   sellerAlias?: string;
   largeItem?: boolean;
@@ -49,15 +49,15 @@ export const useCartStore = create<CartStore>()(
 
     const existingItem = cartItems.find(cartItem => cartItem.id === item.id);
     if (existingItem) {
-      // Update quantity instead of blocking
+      const newQty = item.selectedQuantity ?? 1;
       set({
         cartItems: cartItems.map(cartItem =>
           cartItem.id === item.id
-            ? { ...cartItem, selectedQuantity: item.selectedQuantity }
+            ? { ...cartItem, selectedQuantity: newQty }
             : cartItem
         )
       });
-      showToast?.(`${item.name} quantity updated to ${item.selectedQuantity}!`, 'success');
+      showToast?.(`${item.name} quantity updated to ${newQty}!`, 'success');
       return;
     }
 
