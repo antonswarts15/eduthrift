@@ -18,4 +18,13 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     Optional<Order> findByTrackingNumber(String trackingNumber);
     Optional<Order> findByTcgShipmentId(String tcgShipmentId);
     List<Order> findByOrderStatusAndCreatedAtBefore(Order.OrderStatus status, LocalDateTime cutoff);
+    List<Order> findByOrderStatusAndPayoutScheduledAtBefore(Order.OrderStatus status, LocalDateTime cutoff);
+
+    /**
+     * Find orders eligible for payout retry:
+     * {@code payout_status = FAILED} AND {@code payout_attempts < maxAttempts}.
+     * The caller is responsible for checking the per-order backoff window.
+     */
+    List<Order> findByPayoutStatusAndPayoutAttemptsLessThan(
+            Order.PayoutStatus payoutStatus, int maxAttempts);
 }

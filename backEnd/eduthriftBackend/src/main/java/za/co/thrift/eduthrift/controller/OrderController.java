@@ -12,7 +12,6 @@ import za.co.thrift.eduthrift.repository.UserRepository;
 import za.co.thrift.eduthrift.service.EscrowService;
 import za.co.thrift.eduthrift.service.EmailService;
 import za.co.thrift.eduthrift.service.FCMNotificationService;
-import za.co.thrift.eduthrift.service.TradeSafeService;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -25,19 +24,17 @@ public class OrderController {
     private final UserRepository userRepository;
     private final ItemRepository itemRepository;
     private final EscrowService escrowService;
-    private final TradeSafeService tradeSafeService;
     private final FCMNotificationService fcmNotificationService;
     private final EmailService emailService;
 
     public OrderController(OrderRepository orderRepository, UserRepository userRepository,
                            ItemRepository itemRepository, EscrowService escrowService,
-                           TradeSafeService tradeSafeService, FCMNotificationService fcmNotificationService,
+                           FCMNotificationService fcmNotificationService,
                            EmailService emailService) {
         this.orderRepository = orderRepository;
         this.userRepository = userRepository;
         this.itemRepository = itemRepository;
         this.escrowService = escrowService;
-        this.tradeSafeService = tradeSafeService;
         this.fcmNotificationService = fcmNotificationService;
         this.emailService = emailService;
     }
@@ -178,16 +175,6 @@ public class OrderController {
                 Order.OrderStatus newStatus = Order.OrderStatus.valueOf(status.toUpperCase());
                 order.setOrderStatus(newStatus);
                 orderRepository.save(order);
-
-                // When seller marks as shipped, tell TradeSafe delivery has started
-                if (newStatus == Order.OrderStatus.SHIPPED
-                        && order.getTradeSafeAllocationId() != null) {
-                    try {
-                        tradeSafeService.startDelivery(order.getTradeSafeAllocationId());
-                    } catch (Exception ignored) {
-                        // Non-fatal: order is still marked shipped; TradeSafe will be retried via callback
-                    }
-                }
 
                 // Notify the relevant party based on the new status
                 switch (newStatus) {

@@ -89,6 +89,8 @@ public class SecurityConfig {
                         .requestMatchers("/item-types/**").permitAll()
                         .requestMatchers("/uploads/**").permitAll()
                         .requestMatchers("/tradesafe/callback").permitAll()
+                        .requestMatchers("/payments/paystack/webhook").permitAll()
+                        .requestMatchers("/payments/ozow/webhook").permitAll()
                         .requestMatchers("/webhooks/**").permitAll()
                         .requestMatchers("/shipping/pickup-points").permitAll()
                         .requestMatchers("/upload/**").authenticated()

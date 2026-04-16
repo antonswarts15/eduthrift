@@ -80,6 +80,9 @@ public class User {
     @Column(name = "tradesafe_token")
     private String tradeSafeToken;
 
+    @Column(name = "paystack_subaccount_code")
+    private String paystackSubaccountCode;
+
     @Column(name = "fcm_token", length = 512)
     private String fcmToken;
 

@@ -74,11 +74,30 @@ public class Order {
     @Column(name = "payout_date")
     private LocalDateTime payoutDate;
 
+    /** Number of payout attempts made so far (0 = not yet attempted). */
+    @Column(name = "payout_attempts", nullable = false)
+    private int payoutAttempts = 0;
+
+    /** Timestamp of the most recent payout attempt — used to enforce retry backoff. */
+    @Column(name = "last_payout_attempt_at")
+    private LocalDateTime lastPayoutAttemptAt;
+
+    /** Human-readable reason for the last payout failure — shown in admin panel. */
+    @Column(name = "payout_failure_reason", length = 500)
+    private String payoutFailureReason;
+
     @Column(name = "tradesafe_transaction_id")
     private String tradeSafeTransactionId;
 
     @Column(name = "tradesafe_allocation_id")
     private String tradeSafeAllocationId;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "payment_method")
+    private PaymentMethod paymentMethod;
+
+    @Column(name = "payout_scheduled_at")
+    private LocalDateTime payoutScheduledAt;
 
     @Column(name = "tracking_number")
     private String trackingNumber;
@@ -172,10 +191,18 @@ public class Order {
         REFUNDED_TO_BUYER
     }
 
+    public enum PaymentMethod {
+        PAYSTACK,   // card — Paystack holds funds via sub-account split
+        OZOW,       // instant EFT — funds land in Eduthrift collection account
+        PEACH,      // Peach Payments — card / EFT (integration pending)
+        STITCH      // Stitch Pay by Bank — instant EFT (integration pending)
+    }
+
     public enum PayoutStatus {
         PENDING,
-        PROCESSING,
+        PROCESSING,       // transfer initiated but not yet confirmed
         COMPLETED,
-        FAILED
+        FAILED,
+        MANUAL_REQUIRED   // provider does not support auto-payouts (e.g. Ozow); admin must manually EFT seller
     }
 }
