@@ -13,7 +13,9 @@ const Layout = ({ children }) => {
   return (
     <div className="admin-layout">
       <aside className="sidebar">
-        <div className="logo">Eduthrift Admin</div>
+        <div className="logo">
+           <img src="/eduLogo.png" alt="Eduthrift Admin Logo" />
+        </div>
         <nav>
           <ul>
             <li><Link to="/dashboard">Dashboard</Link></li>
@@ -22,6 +24,8 @@ const Layout = ({ children }) => {
             <li><Link to="/admin-users">Manage Admins</Link></li>
           </ul>
         </nav>
+
+        
         <button onClick={handleLogout} className="logout-btn">Logout</button>
       </aside>
       <main className="content">

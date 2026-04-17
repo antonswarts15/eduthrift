@@ -1,10 +1,13 @@
 package za.co.thrift.eduthrift.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import za.co.thrift.eduthrift.entity.Order;
 import za.co.thrift.eduthrift.entity.User;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -27,4 +30,12 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
      */
     List<Order> findByPayoutStatusAndPayoutAttemptsLessThan(
             Order.PayoutStatus payoutStatus, int maxAttempts);
+
+    long countByOrderStatus(Order.OrderStatus status);
+
+    long countByPayoutStatus(Order.PayoutStatus status);
+
+    /** Total value of all completed orders (Gross Merchandise Value). */
+    @Query("SELECT COALESCE(SUM(o.totalAmount), 0) FROM Order o WHERE o.orderStatus = :status")
+    BigDecimal sumTotalAmountByOrderStatus(@Param("status") Order.OrderStatus status);
 }

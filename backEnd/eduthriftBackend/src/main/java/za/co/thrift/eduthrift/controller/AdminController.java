@@ -3,10 +3,16 @@ package za.co.thrift.eduthrift.controller;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import za.co.thrift.eduthrift.entity.LedgerEntry;
+import za.co.thrift.eduthrift.entity.Order;
 import za.co.thrift.eduthrift.entity.User;
+import za.co.thrift.eduthrift.repository.LedgerEntryRepository;
+import za.co.thrift.eduthrift.repository.OrderRepository;
 import za.co.thrift.eduthrift.repository.UserRepository;
 
+import java.math.BigDecimal;
 import java.security.SecureRandom;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -15,27 +21,57 @@ import java.util.stream.Collectors;
 public class AdminController {
 
     private final UserRepository userRepository;
+    private final OrderRepository orderRepository;
+    private final LedgerEntryRepository ledgerEntryRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public AdminController(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public AdminController(UserRepository userRepository,
+                           OrderRepository orderRepository,
+                           LedgerEntryRepository ledgerEntryRepository,
+                           PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.orderRepository = orderRepository;
+        this.ledgerEntryRepository = ledgerEntryRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
     @GetMapping("/dashboard/stats")
     public ResponseEntity<?> getDashboardStats() {
-        long totalUsers = userRepository.count();
-        long activeUsers = userRepository.countByStatus("active");
-        long pendingVerifications = userRepository.countByVerificationStatus("pending");
+        // ── Users ────────────────────────────────────────────────────────────
+        long totalUsers            = userRepository.count();
+        long activeUsers           = userRepository.countByStatus("active");
+        long pendingVerifications  = userRepository.countByVerificationStatus("pending");
+
+        // ── Orders ───────────────────────────────────────────────────────────
+        long totalOrders     = orderRepository.count();
+        long completedOrders = orderRepository.countByOrderStatus(Order.OrderStatus.COMPLETED);
+        BigDecimal totalGmv  = orderRepository.sumTotalAmountByOrderStatus(Order.OrderStatus.COMPLETED);
+
+        // ── Ledger ───────────────────────────────────────────────────────────
+        BigDecimal platformRevenue     = ledgerEntryRepository.getBalance(LedgerEntry.AccountType.PLATFORM);
+        BigDecimal escrowBalance       = ledgerEntryRepository.getBalance(LedgerEntry.AccountType.ESCROW);
+        BigDecimal outstandingSellers  = ledgerEntryRepository.getTotalOutstandingSellerBalance();
+
+        LocalDateTime monthStart = LocalDateTime.now().withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
+        BigDecimal revenueThisMonth = ledgerEntryRepository.getPlatformRevenueBetween(monthStart, LocalDateTime.now());
+
+        // ── Payout safety ────────────────────────────────────────────────────
+        long failedPayouts         = orderRepository.countByPayoutStatus(Order.PayoutStatus.FAILED);
+        long manualPayoutsRequired = orderRepository.countByPayoutStatus(Order.PayoutStatus.MANUAL_REQUIRED);
 
         Map<String, Object> stats = new LinkedHashMap<>();
-        stats.put("totalUsers", totalUsers);
-        stats.put("activeUsers", activeUsers);
-        stats.put("pendingVerifications", pendingVerifications);
-        stats.put("totalSales", 0);
-        stats.put("totalOrders", 0);
-        stats.put("platformFees", 0);
-        stats.put("recentTransactions", 0);
+        stats.put("totalUsers",            totalUsers);
+        stats.put("activeUsers",           activeUsers);
+        stats.put("pendingVerifications",  pendingVerifications);
+        stats.put("totalOrders",           totalOrders);
+        stats.put("completedOrders",       completedOrders);
+        stats.put("totalGmv",              totalGmv);
+        stats.put("platformRevenue",       platformRevenue);
+        stats.put("revenueThisMonth",      revenueThisMonth);
+        stats.put("escrowBalance",         escrowBalance);
+        stats.put("outstandingSellerPayouts", outstandingSellers);
+        stats.put("failedPayouts",         failedPayouts);
+        stats.put("manualPayoutsRequired", manualPayoutsRequired);
 
         return ResponseEntity.ok(stats);
     }
