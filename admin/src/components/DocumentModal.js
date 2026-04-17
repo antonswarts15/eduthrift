@@ -1,49 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { PhotoProvider, PhotoView } from 'react-photo-view';
 import 'react-photo-view/dist/react-photo-view.css';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080';
 
 const DocumentModal = ({ seller, onClose, onVerify, onReject }) => {
-  const [docImages, setDocImages] = useState({ id: null, proof: null });
-  const [loadingDocs, setLoadingDocs] = useState(false);
-
-  useEffect(() => {
-    if (!seller) return;
-
-    const fetchDocs = async () => {
-      setLoadingDocs(true);
-      const token = localStorage.getItem('authToken');
-      const headers = { Authorization: `Bearer ${token}` };
-
-      try {
-        const [idResp, proofResp] = await Promise.allSettled([
-          fetch(`${API_URL}/auth/document/${seller.id}/id`, { headers }),
-          fetch(`${API_URL}/auth/document/${seller.id}/proof`, { headers })
-        ]);
-
-        const idBlob = idResp.status === 'fulfilled' && idResp.value.ok ? await idResp.value.blob() : null;
-        const proofBlob = proofResp.status === 'fulfilled' && proofResp.value.ok ? await proofResp.value.blob() : null;
-
-        setDocImages({
-          id: idBlob ? URL.createObjectURL(idBlob) : null,
-          proof: proofBlob ? URL.createObjectURL(proofBlob) : null
-        });
-      } catch (err) {
-        console.error('Error loading documents:', err);
-      } finally {
-        setLoadingDocs(false);
-      }
-    };
-
-    fetchDocs();
-
-    return () => {
-      // Clean up blob URLs
-      if (docImages.id) URL.revokeObjectURL(docImages.id);
-      if (docImages.proof) URL.revokeObjectURL(docImages.proof);
-    };
-  }, [seller?.id]);
+  // Documents are served publicly from /uploads/** (no auth required).
+  // The seller object already contains the URL paths from the backend.
+  const idDocUrl = seller?.id_document_url ? `${API_URL}${seller.id_document_url}` : null;
+  const proofDocUrl = seller?.proof_of_address_url ? `${API_URL}${seller.proof_of_address_url}` : null;
 
   if (!seller) return null;
 
@@ -215,17 +180,10 @@ const DocumentModal = ({ seller, onClose, onVerify, onReject }) => {
               {/* ID Document */}
               <div>
                 <h4 style={{ marginBottom: '10px', color: '#34495e' }}>ID Document</h4>
-                {loadingDocs ? (
-                  <div style={{
-                    width: '100%', height: '250px', borderRadius: '8px', backgroundColor: '#f8f9fa',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#999'
-                  }}>
-                    Loading document...
-                  </div>
-                ) : docImages.id ? (
-                  <PhotoView src={docImages.id}>
+                {idDocUrl ? (
+                  <PhotoView src={idDocUrl}>
                     <img
-                      src={docImages.id}
+                      src={idDocUrl}
                       alt="ID Document"
                       style={{
                         width: '100%',
@@ -259,17 +217,10 @@ const DocumentModal = ({ seller, onClose, onVerify, onReject }) => {
               {/* Proof of Address */}
               <div>
                 <h4 style={{ marginBottom: '10px', color: '#34495e' }}>Proof of Address</h4>
-                {loadingDocs ? (
-                  <div style={{
-                    width: '100%', height: '250px', borderRadius: '8px', backgroundColor: '#f8f9fa',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#999'
-                  }}>
-                    Loading document...
-                  </div>
-                ) : docImages.proof ? (
-                  <PhotoView src={docImages.proof}>
+                {proofDocUrl ? (
+                  <PhotoView src={proofDocUrl}>
                     <img
-                      src={docImages.proof}
+                      src={proofDocUrl}
                       alt="Proof of Address"
                       style={{
                         width: '100%',

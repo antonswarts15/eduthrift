@@ -14,16 +14,18 @@ const LoginPage = () => {
     try {
       const response = await api.post('/auth/login', { email, password });
 
-      if (response.data.token && response.data.user) {
-        const userType = response.data.user.userType;
-        
-        if (userType === 'admin') {
+      if (response.data.token && response.data.userType) {
+        const userType = response.data.userType;
+
+        if (userType === 'ADMIN') {
           localStorage.setItem('adminToken', response.data.token);
-          localStorage.setItem('adminUser', JSON.stringify(response.data.user));
+          localStorage.setItem('adminUser', JSON.stringify({ userType }));
           navigate('/dashboard');
         } else {
           setError('Access denied. You must be an administrator to log in here.');
         }
+      } else {
+        setError('Invalid response from server. Please try again.');
       }
     } catch (err) {
       console.error('Login error:', err);

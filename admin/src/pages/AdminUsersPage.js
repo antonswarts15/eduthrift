@@ -70,16 +70,7 @@ const AdminUsersPage = () => {
       const response = await api.put(`/admin/users/${id}/reset-password`, {});
       toast.dismiss(loadingToast);
 
-      const tempPassword = response.data.tempPassword;
-      toast.success('Password reset successful!', { duration: 5000 });
-
-      // Copy to clipboard if available
-      if (navigator.clipboard) {
-        await navigator.clipboard.writeText(tempPassword);
-        alert(`Password reset successful!\n\nTemporary Password: ${tempPassword}\n\n(Password has been copied to clipboard)`);
-      } else {
-        alert(`Password reset successful!\n\nTemporary Password: ${tempPassword}\n\nPlease copy this password and send it to the user.`);
-      }
+      toast.success('Password reset. Contact the user via support to provide their temporary password.', { duration: 6000 });
     } catch (error) {
       toast.dismiss(loadingToast);
       console.error('Error resetting password:', error);
