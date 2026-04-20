@@ -79,7 +79,7 @@ interface ListingsStore {
   deleteListing: (id: string) => Promise<void>;
   decreaseQuantity: (id: string) => void;
   getListingById: (id: string) => Listing | undefined;
-  relistItem: (id: string) => void;
+  relistItem: (id: string) => Promise<void>;
   getExpiredListings: () => Listing[];
   getListingsNearExpiry: () => Listing[];
   getDaysUntilExpiry: (listing: Listing) => number;
@@ -108,8 +108,8 @@ const mapBackendItem = (item: any): Listing => ({
   dateCreated: item.created_at ? new Date(item.created_at).toLocaleDateString() : new Date().toLocaleDateString(),
   quantity: item.quantity || 1,
   soldOut: item.sold_out || item.quantity === 0 || item.status === 'sold',
-  expiryDate: item.expiry_date || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-  isExpired: item.is_expired || false,
+  expiryDate: item.expiry_date || new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+  isExpired: item.is_expired || item.status === 'expired' || false,
   largeItem: item.large_item || false,
   sellerId: item.user_id?.toString() || item.seller_id?.toString() || undefined,
   sellerAlias: item.seller_alias || item.seller_name || undefined,
@@ -372,19 +372,12 @@ export const useListingsStore = create<ListingsStore>((set, get) => ({
     return get().listings.find(listing => listing.id === id);
   },
 
-  relistItem: (id: string) => {
+  relistItem: async (id: string) => {
+    const response = await itemsApi.relistItem(id);
+    const updated = mapBackendItem(response.data);
     set((state) => ({
-      listings: state.listings.map(listing =>
-        listing.id === id ? {
-          ...listing,
-          expiryDate: (() => {
-            const expiryDate = new Date();
-            expiryDate.setMonth(expiryDate.getMonth() + 1);
-            return expiryDate.toISOString().split('T')[0];
-          })(),
-          isExpired: false
-        } : listing
-      )
+      myListings: state.myListings.map(l => l.id === id ? updated : l),
+      listings: state.listings.map(l => l.id === id ? updated : l),
     }));
   },
 
@@ -397,7 +390,7 @@ export const useListingsStore = create<ListingsStore>((set, get) => ({
     const myListings = get().myListings;
     return myListings.filter(listing => {
       const daysUntilExpiry = get().getDaysUntilExpiry(listing);
-      return daysUntilExpiry >= 0 && daysUntilExpiry <= 20 && !listing.soldOut;
+      return daysUntilExpiry >= 0 && daysUntilExpiry <= 14 && !listing.soldOut;
     });
   },
 

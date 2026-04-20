@@ -18,12 +18,20 @@ import {
   IonCol,
   IonToast,
   IonSelect,
-  IonSelectOption
+  IonSelectOption,
+  IonModal,
+  IonHeader,
+  IonToolbar,
+  IonTitle,
+  IonBadge,
+  IonSpinner
 } from '@ionic/react';
-import { logInOutline, personAddOutline, eyeOutline, eyeOffOutline, locationOutline, arrowBackOutline } from 'ionicons/icons';
+import { logInOutline, personAddOutline, eyeOutline, eyeOffOutline, locationOutline, arrowBackOutline, warningOutline, refreshOutline } from 'ionicons/icons';
 import { useHistory, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
 import { useUserStore } from '../stores/userStore';
+import { useListingsStore } from '../stores/listingsStore';
+import { Listing } from '../stores/listingsStore';
 import { userApi } from '../services/api';
 import './LoginRegisterPage.css';
 
@@ -51,10 +59,15 @@ const LoginRegisterPage: React.FC = () => {
   const [showRegisterPassword, setShowRegisterPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+  const [showExpiryModal, setShowExpiryModal] = useState(false);
+  const [expiryListings, setExpiryListings] = useState<Listing[]>([]);
+  const [relistingId, setRelistingId] = useState<string | null>(null);
+
   const history = useHistory();
   const location = useLocation();
   const { login: authLogin } = useAuthStore();
   const { fetchUserProfile } = useUserStore();
+  const { fetchMyListings, getListingsNearExpiry, getDaysUntilExpiry, relistItem } = useListingsStore();
 
   // Read segment query param to support direct navigation to register tab
   useEffect(() => {
@@ -80,10 +93,17 @@ const LoginRegisterPage: React.FC = () => {
       if (response.data.token) {
         authLogin(response.data.token);
         await fetchUserProfile();
-        setToastMessage('Login successful!');
-        setToastColor('success');
-        setShowToast(true);
-        history.push('/home');
+        await fetchMyListings();
+        const nearExpiry = getListingsNearExpiry();
+        if (nearExpiry.length > 0) {
+          setExpiryListings(nearExpiry);
+          setShowExpiryModal(true);
+        } else {
+          setToastMessage('Login successful!');
+          setToastColor('success');
+          setShowToast(true);
+          history.push('/home');
+        }
       } else {
         throw new Error('No token received');
       }
@@ -349,6 +369,84 @@ const LoginRegisterPage: React.FC = () => {
               onDidDismiss={() => setShowToast(false)}
           />
         </IonContent>
+
+        {/* ── Expiry reminder modal (shown after login if listings are expiring soon) ── */}
+        <IonModal isOpen={showExpiryModal} onDidDismiss={() => { setShowExpiryModal(false); history.push('/home'); }}>
+          <IonHeader>
+            <IonToolbar>
+              <IonTitle>Listings Expiring Soon</IonTitle>
+            </IonToolbar>
+          </IonHeader>
+          <IonContent>
+            <div style={{ padding: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px', padding: '14px', backgroundColor: '#fff8e1', borderRadius: '10px' }}>
+                <IonIcon icon={warningOutline} style={{ fontSize: '28px', color: '#f39c12', flexShrink: 0 }} />
+                <div>
+                  <p style={{ margin: '0 0 4px', fontWeight: 700, fontSize: '15px', color: '#333' }}>
+                    {expiryListings.length} listing{expiryListings.length > 1 ? 's' : ''} expiring within 14 days
+                  </p>
+                  <p style={{ margin: 0, fontSize: '13px', color: '#666' }}>
+                    Relist now to keep them visible to buyers — it's free.
+                  </p>
+                </div>
+              </div>
+
+              {expiryListings.map(listing => {
+                const days = getDaysUntilExpiry(listing);
+                const urgent = days <= 3;
+                return (
+                  <div key={listing.id} style={{
+                    display: 'flex', alignItems: 'center', gap: '12px',
+                    padding: '12px', marginBottom: '10px',
+                    border: `1.5px solid ${urgent ? '#e74c3c' : '#f39c12'}`,
+                    borderRadius: '10px', backgroundColor: 'white',
+                  }}>
+                    {listing.frontPhoto ? (
+                      <img src={listing.frontPhoto} alt={listing.name}
+                        style={{ width: '56px', height: '68px', objectFit: 'cover', borderRadius: '6px', border: '1px solid #ddd', flexShrink: 0 }} />
+                    ) : (
+                      <div style={{ width: '56px', height: '68px', backgroundColor: '#f5f5f5', borderRadius: '6px', flexShrink: 0 }} />
+                    )}
+                    <div style={{ flex: 1 }}>
+                      <p style={{ margin: '0 0 4px', fontWeight: 700, fontSize: '14px', color: '#1a1a1a' }}>{listing.name}</p>
+                      <IonBadge color={urgent ? 'danger' : 'warning'} style={{ fontSize: '11px' }}>
+                        {days === 0 ? 'Expires today' : `${days} day${days === 1 ? '' : 's'} left`}
+                      </IonBadge>
+                      <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#004aad', fontWeight: 700 }}>R{listing.price}</p>
+                    </div>
+                    <IonButton
+                      size="small"
+                      fill="solid"
+                      disabled={relistingId === listing.id}
+                      onClick={async () => {
+                        setRelistingId(listing.id);
+                        try {
+                          await relistItem(listing.id);
+                          setExpiryListings(prev => prev.filter(l => l.id !== listing.id));
+                        } finally {
+                          setRelistingId(null);
+                        }
+                      }}
+                      style={{ '--background': '#004aad', flexShrink: 0 }}
+                    >
+                      {relistingId === listing.id
+                        ? <IonSpinner name="crescent" style={{ width: '18px', height: '18px' }} />
+                        : <><IonIcon icon={refreshOutline} slot="start" />Relist</>}
+                    </IonButton>
+                  </div>
+                );
+              })}
+
+              <IonButton
+                expand="block"
+                onClick={() => { setShowExpiryModal(false); history.push('/home'); }}
+                style={{ marginTop: '16px', '--background': '#004aad' }}
+              >
+                Continue to Home
+              </IonButton>
+            </div>
+          </IonContent>
+        </IonModal>
       </IonPage>
   );
 };

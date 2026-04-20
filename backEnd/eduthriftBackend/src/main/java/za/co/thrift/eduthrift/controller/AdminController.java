@@ -5,15 +5,19 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import za.co.thrift.eduthrift.entity.LedgerEntry;
 import za.co.thrift.eduthrift.entity.Order;
+import za.co.thrift.eduthrift.entity.PaymentTransaction;
 import za.co.thrift.eduthrift.entity.User;
 import za.co.thrift.eduthrift.repository.LedgerEntryRepository;
 import za.co.thrift.eduthrift.repository.OrderRepository;
+import za.co.thrift.eduthrift.repository.PaymentTransactionRepository;
 import za.co.thrift.eduthrift.repository.UserRepository;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.security.SecureRandom;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.Objects;
@@ -25,15 +29,18 @@ public class AdminController {
     private final UserRepository userRepository;
     private final OrderRepository orderRepository;
     private final LedgerEntryRepository ledgerEntryRepository;
+    private final PaymentTransactionRepository paymentTransactionRepository;
     private final PasswordEncoder passwordEncoder;
 
     public AdminController(UserRepository userRepository,
                            OrderRepository orderRepository,
                            LedgerEntryRepository ledgerEntryRepository,
+                           PaymentTransactionRepository paymentTransactionRepository,
                            PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.orderRepository = orderRepository;
         this.ledgerEntryRepository = ledgerEntryRepository;
+        this.paymentTransactionRepository = paymentTransactionRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -352,6 +359,203 @@ public class AdminController {
         response.put("seller_count", sellerCount);
         response.put("pending_verifications", pendingCount);
         response.put("verified_count", verifiedCount);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/reports/general-ledger")
+    public ResponseEntity<?> getGeneralLedger(
+            @RequestParam(required = false) String from,
+            @RequestParam(required = false) String to,
+            @RequestParam(required = false) String accountType) {
+
+        LocalDateTime fromDt = (from != null && !from.isEmpty())
+                ? LocalDate.parse(from).atStartOfDay()
+                : LocalDateTime.of(2020, 1, 1, 0, 0);
+        LocalDateTime toDt = (to != null && !to.isEmpty())
+                ? LocalDate.parse(to).plusDays(1).atStartOfDay()
+                : LocalDateTime.now().plusDays(1);
+
+        List<LedgerEntry> entries;
+        if (accountType != null && !accountType.isEmpty() && !accountType.equalsIgnoreCase("all")) {
+            try {
+                LedgerEntry.AccountType acct = LedgerEntry.AccountType.valueOf(accountType.toUpperCase());
+                entries = ledgerEntryRepository.findWithOrderByAccountTypeAndDateRange(acct, fromDt, toDt);
+            } catch (IllegalArgumentException e) {
+                entries = ledgerEntryRepository.findWithOrderByDateRange(fromDt, toDt);
+            }
+        } else {
+            entries = ledgerEntryRepository.findWithOrderByDateRange(fromDt, toDt);
+        }
+
+        List<Map<String, Object>> rows = entries.stream().map(e -> {
+            Map<String, Object> m = new LinkedHashMap<>();
+            m.put("id", e.getId());
+            m.put("date", e.getCreatedAt());
+            m.put("order_number", e.getOrder().getOrderNumber());
+            m.put("account_type", e.getAccountType().name());
+            m.put("entry_type", e.getEntryType().name());
+            m.put("amount", e.getAmount());
+            m.put("reference_type", e.getReferenceType().name());
+            m.put("description", e.getDescription());
+            return m;
+        }).collect(Collectors.toList());
+
+        BigDecimal totalDebits = entries.stream()
+                .filter(e -> e.getEntryType() == LedgerEntry.EntryType.DEBIT)
+                .map(LedgerEntry::getAmount).filter(Objects::nonNull)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal totalCredits = entries.stream()
+                .filter(e -> e.getEntryType() == LedgerEntry.EntryType.CREDIT)
+                .map(LedgerEntry::getAmount).filter(Objects::nonNull)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("entries", rows);
+        response.put("total_count", rows.size());
+        response.put("total_debits", totalDebits);
+        response.put("total_credits", totalCredits);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/reports/trial-balance")
+    public ResponseEntity<?> getTrialBalance(@RequestParam(required = false) String asAt) {
+        LocalDateTime asAtDt = (asAt != null && !asAt.isEmpty())
+                ? LocalDate.parse(asAt).plusDays(1).atStartOfDay()
+                : LocalDateTime.now().plusDays(1);
+
+        List<Map<String, Object>> rows = new ArrayList<>();
+        BigDecimal grandTotalDebits = BigDecimal.ZERO;
+        BigDecimal grandTotalCredits = BigDecimal.ZERO;
+
+        for (LedgerEntry.AccountType account : LedgerEntry.AccountType.values()) {
+            List<LedgerEntry> debits = ledgerEntryRepository.findByAccountTypeAndEntryType(
+                    account, LedgerEntry.EntryType.DEBIT).stream()
+                    .filter(e -> e.getCreatedAt().isBefore(asAtDt))
+                    .collect(Collectors.toList());
+            List<LedgerEntry> credits = ledgerEntryRepository.findByAccountTypeAndEntryType(
+                    account, LedgerEntry.EntryType.CREDIT).stream()
+                    .filter(e -> e.getCreatedAt().isBefore(asAtDt))
+                    .collect(Collectors.toList());
+
+            BigDecimal debitTotal = debits.stream().map(LedgerEntry::getAmount).filter(Objects::nonNull).reduce(BigDecimal.ZERO, BigDecimal::add);
+            BigDecimal creditTotal = credits.stream().map(LedgerEntry::getAmount).filter(Objects::nonNull).reduce(BigDecimal.ZERO, BigDecimal::add);
+            BigDecimal balance = creditTotal.subtract(debitTotal);
+
+            Map<String, Object> row = new LinkedHashMap<>();
+            row.put("account", account.name());
+            row.put("debit_total", debitTotal);
+            row.put("credit_total", creditTotal);
+            row.put("balance", balance);
+            rows.add(row);
+
+            grandTotalDebits = grandTotalDebits.add(debitTotal);
+            grandTotalCredits = grandTotalCredits.add(creditTotal);
+        }
+
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("accounts", rows);
+        response.put("grand_total_debits", grandTotalDebits);
+        response.put("grand_total_credits", grandTotalCredits);
+        response.put("balanced", grandTotalDebits.compareTo(grandTotalCredits) == 0);
+        response.put("as_at", asAt != null ? asAt : LocalDate.now().toString());
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/reports/vat")
+    public ResponseEntity<?> getVatReport(
+            @RequestParam(required = false) String from,
+            @RequestParam(required = false) String to) {
+
+        LocalDateTime fromDt = (from != null && !from.isEmpty())
+                ? LocalDate.parse(from).atStartOfDay()
+                : LocalDateTime.now().withDayOfYear(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
+        LocalDateTime toDt = (to != null && !to.isEmpty())
+                ? LocalDate.parse(to).plusDays(1).atStartOfDay()
+                : LocalDateTime.now().plusDays(1);
+
+        List<LedgerEntry> platformCredits = ledgerEntryRepository
+                .findWithOrderByAccountTypeAndDateRange(LedgerEntry.AccountType.PLATFORM, fromDt, toDt)
+                .stream()
+                .filter(e -> e.getEntryType() == LedgerEntry.EntryType.CREDIT)
+                .collect(Collectors.toList());
+
+        // Group by year-month
+        Map<String, List<LedgerEntry>> byMonth = platformCredits.stream()
+                .collect(Collectors.groupingBy(
+                        e -> e.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM"))));
+
+        BigDecimal vat15 = new BigDecimal("15");
+        BigDecimal vat115 = new BigDecimal("115");
+
+        List<Map<String, Object>> monthlyRows = new ArrayList<>();
+        BigDecimal totalGross = BigDecimal.ZERO;
+        BigDecimal totalNet = BigDecimal.ZERO;
+        BigDecimal totalVat = BigDecimal.ZERO;
+
+        for (Map.Entry<String, List<LedgerEntry>> entry : new TreeMap<>(byMonth).entrySet()) {
+            BigDecimal gross = entry.getValue().stream()
+                    .map(LedgerEntry::getAmount).filter(Objects::nonNull)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+            BigDecimal vat = gross.multiply(vat15).divide(vat115, 2, RoundingMode.HALF_UP);
+            BigDecimal net = gross.subtract(vat);
+
+            Map<String, Object> row = new LinkedHashMap<>();
+            row.put("tax_period", entry.getKey());
+            row.put("transaction_count", entry.getValue().size());
+            row.put("gross_revenue_incl_vat", gross);
+            row.put("net_revenue_excl_vat", net);
+            row.put("output_vat_15pct", vat);
+            monthlyRows.add(row);
+
+            totalGross = totalGross.add(gross);
+            totalNet = totalNet.add(net);
+            totalVat = totalVat.add(vat);
+        }
+
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("monthly_breakdown", monthlyRows);
+        response.put("total_gross_revenue_incl_vat", totalGross);
+        response.put("total_net_revenue_excl_vat", totalNet);
+        response.put("total_output_vat", totalVat);
+        response.put("vat_rate", "15%");
+        response.put("statutory_reference", "VAT Act 89 of 1991 — Output Tax (Standard Rate)");
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/reports/audit-trail")
+    public ResponseEntity<?> getAuditTrail(
+            @RequestParam(required = false) String from,
+            @RequestParam(required = false) String to) {
+
+        LocalDateTime fromDt = (from != null && !from.isEmpty())
+                ? LocalDate.parse(from).atStartOfDay()
+                : LocalDateTime.of(2020, 1, 1, 0, 0);
+        LocalDateTime toDt = (to != null && !to.isEmpty())
+                ? LocalDate.parse(to).plusDays(1).atStartOfDay()
+                : LocalDateTime.now().plusDays(1);
+
+        List<PaymentTransaction> transactions = paymentTransactionRepository.findWithOrderByDateRange(fromDt, toDt);
+
+        List<Map<String, Object>> rows = transactions.stream().map(t -> {
+            Map<String, Object> m = new LinkedHashMap<>();
+            m.put("id", t.getId());
+            m.put("date", t.getCreatedAt());
+            m.put("order_number", t.getOrder().getOrderNumber());
+            m.put("provider", t.getProvider());
+            m.put("provider_transaction_id", t.getProviderTransactionId() != null ? t.getProviderTransactionId() : "—");
+            m.put("event_type", t.getEventType());
+            m.put("amount", t.getAmount());
+            m.put("status", t.getStatus());
+            return m;
+        }).collect(Collectors.toList());
+
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("audit_trail", rows);
+        response.put("total_count", rows.size());
 
         return ResponseEntity.ok(response);
     }

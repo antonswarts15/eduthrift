@@ -12,6 +12,8 @@ import za.co.thrift.eduthrift.repository.ItemTypeRepository;
 import za.co.thrift.eduthrift.repository.UserRepository;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 @RestController
@@ -57,6 +59,9 @@ public class ItemController {
             item.setQuantity(request.quantity != null ? request.quantity : 1);
             item.setLargeItem(request.largeItem != null && request.largeItem);
             item.setStatus(Item.ItemStatus.AVAILABLE);
+            item.setExpiryDate(LocalDate.now().plusDays(60));
+            item.setRelistCount(0);
+            item.setExpiryReminderSent(false);
 
             if (request.price == null) {
                 return ResponseEntity.badRequest().body(Map.of("error", "Price is required"));
@@ -231,6 +236,31 @@ public class ItemController {
         return ResponseEntity.ok(toResponse(saved, userOpt.get()));
     }
 
+    @PutMapping("/{id}/relist")
+    public ResponseEntity<?> relistItem(@PathVariable Long id, Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(401).body(Map.of("error", "Not authenticated"));
+        }
+        String email = authentication.getName();
+        Optional<User> userOpt = userRepository.findByEmail(email);
+        if (userOpt.isEmpty()) return ResponseEntity.status(404).body(Map.of("error", "User not found"));
+
+        Optional<Item> itemOpt = itemRepository.findById(id);
+        if (itemOpt.isEmpty()) return ResponseEntity.status(404).body(Map.of("error", "Item not found"));
+
+        Item item = itemOpt.get();
+        if (!item.getUser().getId().equals(userOpt.get().getId())) {
+            return ResponseEntity.status(403).body(Map.of("error", "Not authorized"));
+        }
+
+        item.setStatus(Item.ItemStatus.AVAILABLE);
+        item.setExpiryDate(LocalDate.now().plusDays(60));
+        item.setRelistCount(item.getRelistCount() != null ? item.getRelistCount() + 1 : 1);
+        item.setExpiryReminderSent(false);
+        Item saved = itemRepository.save(item);
+        return ResponseEntity.ok(toResponse(saved, userOpt.get()));
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteItem(@PathVariable Long id, Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated()) {
@@ -277,9 +307,13 @@ public class ItemController {
         map.put("quantity", item.getQuantity());
         map.put("status", item.getStatus() != null ? item.getStatus().name().toLowerCase() : "available");
         map.put("sold_out", item.getQuantity() != null && item.getQuantity() == 0);
+        map.put("is_expired", item.getStatus() == Item.ItemStatus.EXPIRED);
         map.put("created_at", item.getCreatedAt() != null ? item.getCreatedAt().toString() : null);
         map.put("updated_at", item.getUpdatedAt() != null ? item.getUpdatedAt().toString() : null);
         map.put("large_item", item.getLargeItem() != null && item.getLargeItem());
+        map.put("expiry_date", item.getExpiryDate() != null ? item.getExpiryDate().toString() : null);
+        map.put("days_until_expiry", item.getExpiryDate() != null ? (int) ChronoUnit.DAYS.between(LocalDate.now(), item.getExpiryDate()) : null);
+        map.put("relist_count", item.getRelistCount() != null ? item.getRelistCount() : 0);
         map.put("seller_id", user.getId());
         map.put("seller_alias", "Seller #" + Long.toHexString(user.getId()).toUpperCase());
         map.put("seller_town", user.getTown());

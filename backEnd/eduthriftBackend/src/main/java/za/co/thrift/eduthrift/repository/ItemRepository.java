@@ -6,6 +6,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import za.co.thrift.eduthrift.entity.Item;
 import za.co.thrift.eduthrift.entity.User;
+import java.time.LocalDate;
 import java.util.List;
 
 @Repository
@@ -19,6 +20,11 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
 
     @Query("SELECT i FROM Item i WHERE i.user.id = :sellerId AND i.status = 'AVAILABLE' AND i.id != :excludeId ORDER BY i.createdAt DESC")
     List<Item> findOtherItemsBySeller(@Param("sellerId") Long sellerId, @Param("excludeId") Long excludeId);
+
+    List<Item> findByStatusAndExpiryDateLessThanEqual(Item.ItemStatus status, LocalDate date);
+
+    @Query("SELECT i FROM Item i WHERE i.status = :status AND i.expiryDate BETWEEN :from AND :to AND (i.expiryReminderSent = false OR i.expiryReminderSent IS NULL)")
+    List<Item> findItemsExpiringBetweenWithoutReminder(@Param("status") Item.ItemStatus status, @Param("from") LocalDate from, @Param("to") LocalDate to);
 
     @Query("SELECT i FROM Item i WHERE " +
            "(:itemTypeId IS NULL OR i.itemType.id = :itemTypeId) AND " +

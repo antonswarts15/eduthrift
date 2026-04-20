@@ -129,12 +129,18 @@ const ListingsPage: React.FC = () => {
     }
   };
 
-  const handleRelistItem = (id: string, name: string) => {
-    relistItem(id);
-    setToastMessage(`${name} has been relisted successfully!`);
-    setToastColor('success');
-    setShowToast(true);
-    addNotification('Item Relisted', `${name} has been relisted for another month.`);
+  const handleRelistItem = async (id: string, name: string) => {
+    try {
+      await relistItem(id);
+      setToastMessage(`${name} has been relisted for another 60 days!`);
+      setToastColor('success');
+      setShowToast(true);
+      addNotification('Item Relisted', `${name} has been relisted for another 60 days.`);
+    } catch {
+      setToastMessage('Failed to relist item. Please try again.');
+      setToastColor('danger');
+      setShowToast(true);
+    }
   };
 
   const handleCloseModal = () => {

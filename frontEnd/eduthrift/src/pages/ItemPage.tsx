@@ -62,7 +62,7 @@ const conditionLabel = (c: number) => {
 const ItemPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const history = useHistory();
-  const { getListingById, fetchListingById, decreaseQuantity } = useListingsStore();
+  const { getListingById, fetchListingById } = useListingsStore();
   const { addToCart, cartItems } = useCartStore();
   const { isOpen, message, color, showToast, hideToast } = useToast();
 
@@ -158,13 +158,30 @@ const ItemPage: React.FC = () => {
     largeItem: item.largeItem || false,
   });
 
+  // ── Quantity helpers ──────────────────────────────────────────────────────
+
+  // How many of an item are currently in the cart
+  const cartQty = (itemId: string) =>
+    cartItems.find(c => c.id === itemId)?.selectedQuantity ?? 0;
+
+  // How many are still available to add (stock minus what's in cart)
+  const remainingQty = (item: Listing) =>
+    Math.max(0, item.quantity - cartQty(item.id));
+
+  // True once the buyer has the full available stock in their cart
+  const fullyAdded = (item: Listing) => remainingQty(item) <= 0;
+
+  // Reactive remaining quantity for the main listing
+  const mainRemaining = listing ? Math.max(0, listing.quantity - cartQty(listing.id)) : 0;
+
   const handleAddToCart = () => {
-    if (listing.soldOut || listing.quantity === 0) {
+    if (mainRemaining <= 0) {
       showToast('This item is sold out!', 'danger');
       return;
     }
-    addToCart(buildCartItem(listing, mainQty), showToast);
-    decreaseQuantity(listing.id);
+    const qty = Math.min(mainQty, mainRemaining);
+    addToCart(buildCartItem(listing, cartQty(listing.id) + qty), showToast);
+    setMainQty(1);
   };
 
   // ── Seller items — grouped selection ─────────────────────────────────────
@@ -187,30 +204,26 @@ const ItemPage: React.FC = () => {
   };
 
   const toggleCategory = (catItems: Listing[]) => {
-    const ids = catItems.map(i => i.id);
-    const allSelected = ids.every(id => selectedItemIds.has(id));
+    const available = catItems.filter(i => !fullyAdded(i));
+    const allSelected = available.length > 0 && available.every(i => selectedItemIds.has(i.id));
     setSelectedItemIds(prev => {
       const next = new Set(prev);
-      if (allSelected) ids.forEach(id => next.delete(id));
-      else ids.forEach(id => next.add(id));
+      if (allSelected) available.forEach(i => next.delete(i.id));
+      else available.forEach(i => next.add(i.id));
       return next;
     });
   };
 
-  const selectedItems = sellerItems.filter(i => selectedItemIds.has(i.id));
+  // Only count items that still have stock remaining
+  const selectedItems = sellerItems.filter(i => selectedItemIds.has(i.id) && !fullyAdded(i));
   const selectedTotal = selectedItems.reduce((sum, i) => sum + i.price, 0);
 
   const handleAddSelected = () => {
     selectedItems.forEach(item => {
-      if (!cartItems.some(c => c.id === item.id)) {
-        addToCart(buildCartItem(item, 1), showToast);
-        decreaseQuantity(item.id);
-      }
+      addToCart(buildCartItem(item, cartQty(item.id) + 1), showToast);
     });
     setSelectedItemIds(new Set());
   };
-
-  const alreadyInCart = (itemId: string) => cartItems.some(c => c.id === itemId);
 
   // Extra bottom padding so content doesn't hide behind floating bar or tab bar
   const bottomPad = selectedItems.length > 0 ? 140 : 88;
@@ -234,13 +247,13 @@ const ItemPage: React.FC = () => {
             <IonCardContent>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
                 <h1 style={{ margin: 0, fontSize: '22px', flex: 1, paddingRight: '8px' }}>{listing.name}</h1>
-                {listing.soldOut || listing.quantity === 0 ? (
+                {mainRemaining <= 0 ? (
                   <IonBadge color="danger">
                     <IonIcon icon={closeCircleOutline} style={{ marginRight: '4px' }} />Sold Out
                   </IonBadge>
                 ) : (
                   <IonBadge color="success">
-                    <IonIcon icon={checkmarkCircleOutline} style={{ marginRight: '4px' }} />{listing.quantity} left
+                    <IonIcon icon={checkmarkCircleOutline} style={{ marginRight: '4px' }} />{mainRemaining} left
                   </IonBadge>
                 )}
               </div>
@@ -292,15 +305,15 @@ const ItemPage: React.FC = () => {
               </div>
 
               {/* Quantity stepper */}
-              {!listing.soldOut && listing.quantity > 0 && (
+              {mainRemaining > 0 && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '4px' }}>
                   <span style={{ fontWeight: 'bold', color: '#666', fontSize: '14px' }}>Qty:</span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <IonButton size="small" fill="outline" onClick={() => setMainQty(q => Math.max(1, q - 1))} disabled={mainQty <= 1}>−</IonButton>
                     <span style={{ minWidth: '24px', textAlign: 'center', fontSize: '16px', fontWeight: 'bold' }}>{mainQty}</span>
-                    <IonButton size="small" fill="outline" onClick={() => setMainQty(q => Math.min(listing.quantity, q + 1))} disabled={mainQty >= listing.quantity}>+</IonButton>
+                    <IonButton size="small" fill="outline" onClick={() => setMainQty(q => Math.min(mainRemaining, q + 1))} disabled={mainQty >= mainRemaining}>+</IonButton>
                   </div>
-                  <span style={{ fontSize: '12px', color: '#888' }}>{listing.quantity} available</span>
+                  <span style={{ fontSize: '12px', color: '#888' }}>{mainRemaining} available</span>
                 </div>
               )}
             </IonCardContent>
@@ -309,9 +322,9 @@ const ItemPage: React.FC = () => {
           {/* ── Main Add to Cart ──────────────────────────────────────── */}
           <div style={{ margin: '8px 0 24px' }}>
             <IonButton expand="block" size="large" onClick={handleAddToCart}
-              disabled={listing.soldOut || listing.quantity === 0}>
+              disabled={mainRemaining <= 0}>
               <IonIcon icon={cartOutline} slot="start" />
-              {listing.soldOut || listing.quantity === 0 ? 'Sold Out' : 'Add to Cart'}
+              {mainRemaining <= 0 ? 'Sold Out' : 'Add to Cart'}
             </IonButton>
           </div>
 
@@ -330,8 +343,9 @@ const ItemPage: React.FC = () => {
 
               {categories.map(cat => {
                 const catItems = grouped[cat];
-                const allCatSelected = catItems.every(i => selectedItemIds.has(i.id));
-                const someCatSelected = catItems.some(i => selectedItemIds.has(i.id));
+                const availableCatItems = catItems.filter(i => !fullyAdded(i));
+                const allCatSelected = availableCatItems.length > 0 && availableCatItems.every(i => selectedItemIds.has(i.id));
+                const someCatSelected = availableCatItems.some(i => selectedItemIds.has(i.id));
 
                 return (
                   <div key={cat} style={{ marginBottom: '20px' }}>
@@ -343,10 +357,13 @@ const ItemPage: React.FC = () => {
                     }}>
                       <span style={{ fontWeight: 700, fontSize: '13px', color: '#004aad', textTransform: 'uppercase', letterSpacing: '0.6px' }}>
                         {cat}
-                        <span style={{ fontWeight: 400, color: '#667', marginLeft: '6px' }}>({catItems.length})</span>
+                        <span style={{ fontWeight: 400, color: '#667', marginLeft: '6px' }}>
+                          ({availableCatItems.length}{availableCatItems.length < catItems.length ? ` of ${catItems.length}` : ''})
+                        </span>
                       </span>
                       <button
                         onClick={() => toggleCategory(catItems)}
+                        disabled={availableCatItems.length === 0}
                         style={{
                           background: 'none', border: 'none', cursor: 'pointer',
                           fontSize: '12px', color: '#004aad', fontWeight: 600,
@@ -365,29 +382,31 @@ const ItemPage: React.FC = () => {
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                       {catItems.map(item => {
                         const selected = selectedItemIds.has(item.id);
-                        const inCart = alreadyInCart(item.id);
+                        const done = fullyAdded(item);
+                        const remaining = remainingQty(item);
+                        const inCartPartial = cartQty(item.id) > 0 && !done;
 
                         return (
                           <div
                             key={item.id}
-                            onClick={() => !inCart && toggleItem(item.id)}
+                            onClick={() => !done && toggleItem(item.id)}
                             style={{
                               display: 'flex', alignItems: 'center', gap: '10px',
                               backgroundColor: selected ? '#f0f4ff' : 'white',
                               border: selected ? '1.5px solid #004aad' : '1.5px solid #e0e0e0',
                               borderRadius: '10px', padding: '10px',
-                              cursor: inCart ? 'default' : 'pointer',
+                              cursor: done ? 'default' : 'pointer',
                               transition: 'border-color 0.15s, background-color 0.15s',
-                              opacity: inCart ? 0.6 : 1,
+                              opacity: done ? 0.6 : 1,
                             }}
                           >
                             {/* Checkbox */}
                             <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center' }}
-                              onClick={e => { e.stopPropagation(); if (!inCart) toggleItem(item.id); }}>
+                              onClick={e => { e.stopPropagation(); if (!done) toggleItem(item.id); }}>
                               <IonCheckbox
-                                checked={selected || inCart}
-                                disabled={inCart}
-                                onIonChange={() => { if (!inCart) toggleItem(item.id); }}
+                                checked={selected || done}
+                                disabled={done}
+                                onIonChange={() => { if (!done) toggleItem(item.id); }}
                                 style={{ '--size': '20px', '--border-radius': '4px' } as any}
                               />
                             </div>
@@ -412,12 +431,20 @@ const ItemPage: React.FC = () => {
                                 <p style={{ margin: '0 0 2px', fontSize: '12px', color: '#888' }}>Size {item.size}</p>
                               )}
                               <p style={{ margin: '0 0 2px', fontSize: '12px', color: '#888' }}>{conditionLabel(item.condition)}</p>
-                              <p style={{ margin: 0, fontSize: '17px', fontWeight: 700, color: '#004aad' }}>R{item.price}</p>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                <p style={{ margin: 0, fontSize: '17px', fontWeight: 700, color: '#004aad' }}>R{item.price}</p>
+                                {item.quantity > 1 && !done && (
+                                  <span style={{ fontSize: '11px', color: '#888' }}>{remaining} left</span>
+                                )}
+                              </div>
                             </div>
 
-                            {/* Cart badge */}
-                            {inCart && (
+                            {/* Status badge */}
+                            {done && (
                               <IonBadge color="success" style={{ flexShrink: 0, fontSize: '10px' }}>In cart</IonBadge>
+                            )}
+                            {inCartPartial && (
+                              <IonBadge color="warning" style={{ flexShrink: 0, fontSize: '10px' }}>{cartQty(item.id)} in cart</IonBadge>
                             )}
                           </div>
                         );

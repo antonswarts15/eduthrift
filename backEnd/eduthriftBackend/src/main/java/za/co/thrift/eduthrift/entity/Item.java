@@ -3,6 +3,7 @@ package za.co.thrift.eduthrift.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -67,6 +68,15 @@ public class Item {
     @Enumerated(EnumType.STRING)
     private ItemStatus status = ItemStatus.AVAILABLE;
 
+    @Column(name = "expiry_date")
+    private LocalDate expiryDate;
+
+    @Column(name = "relist_count", columnDefinition = "INT DEFAULT 0")
+    private Integer relistCount = 0;
+
+    @Column(name = "expiry_reminder_sent", columnDefinition = "BOOLEAN DEFAULT false")
+    private Boolean expiryReminderSent = false;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
@@ -89,6 +99,6 @@ public class Item {
     }
 
     public enum ItemStatus {
-        AVAILABLE, SOLD, RESERVED
+        AVAILABLE, SOLD, RESERVED, EXPIRED
     }
 }

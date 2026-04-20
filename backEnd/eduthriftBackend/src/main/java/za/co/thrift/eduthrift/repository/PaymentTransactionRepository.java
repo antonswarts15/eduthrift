@@ -1,8 +1,11 @@
 package za.co.thrift.eduthrift.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import za.co.thrift.eduthrift.entity.PaymentTransaction;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,4 +24,8 @@ public interface PaymentTransactionRepository extends JpaRepository<PaymentTrans
      */
     boolean existsByProviderAndProviderTransactionIdAndEventType(
             String provider, String providerTransactionId, String eventType);
+
+    /** All payment events in a date range, with Order eagerly fetched — used for audit trail reports. */
+    @Query("SELECT pt FROM PaymentTransaction pt JOIN FETCH pt.order o WHERE pt.createdAt >= :from AND pt.createdAt < :to ORDER BY pt.createdAt ASC")
+    List<PaymentTransaction> findWithOrderByDateRange(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
 }

@@ -78,4 +78,19 @@ public interface LedgerEntryRepository extends JpaRepository<LedgerEntry, Long> 
               AND e.userId = :userId
             """)
     BigDecimal getSellerBalance(@Param("userId") Long userId);
+
+    /** All entries in a date range, with Order eagerly fetched to avoid N+1. */
+    @Query("SELECT e FROM LedgerEntry e JOIN FETCH e.order o WHERE e.createdAt >= :from AND e.createdAt < :to ORDER BY e.createdAt ASC")
+    List<LedgerEntry> findWithOrderByDateRange(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
+
+    /** Entries for a specific account type in a date range, Order eagerly fetched. */
+    @Query("SELECT e FROM LedgerEntry e JOIN FETCH e.order o WHERE e.accountType = :accountType AND e.createdAt >= :from AND e.createdAt < :to ORDER BY e.createdAt ASC")
+    List<LedgerEntry> findWithOrderByAccountTypeAndDateRange(
+            @Param("accountType") LedgerEntry.AccountType accountType,
+            @Param("from") LocalDateTime from,
+            @Param("to") LocalDateTime to);
+
+    /** Debit and credit totals for a specific account — used by trial balance. */
+    List<LedgerEntry> findByAccountTypeAndEntryTypeOrderByCreatedAtAsc(
+            LedgerEntry.AccountType accountType, LedgerEntry.EntryType entryType);
 }

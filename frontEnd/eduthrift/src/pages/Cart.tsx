@@ -10,7 +10,7 @@ import { trashOutline, warningOutline } from 'ionicons/icons';
 
 const Cart: React.FC = () => {
   const history = useHistory();
-  const { cartItems, removeFromCart, updateQuantity } = useCartStore();
+  const { cartItems, removeFromCart, updateQuantity, clearCart } = useCartStore();
   const [itemCount, setItemCount] = useState<number>(0);
   const [minimumActive, setMinimumActive] = useState<boolean>(false);
 
@@ -187,12 +187,21 @@ const Cart: React.FC = () => {
                   </div>
                 )}
                 
-                <IonButton 
-                  expand="full" 
+                <IonButton
+                  expand="full"
                   onClick={handleCheckout}
                   style={{ marginTop: '16px' }}
                 >
                   Proceed to Checkout
+                </IonButton>
+                <IonButton
+                  expand="full"
+                  fill="outline"
+                  color="danger"
+                  onClick={() => clearCart()}
+                  style={{ marginTop: '8px' }}
+                >
+                  Clear Cart
                 </IonButton>
               </IonCardContent>
             </IonCard>

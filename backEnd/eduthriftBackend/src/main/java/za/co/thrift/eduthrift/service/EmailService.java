@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
+import za.co.thrift.eduthrift.entity.Item;
 import za.co.thrift.eduthrift.entity.Order;
 
 import jakarta.mail.internet.MimeMessage;
@@ -837,6 +838,61 @@ public class EmailService {
             send(order.getBuyer().getEmail(), "Refund Processed — " + order.getOrderNumber(), html);
         } catch (Exception e) {
             log.warn("Failed to send refund email for order {}: {}", order.getOrderNumber(), e.getMessage());
+        }
+    }
+
+    // ── Listing expiry reminder ───────────────────────────────────────────────
+
+    public void sendListingExpiryReminderEmail(Item item, int daysLeft) {
+        try {
+            String html = """
+                    <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px">
+                      <div style="background:#f39c12;padding:20px;border-radius:8px 8px 0 0;text-align:center">
+                        <h1 style="color:white;margin:0;font-size:24px">Your Listing Expires Soon</h1>
+                        <p style="color:rgba(255,255,255,0.9);margin:8px 0 0">Eduthrift Marketplace</p>
+                      </div>
+                      <div style="background:#f9f9f9;padding:24px;border:1px solid #eee">
+                        <p style="font-size:16px">Hi <strong>%s</strong>,</p>
+                        <p>Your listing <strong>%s</strong> will expire in <strong>%d days</strong>.
+                           Once expired, it will no longer appear in search results and buyers won't be able to find it.</p>
+
+                        <div style="background:white;border:1px solid #ddd;border-radius:8px;padding:16px;margin:20px 0;text-align:center">
+                          <p style="margin:0 0 8px;font-size:18px;font-weight:bold;color:#1a1a1a">%s</p>
+                          <p style="margin:0;font-size:14px;color:#e74c3c;font-weight:bold">
+                            ⏰ Expires in %d day%s
+                          </p>
+                        </div>
+
+                        <p style="font-size:14px;color:#555">
+                          Simply log in and click <strong>Relist</strong> on your listing to extend it for another 60 days — for free.
+                        </p>
+
+                        <div style="text-align:center;margin:24px 0">
+                          <a href="%s/profile/listings" style="background:#004aad;color:white;padding:12px 28px;border-radius:6px;text-decoration:none;font-weight:bold;font-size:15px">
+                            Relist My Item
+                          </a>
+                        </div>
+                        <p style="font-size:12px;color:#aaa;text-align:center">
+                          If you no longer have this item available, you can delete the listing from your seller dashboard.
+                        </p>
+                      </div>
+                      %s
+                    </div>
+                    """.formatted(
+                    item.getUser().getFirstName(),
+                    item.getItemName(),
+                    daysLeft,
+                    item.getItemName(),
+                    daysLeft,
+                    daysLeft == 1 ? "" : "s",
+                    appBaseUrl,
+                    footer()
+            );
+            send(item.getUser().getEmail(),
+                    "Your listing \"" + item.getItemName() + "\" expires in " + daysLeft + " days — Relist now",
+                    html);
+        } catch (Exception e) {
+            log.warn("Failed to send expiry reminder for item {}: {}", item.getId(), e.getMessage());
         }
     }
 

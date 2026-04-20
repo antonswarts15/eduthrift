@@ -2,17 +2,32 @@ import React, { useState, useEffect } from 'react';
 import {
   IonContent, IonSegment, IonSegmentButton, IonLabel, IonCard, IonCardContent,
   IonBadge, IonGrid, IonRow, IonCol, IonButton, IonIcon, IonModal,
-  IonHeader, IonToolbar, IonTitle, IonSpinner
+  IonHeader, IonToolbar, IonTitle, IonSpinner, IonAlert
 } from '@ionic/react';
-import { trainOutline as trackingOutline, closeOutline } from 'ionicons/icons';
+import { trainOutline as trackingOutline, closeOutline, closeCircleOutline } from 'ionicons/icons';
 import { useOrdersStore } from '../stores/ordersStore';
+import { useCartStore } from '../stores/cartStore';
+import api from '../services/api';
 
 const OrdersPage: React.FC = () => {
   const [selectedTab, setSelectedTab] = useState('current');
   const [trackingModal, setTrackingModal] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [cancelConfirmOrder, setCancelConfirmOrder] = useState<string | null>(null);
   const { orders, fetchOrders } = useOrdersStore();
+  const { clearCart } = useCartStore();
+
+  const handleCancelOrder = async (orderNumber: string) => {
+    try {
+      await api.put(`/orders/${orderNumber}/status`, { status: 'CANCELLED' });
+      clearCart();
+      await fetchOrders();
+    } catch {
+      // silently ignore — order status will refresh on next fetch
+    }
+    setCancelConfirmOrder(null);
+  };
 
   useEffect(() => {
     fetchOrders().finally(() => setLoading(false));
@@ -122,6 +137,18 @@ const OrdersPage: React.FC = () => {
                     Track
                   </IonButton>
                 )}
+                {order.isBuyer && order.status === 'pending_payment' && (
+                  <IonButton
+                    size="small"
+                    fill="outline"
+                    color="danger"
+                    onClick={() => setCancelConfirmOrder(order.id)}
+                    style={{ marginTop: '4px' }}
+                  >
+                    <IonIcon icon={closeCircleOutline} slot="start" />
+                    Cancel
+                  </IonButton>
+                )}
               </IonCol>
             </IonRow>
           </IonGrid>
@@ -166,6 +193,17 @@ const OrdersPage: React.FC = () => {
           </>
         )}
       </div>
+
+      <IonAlert
+        isOpen={!!cancelConfirmOrder}
+        onDidDismiss={() => setCancelConfirmOrder(null)}
+        header="Cancel Order"
+        message="Are you sure you want to cancel this order? The items will be returned to the marketplace and your cart will be cleared."
+        buttons={[
+          { text: 'Keep Order', role: 'cancel' },
+          { text: 'Cancel Order', role: 'destructive', handler: () => handleCancelOrder(cancelConfirmOrder!) }
+        ]}
+      />
 
       <IonModal isOpen={trackingModal} onDidDismiss={() => setTrackingModal(false)}>
         <IonHeader>
