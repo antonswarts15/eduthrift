@@ -178,16 +178,22 @@ public class OrderController {
 
                 // Notify the relevant party based on the new status
                 switch (newStatus) {
-                    case SHIPPED -> fcmNotificationService.send(
-                            order.getBuyer().getFcmToken(),
-                            "Your Order is On Its Way",
-                            "Order " + orderNumber + " has been shipped. Check your orders for tracking details."
-                    );
-                    case DELIVERED -> fcmNotificationService.send(
-                            order.getBuyer().getFcmToken(),
-                            "Order Delivered",
-                            "Order " + orderNumber + " has been delivered. Please confirm receipt in the app."
-                    );
+                    case SHIPPED -> {
+                        fcmNotificationService.send(
+                                order.getBuyer().getFcmToken(),
+                                "Your Order is On Its Way",
+                                "Order " + orderNumber + " has been shipped. Check your orders for tracking details."
+                        );
+                        emailService.sendOrderShippedEmail(order);
+                    }
+                    case DELIVERED -> {
+                        fcmNotificationService.send(
+                                order.getBuyer().getFcmToken(),
+                                "Order Delivered",
+                                "Order " + orderNumber + " has been delivered. Please confirm receipt in the app."
+                        );
+                        emailService.sendOrderArrivedEmail(order);
+                    }
                     case CANCELLED -> {
                         fcmNotificationService.send(
                                 order.getBuyer().getFcmToken(),
@@ -199,6 +205,7 @@ public class OrderController {
                                 "Order Cancelled",
                                 "Order " + orderNumber + " has been cancelled."
                         );
+                        emailService.sendOrderCancellationEmail(order, "Order was cancelled");
                     }
                     default -> { /* no notification for other transitions */ }
                 }

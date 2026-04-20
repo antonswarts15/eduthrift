@@ -38,13 +38,16 @@ public class EscrowService {
     private final OrderRepository orderRepository;
     private final PaymentService paymentService;
     private final LedgerService ledgerService;
+    private final EmailService emailService;
 
     public EscrowService(OrderRepository orderRepository,
                           PaymentService paymentService,
-                          LedgerService ledgerService) {
+                          LedgerService ledgerService,
+                          EmailService emailService) {
         this.orderRepository = orderRepository;
         this.paymentService  = paymentService;
         this.ledgerService   = ledgerService;
+        this.emailService    = emailService;
     }
 
     /**
@@ -61,6 +64,7 @@ public class EscrowService {
         order.setPayoutScheduledAt(LocalDateTime.now().plusHours(72));
         orderRepository.save(order);
         ledgerService.postPaymentReceived(order);
+        emailService.sendPaymentConfirmedEmails(order);
         log.info("Funds held for order {} via {}", order.getOrderNumber(), order.getPaymentMethod());
     }
 
@@ -80,6 +84,7 @@ public class EscrowService {
         order.setOrderStatus(Order.OrderStatus.DELIVERED);
         orderRepository.save(order);
 
+        emailService.sendDeliveryConfirmedEmails(order);
         releaseToSeller(order);
     }
 
@@ -130,6 +135,7 @@ public class EscrowService {
         order.setPayoutStatus(Order.PayoutStatus.FAILED);
         orderRepository.save(order);
         ledgerService.postRefund(order);
+        emailService.sendRefundEmail(order);
         log.info("Refund state set for order {} (payment method: {})",
                 order.getOrderNumber(), order.getPaymentMethod());
     }
@@ -157,6 +163,7 @@ public class EscrowService {
                 order.setDeliveryConfirmedDate(LocalDateTime.now());
                 order.setOrderStatus(Order.OrderStatus.DELIVERED);
                 orderRepository.save(order);
+                emailService.sendAutoReleaseEmails(order);
                 releaseToSeller(order);
             } catch (Exception e) {
                 log.error("Auto-release failed for order {}: {}", order.getOrderNumber(), e.getMessage(), e);

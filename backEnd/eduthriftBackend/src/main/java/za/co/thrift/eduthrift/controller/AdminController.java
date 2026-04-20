@@ -12,9 +12,11 @@ import za.co.thrift.eduthrift.repository.UserRepository;
 
 import java.math.BigDecimal;
 import java.security.SecureRandom;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/admin")
@@ -40,7 +42,8 @@ public class AdminController {
         // ── Users ────────────────────────────────────────────────────────────
         long totalUsers            = userRepository.count();
         long activeUsers           = userRepository.countByStatus("active");
-        long pendingVerifications  = userRepository.countByVerificationStatus("pending");
+        long pendingVerifications  = userRepository.countPendingSellerVerifications(
+                Arrays.asList(User.UserType.SELLER, User.UserType.BOTH), "pending");
 
         // ── Orders ───────────────────────────────────────────────────────────
         long totalOrders     = orderRepository.count();
@@ -233,6 +236,124 @@ public class AdminController {
         userRepository.save(user);
 
         return ResponseEntity.ok(Map.of("message", "User reactivated"));
+    }
+
+    @GetMapping("/reports/transactions")
+    public ResponseEntity<?> getTransactionReport(
+            @RequestParam(required = false) String from,
+            @RequestParam(required = false) String to,
+            @RequestParam(required = false) String status) {
+
+        List<Order> orders = new ArrayList<>(orderRepository.findAll());
+
+        if (from != null && !from.isEmpty()) {
+            LocalDateTime fromDt = LocalDate.parse(from).atStartOfDay();
+            orders.removeIf(o -> o.getCreatedAt() == null || o.getCreatedAt().isBefore(fromDt));
+        }
+        if (to != null && !to.isEmpty()) {
+            LocalDateTime toDt = LocalDate.parse(to).plusDays(1).atStartOfDay();
+            orders.removeIf(o -> o.getCreatedAt() == null || !o.getCreatedAt().isBefore(toDt));
+        }
+        if (status != null && !status.isEmpty() && !status.equalsIgnoreCase("all")) {
+            try {
+                Order.OrderStatus orderStatus = Order.OrderStatus.valueOf(status.toUpperCase());
+                orders.removeIf(o -> o.getOrderStatus() != orderStatus);
+            } catch (IllegalArgumentException ignored) {}
+        }
+
+        orders.sort((a, b) -> {
+            if (a.getCreatedAt() == null) return 1;
+            if (b.getCreatedAt() == null) return -1;
+            return b.getCreatedAt().compareTo(a.getCreatedAt());
+        });
+
+        List<Map<String, Object>> rows = orders.stream().map(o -> {
+            Map<String, Object> m = new LinkedHashMap<>();
+            m.put("id", o.getId());
+            m.put("order_number", o.getOrderNumber());
+            m.put("buyer_name", o.getBuyer().getFirstName() + " " + o.getBuyer().getLastName());
+            m.put("buyer_email", o.getBuyer().getEmail());
+            m.put("seller_name", o.getSeller().getFirstName() + " " + o.getSeller().getLastName());
+            m.put("seller_email", o.getSeller().getEmail());
+            m.put("item_name", o.getItem() != null ? o.getItem().getItemName() : "N/A");
+            m.put("quantity", o.getQuantity());
+            m.put("item_price", o.getItemPrice());
+            m.put("shipping_cost", o.getShippingCost());
+            m.put("total_amount", o.getTotalAmount());
+            m.put("platform_fee", o.getPlatformFee());
+            m.put("seller_payout", o.getSellerPayout());
+            m.put("order_status", o.getOrderStatus() != null ? o.getOrderStatus().name() : null);
+            m.put("payment_status", o.getPaymentStatus() != null ? o.getPaymentStatus().name() : null);
+            m.put("escrow_status", o.getEscrowStatus() != null ? o.getEscrowStatus().name() : null);
+            m.put("payout_status", o.getPayoutStatus() != null ? o.getPayoutStatus().name() : null);
+            m.put("payment_method", o.getPaymentMethod() != null ? o.getPaymentMethod().name() : null);
+            m.put("created_at", o.getCreatedAt());
+            return m;
+        }).collect(Collectors.toList());
+
+        BigDecimal totalVolume = orders.stream()
+                .map(Order::getTotalAmount).filter(Objects::nonNull)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal totalFees = orders.stream()
+                .map(Order::getPlatformFee).filter(Objects::nonNull)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("transactions", rows);
+        response.put("total_count", rows.size());
+        response.put("total_volume", totalVolume);
+        response.put("total_fees", totalFees);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/reports/users")
+    public ResponseEntity<?> getUserReport(
+            @RequestParam(required = false) String from,
+            @RequestParam(required = false) String to,
+            @RequestParam(required = false) String userType) {
+
+        List<User> users = new ArrayList<>(userRepository.findAll());
+
+        if (from != null && !from.isEmpty()) {
+            LocalDateTime fromDt = LocalDate.parse(from).atStartOfDay();
+            users.removeIf(u -> u.getCreatedAt() == null || u.getCreatedAt().isBefore(fromDt));
+        }
+        if (to != null && !to.isEmpty()) {
+            LocalDateTime toDt = LocalDate.parse(to).plusDays(1).atStartOfDay();
+            users.removeIf(u -> u.getCreatedAt() == null || !u.getCreatedAt().isBefore(toDt));
+        }
+        if (userType != null && !userType.isEmpty() && !userType.equalsIgnoreCase("all")) {
+            try {
+                User.UserType type = User.UserType.valueOf(userType.toUpperCase());
+                users.removeIf(u -> u.getUserType() != type);
+            } catch (IllegalArgumentException ignored) {}
+        }
+
+        users.sort((a, b) -> {
+            if (a.getCreatedAt() == null) return 1;
+            if (b.getCreatedAt() == null) return -1;
+            return b.getCreatedAt().compareTo(a.getCreatedAt());
+        });
+
+        long buyerCount  = users.stream().filter(u -> u.getUserType() == User.UserType.BUYER).count();
+        long sellerCount = users.stream().filter(u -> u.getUserType() == User.UserType.SELLER || u.getUserType() == User.UserType.BOTH).count();
+        long pendingCount  = users.stream().filter(u -> "pending".equals(u.getVerificationStatus())).count();
+        long verifiedCount = users.stream().filter(u -> "verified".equals(u.getVerificationStatus())).count();
+
+        List<Map<String, Object>> rows = users.stream()
+                .map(this::userToSnakeCaseMap)
+                .collect(Collectors.toList());
+
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("users", rows);
+        response.put("total_count", rows.size());
+        response.put("buyer_count", buyerCount);
+        response.put("seller_count", sellerCount);
+        response.put("pending_verifications", pendingCount);
+        response.put("verified_count", verifiedCount);
+
+        return ResponseEntity.ok(response);
     }
 
     private Map<String, Object> userToSnakeCaseMap(User user) {

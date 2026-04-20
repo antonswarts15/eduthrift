@@ -9,6 +9,7 @@ import za.co.thrift.eduthrift.entity.Order;
 import za.co.thrift.eduthrift.entity.PaymentTransaction;
 import za.co.thrift.eduthrift.repository.OrderRepository;
 import za.co.thrift.eduthrift.repository.PaymentTransactionRepository;
+import za.co.thrift.eduthrift.service.EmailService;
 import za.co.thrift.eduthrift.service.FCMNotificationService;
 import za.co.thrift.eduthrift.service.LedgerService;
 
@@ -51,13 +52,15 @@ public class PaymentService {
     private final PaymentTransactionRepository transactionRepository;
     private final FCMNotificationService fcmService;
     private final LedgerService ledgerService;
+    private final EmailService emailService;
 
     public PaymentService(List<PaymentProvider> providers,
                           PaymentConfig paymentConfig,
                           OrderRepository orderRepository,
                           PaymentTransactionRepository transactionRepository,
                           FCMNotificationService fcmService,
-                          LedgerService ledgerService) {
+                          LedgerService ledgerService,
+                          EmailService emailService) {
         this.providersByName = providers.stream()
                 .collect(Collectors.toMap(
                         p -> p.getProviderName().toUpperCase(),
@@ -68,6 +71,7 @@ public class PaymentService {
         this.transactionRepository = transactionRepository;
         this.fcmService           = fcmService;
         this.ledgerService        = ledgerService;
+        this.emailService         = emailService;
         log.info("PaymentService initialized — registered providers: {}", providersByName.keySet());
     }
 
@@ -185,6 +189,7 @@ public class PaymentService {
             order.setPayoutStatus(Order.PayoutStatus.MANUAL_REQUIRED);
             order.setPayoutFailureReason(result.errorMessage());
             orderRepository.save(order);
+            emailService.sendPayoutStatusEmail(order);
             log.info("Order {} payout set to MANUAL_REQUIRED — provider {} does not support auto-payouts",
                     order.getOrderNumber(), provider.getProviderName());
 
@@ -194,6 +199,7 @@ public class PaymentService {
             order.setPayoutFailureReason(null);
             orderRepository.save(order);
             ledgerService.postPayout(order);
+            emailService.sendPayoutStatusEmail(order);
             log.info("Payout completed for order {} via {} — ref: {}",
                     order.getOrderNumber(), provider.getProviderName(), result.providerReference());
 
@@ -201,6 +207,7 @@ public class PaymentService {
             order.setPayoutStatus(Order.PayoutStatus.FAILED);
             order.setPayoutFailureReason(result.errorMessage());
             orderRepository.save(order);
+            emailService.sendPayoutStatusEmail(order);
             int remaining = 3 - order.getPayoutAttempts();
             if (remaining > 0) {
                 log.warn("Payout failed for order {} via {} (attempt {}/3, {} retry/retries remaining): {}",
@@ -252,6 +259,7 @@ public class PaymentService {
                 "Payment Failed",
                 "Your payment for order " + order.getOrderNumber() + " could not be processed. Please try again."
         );
+        emailService.sendPaymentFailedEmail(order);
         log.warn("Payment failed for order {}", order.getOrderNumber());
     }
 
@@ -259,6 +267,7 @@ public class PaymentService {
         order.setPaymentStatus(Order.PaymentStatus.FAILED);
         order.setOrderStatus(Order.OrderStatus.CANCELLED);
         orderRepository.save(order);
+        emailService.sendOrderCancellationEmail(order, "Payment was cancelled");
         log.info("Payment cancelled for order {}", order.getOrderNumber());
     }
 
@@ -267,6 +276,7 @@ public class PaymentService {
         order.setOrderStatus(Order.OrderStatus.REFUNDED);
         order.setEscrowStatus(Order.EscrowStatus.REFUNDED_TO_BUYER);
         orderRepository.save(order);
+        emailService.sendRefundEmail(order);
         log.info("Refund completed (webhook confirmation) for order {}", order.getOrderNumber());
     }
 
@@ -277,12 +287,14 @@ public class PaymentService {
         order.setPayoutStatus(Order.PayoutStatus.COMPLETED);
         order.setPayoutDate(LocalDateTime.now());
         orderRepository.save(order);
+        emailService.sendPayoutStatusEmail(order);
         log.info("Payout completed (webhook confirmation) for order {}", order.getOrderNumber());
     }
 
     private void handlePayoutFailed(Order order) {
         order.setPayoutStatus(Order.PayoutStatus.FAILED);
         orderRepository.save(order);
+        emailService.sendPayoutStatusEmail(order);
         log.error("Payout failed (webhook notification) for order {}", order.getOrderNumber());
     }
 

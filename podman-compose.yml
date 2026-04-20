@@ -52,6 +52,13 @@ services:
       TRADESAFE_CLIENT_SECRET: ${TRADESAFE_CLIENT_SECRET}
       TRADESAFE_API_URL: ${TRADESAFE_API_URL:-https://api.tradesafe.co.za}
       TRADESAFE_AUTH_URL: ${TRADESAFE_AUTH_URL:-https://auth.tradesafe.co.za}
+
+      # Zoho Mail (SMTP)
+      MAIL_HOST: ${MAIL_HOST:-smtppro.zoho.com}
+      MAIL_PORT: ${MAIL_PORT:-587}
+      MAIL_USERNAME: ${MAIL_USERNAME:-support@eduthrift.co.za}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+      MAIL_ADMIN_EMAIL: ${MAIL_ADMIN_EMAIL:-support@eduthrift.co.za}
     volumes:
       - /home/almalinux/eduthrift-uploads:/app/uploads:z
     depends_on:

@@ -33,5 +33,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     long countByVerificationStatus(String verificationStatus);
 
+    @Query("SELECT COUNT(u) FROM User u WHERE u.userType IN :types AND u.verificationStatus = :status")
+    long countPendingSellerVerifications(@Param("types") List<User.UserType> types, @Param("status") String status);
+
     long countByStatus(String status);
 }

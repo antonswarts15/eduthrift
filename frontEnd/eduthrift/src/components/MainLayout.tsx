@@ -48,7 +48,8 @@ import {
   shieldOutline,
   logOutOutline,
   documentTextOutline,
-  chatbubbleOutline
+  chatbubbleOutline,
+  lockClosedOutline
 } from 'ionicons/icons';
 
 interface MainLayoutProps {
@@ -135,8 +136,8 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
               <IonLabel>Home</IonLabel>
             </IonItem>
             
-            <IonItem button onClick={() => history.push('/profile')}>
-              <IonIcon icon={personOutline} slot="start" />
+            <IonItem button onClick={() => { if (isLoggedIn()) { history.push('/profile'); } else { history.push('/login'); } }}>
+              <IonIcon icon={isLoggedIn() ? personOutline : lockClosedOutline} slot="start" />
               <IonLabel>My Profile</IonLabel>
             </IonItem>
             
@@ -335,13 +336,17 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
               </IonBadge>
             )}
           </IonTabButton>
-          <IonTabButton 
-            tab="profile" 
-            onClick={() => history.push('/profile')}
-            style={{ color: getCurrentTab() === 'profile' ? '#004aad' : '#92949c' }}
+          <IonTabButton
+            tab="profile"
+            onClick={() => { if (isLoggedIn()) { history.push('/profile'); } else { history.push('/login'); } }}
+            style={{ color: isLoggedIn() ? (getCurrentTab() === 'profile' ? '#004aad' : '#92949c') : '#c8c8c8' }}
           >
-            <IonIcon aria-hidden="true" icon={personOutline} style={{ color: getCurrentTab() === 'profile' ? '#004aad' : '#92949c' }} />
-            <IonLabel style={{ color: getCurrentTab() === 'profile' ? '#004aad' : '#92949c' }}>Profile</IonLabel>
+            <IonIcon
+              aria-hidden="true"
+              icon={isLoggedIn() ? personOutline : lockClosedOutline}
+              style={{ color: isLoggedIn() ? (getCurrentTab() === 'profile' ? '#004aad' : '#92949c') : '#c8c8c8' }}
+            />
+            <IonLabel style={{ color: isLoggedIn() ? (getCurrentTab() === 'profile' ? '#004aad' : '#92949c') : '#c8c8c8' }}>Profile</IonLabel>
           </IonTabButton>
         </IonTabBar>
         
