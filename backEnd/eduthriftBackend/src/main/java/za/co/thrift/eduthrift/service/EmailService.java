@@ -937,6 +937,81 @@ public class EmailService {
         }
     }
 
+    // ── Seller verification ───────────────────────────────────────────────────
+
+    public void sendSellerDocumentsSubmittedEmail(za.co.thrift.eduthrift.entity.User user) {
+        try {
+            String details = "Name: %s %s<br>Email: %s<br>Phone: %s<br>Town: %s, %s"
+                    .formatted(user.getFirstName(), user.getLastName(),
+                            user.getEmail(), user.getPhone(),
+                            user.getTown(), user.getProvince());
+            send(adminEmail,
+                    "Seller Verification Pending — Action Required — " + user.getEmail(),
+                    adminAlertHtml("New Seller Verification Request", user.getEmail(),
+                            "A seller has submitted all 3 verification documents (ID, proof of address, bank confirmation). Please review and approve or reject in the admin panel.",
+                            details));
+        } catch (Exception e) {
+            log.warn("Failed to send seller verification admin alert for {}: {}", user.getEmail(), e.getMessage());
+        }
+    }
+
+    // ── Dispute ───────────────────────────────────────────────────────────────
+
+    public void sendDisputeRaisedEmails(Order order) {
+        try {
+            String buyerHtml = """
+                    <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px">
+                      <div style="background:#e67e22;padding:20px;border-radius:8px 8px 0 0;text-align:center">
+                        <h1 style="color:white;margin:0;font-size:24px">Dispute Received</h1>
+                        <p style="color:rgba(255,255,255,0.85);margin:8px 0 0">We're on it — funds are frozen</p>
+                      </div>
+                      <div style="background:#f9f9f9;padding:24px;border:1px solid #eee">
+                        <p style="font-size:16px">Hi <strong>%s</strong>,</p>
+                        <p>We've received your dispute for order <strong>%s</strong>.</p>
+                        <div style="background:#fef9e7;border-radius:8px;padding:14px;margin:16px 0;border-left:4px solid #e67e22">
+                          <p style="margin:0;font-size:13px;color:#784212">
+                            <strong>Item:</strong> %s<br>
+                            <strong>Your reason:</strong> %s<br><br>
+                            The funds are now frozen — the seller cannot receive payment until our team resolves this.
+                            We'll review your dispute within 24 hours.
+                          </p>
+                        </div>
+                        <p style="font-size:13px;color:#666">
+                          Questions? Email <a href="mailto:support@eduthrift.co.za" style="color:#e67e22">support@eduthrift.co.za</a>
+                          and quote your order number.
+                        </p>
+                      </div>
+                      %s
+                    </div>
+                    """.formatted(
+                    order.getBuyer().getFirstName(),
+                    order.getOrderNumber(),
+                    order.getItem().getItemName(),
+                    order.getDisputeReason(),
+                    footer()
+            );
+            send(order.getBuyer().getEmail(), "Dispute Received — " + order.getOrderNumber(), buyerHtml);
+
+            String adminDetails = "Buyer: %s (%s)<br>Seller: %s (%s)<br>Item: %s<br>Amount held: %s<br>Reason: %s"
+                    .formatted(
+                            order.getBuyer().getFirstName() + " " + order.getBuyer().getLastName(),
+                            order.getBuyer().getEmail(),
+                            order.getSeller().getFirstName() + " " + order.getSeller().getLastName(),
+                            order.getSeller().getEmail(),
+                            order.getItem().getItemName(),
+                            ZAR.format(order.getEscrowAmount()),
+                            order.getDisputeReason()
+                    );
+            send(adminEmail,
+                    "Dispute Raised — Action Required — " + order.getOrderNumber(),
+                    adminAlertHtml("Dispute Raised", order.getOrderNumber(),
+                            "A buyer has raised a dispute. Funds are frozen. Review and resolve via the admin panel.",
+                            adminDetails));
+        } catch (Exception e) {
+            log.warn("Failed to send dispute emails for order {}: {}", order.getOrderNumber(), e.getMessage());
+        }
+    }
+
     // ── Internal helpers ──────────────────────────────────────────────────────
 
     private String adminAlertHtml(String title, String orderNumber, String body, String details) {

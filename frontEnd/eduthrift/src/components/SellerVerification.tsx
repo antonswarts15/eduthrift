@@ -24,8 +24,9 @@ const SellerVerification: React.FC<SellerVerificationProps> = ({ onVerificationC
     fetchUserProfile();
   }, [fetchUserProfile]);
 
-  // Check if both documents are uploaded
-  const isDocumentsUploaded = userProfile?.idDocumentPath && userProfile?.proofOfResidencePath;
+  const isDocumentsUploaded = userProfile?.idDocumentPath
+    && userProfile?.proofOfResidencePath
+    && userProfile?.bankConfirmationPath;
 
   const handleUploadSuccess = async () => {
     setToastMessage('Documents uploaded successfully. Refreshing profile...');
@@ -48,6 +49,7 @@ const SellerVerification: React.FC<SellerVerificationProps> = ({ onVerificationC
             <DocumentUploadComponent
               initialIdDocumentPath={userProfile?.idDocumentPath}
               initialProofOfResidencePath={userProfile?.proofOfResidencePath}
+              initialBankConfirmationPath={userProfile?.bankConfirmationPath}
               onUploadSuccess={handleUploadSuccess}
             />
           ) : (

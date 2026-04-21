@@ -11,6 +11,7 @@ import za.co.thrift.eduthrift.repository.LedgerEntryRepository;
 import za.co.thrift.eduthrift.repository.OrderRepository;
 import za.co.thrift.eduthrift.repository.PaymentTransactionRepository;
 import za.co.thrift.eduthrift.repository.UserRepository;
+import za.co.thrift.eduthrift.service.EscrowService;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -31,17 +32,20 @@ public class AdminController {
     private final LedgerEntryRepository ledgerEntryRepository;
     private final PaymentTransactionRepository paymentTransactionRepository;
     private final PasswordEncoder passwordEncoder;
+    private final EscrowService escrowService;
 
     public AdminController(UserRepository userRepository,
                            OrderRepository orderRepository,
                            LedgerEntryRepository ledgerEntryRepository,
                            PaymentTransactionRepository paymentTransactionRepository,
-                           PasswordEncoder passwordEncoder) {
+                           PasswordEncoder passwordEncoder,
+                           EscrowService escrowService) {
         this.userRepository = userRepository;
         this.orderRepository = orderRepository;
         this.ledgerEntryRepository = ledgerEntryRepository;
         this.paymentTransactionRepository = paymentTransactionRepository;
         this.passwordEncoder = passwordEncoder;
+        this.escrowService = escrowService;
     }
 
     @GetMapping("/dashboard/stats")
@@ -586,6 +590,49 @@ public class AdminController {
         map.put("created_at", user.getCreatedAt());
         map.put("updated_at", user.getUpdatedAt());
         return map;
+    }
+
+    // ── Dispute management ────────────────────────────────────────────────────
+
+    @GetMapping("/orders/disputes")
+    public ResponseEntity<?> getOpenDisputes() {
+        List<Order> disputes = orderRepository.findByDisputeStatus(Order.DisputeStatus.OPEN);
+        List<Map<String, Object>> result = disputes.stream().map(o -> {
+            Map<String, Object> m = new LinkedHashMap<>();
+            m.put("orderNumber", o.getOrderNumber());
+            m.put("buyerName", o.getBuyer().getFirstName() + " " + o.getBuyer().getLastName());
+            m.put("buyerEmail", o.getBuyer().getEmail());
+            m.put("sellerName", o.getSeller().getFirstName() + " " + o.getSeller().getLastName());
+            m.put("sellerEmail", o.getSeller().getEmail());
+            m.put("itemName", o.getItem().getItemName());
+            m.put("totalAmount", o.getTotalAmount());
+            m.put("escrowAmount", o.getEscrowAmount());
+            m.put("disputeReason", o.getDisputeReason());
+            m.put("disputeRaisedAt", o.getDisputeRaisedAt());
+            m.put("escrowStatus", o.getEscrowStatus().name());
+            m.put("trackingNumber", o.getTrackingNumber());
+            return m;
+        }).toList();
+        return ResponseEntity.ok(result);
+    }
+
+    @PostMapping("/orders/{orderNumber}/resolve-dispute")
+    public ResponseEntity<?> resolveDispute(@PathVariable String orderNumber,
+                                            @RequestBody Map<String, String> body) {
+        String resolution = body.get("resolution");
+        if (!"refund".equals(resolution) && !"release".equals(resolution)) {
+            return ResponseEntity.badRequest().body(Map.of("error", "resolution must be 'refund' or 'release'"));
+        }
+        try {
+            if ("refund".equals(resolution)) {
+                escrowService.resolveDisputeAsRefund(orderNumber);
+            } else {
+                escrowService.resolveDisputeAsRelease(orderNumber);
+            }
+            return ResponseEntity.ok(Map.of("message", "Dispute resolved as " + resolution + " for order " + orderNumber));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(400).body(Map.of("error", e.getMessage()));
+        }
     }
 
     private String generateTempPassword() {

@@ -118,6 +118,55 @@ public class EscrowService {
     }
 
     /**
+     * Buyer raises a dispute (non-receipt, wrong item, damaged).
+     *
+     * Freezes the auto-release timer by nulling payoutScheduledAt.
+     * Admin must resolve via resolveDisputeAsRefund() or resolveDisputeAsRelease().
+     */
+    @Transactional
+    public void raiseDispute(String orderNumber, String reason) {
+        Order order = orderRepository.findByOrderNumber(orderNumber)
+                .orElseThrow(() -> new RuntimeException("Order not found: " + orderNumber));
+
+        if (order.getEscrowStatus() != Order.EscrowStatus.HELD) {
+            throw new RuntimeException("Cannot raise dispute — funds are not currently held for order: " + orderNumber);
+        }
+        if (order.getDisputeStatus() == Order.DisputeStatus.OPEN) {
+            throw new RuntimeException("Dispute already open for order: " + orderNumber);
+        }
+
+        order.setDisputeStatus(Order.DisputeStatus.OPEN);
+        order.setDisputeReason(reason);
+        order.setDisputeRaisedAt(LocalDateTime.now());
+        order.setPayoutScheduledAt(null);
+        orderRepository.save(order);
+        emailService.sendDisputeRaisedEmails(order);
+        log.info("Dispute raised for order {} — auto-release frozen", orderNumber);
+    }
+
+    /** Admin resolves dispute in favour of buyer — triggers refund. */
+    @Transactional
+    public void resolveDisputeAsRefund(String orderNumber) {
+        Order order = orderRepository.findByOrderNumber(orderNumber)
+                .orElseThrow(() -> new RuntimeException("Order not found: " + orderNumber));
+        order.setDisputeStatus(Order.DisputeStatus.RESOLVED_REFUND);
+        orderRepository.save(order);
+        refundToBuyer(orderNumber);
+        log.info("Dispute for order {} resolved as REFUND", orderNumber);
+    }
+
+    /** Admin resolves dispute in favour of seller — releases escrow. */
+    @Transactional
+    public void resolveDisputeAsRelease(String orderNumber) {
+        Order order = orderRepository.findByOrderNumber(orderNumber)
+                .orElseThrow(() -> new RuntimeException("Order not found: " + orderNumber));
+        order.setDisputeStatus(Order.DisputeStatus.RESOLVED_RELEASE);
+        orderRepository.save(order);
+        releaseToSeller(order);
+        log.info("Dispute for order {} resolved as RELEASE to seller", orderNumber);
+    }
+
+    /**
      * Mark order for refund to buyer.
      *
      * Updates internal state only. The actual payment reversal is either triggered
@@ -148,9 +197,10 @@ public class EscrowService {
      */
     @Scheduled(fixedRate = 3_600_000)
     public void processExpiredHolds() {
-        List<Order> expired = orderRepository.findByOrderStatusAndPayoutScheduledAtBefore(
+        List<Order> expired = orderRepository.findEligibleForAutoRelease(
                 Order.OrderStatus.PAYMENT_CONFIRMED,
-                LocalDateTime.now()
+                LocalDateTime.now(),
+                Order.DisputeStatus.NONE
         );
 
         if (expired.isEmpty()) return;

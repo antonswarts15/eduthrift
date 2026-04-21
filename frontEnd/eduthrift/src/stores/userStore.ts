@@ -16,12 +16,13 @@ export interface UserProfile {
   schoolName?: string;
   userType?: 'buyer' | 'seller' | 'both' | 'admin';
   sellerVerification?: {
-    status: 'pending' | 'verified' | 'rejected';
+    status: 'unverified' | 'pending' | 'verified' | 'rejected';
     submittedAt?: string;
     verifiedAt?: string;
   };
   idDocumentPath?: string;
   proofOfResidencePath?: string;
+  bankConfirmationPath?: string;
   bankName?: string;
   bankAccountNumber?: string;
   bankAccountType?: string;
@@ -49,21 +50,8 @@ export const useUserStore = create<UserStore>((set, get) => ({
     }
   },
 
-  submitSellerVerification: (idDocument: string, proofOfResidence: string) => {
-    const { userProfile } = get();
-    if (userProfile) {
-      set({
-        userProfile: {
-          ...userProfile,
-          sellerVerification: {
-            status: 'pending',
-            submittedAt: new Date().toISOString()
-          },
-          idDocumentPath: idDocument, // Update direct path
-          proofOfResidencePath: proofOfResidence // Update direct path
-        }
-      });
-    }
+  submitSellerVerification: (_idDocument: string, _proofOfResidence: string) => {
+    // No-op: upload state is managed server-side; call fetchUserProfile() after uploads to refresh
   },
 
   isSellerVerified: () => {
@@ -85,10 +73,11 @@ export const useUserStore = create<UserStore>((set, get) => ({
           status: profileData.sellerVerified ? 'verified'
                  : profileData.verificationStatus === 'rejected' ? 'rejected'
                  : profileData.verificationStatus === 'pending' ? 'pending'
-                 : undefined,
+                 : 'unverified',
         },
-        idDocumentPath: profileData.idDocumentUrl || undefined,
-        proofOfResidencePath: profileData.proofOfAddressUrl || undefined,
+        idDocumentPath: profileData.idDocumentPath || undefined,
+        proofOfResidencePath: profileData.proofOfResidencePath || undefined,
+        bankConfirmationPath: profileData.bankConfirmationPath || undefined,
         streetAddress: profileData.streetAddress,
         bankName: profileData.bankName,
         bankAccountNumber: profileData.bankAccountNumber,

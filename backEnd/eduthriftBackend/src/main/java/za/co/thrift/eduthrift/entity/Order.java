@@ -123,6 +123,16 @@ public class Order {
     @Column(name = "delivery_confirmed_date")
     private LocalDateTime deliveryConfirmedDate;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "dispute_status")
+    private DisputeStatus disputeStatus = DisputeStatus.NONE;
+
+    @Column(name = "dispute_reason", length = 1000)
+    private String disputeReason;
+
+    @Column(name = "dispute_raised_at")
+    private LocalDateTime disputeRaisedAt;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
@@ -204,5 +214,12 @@ public class Order {
         COMPLETED,
         FAILED,
         MANUAL_REQUIRED   // provider does not support auto-payouts (e.g. Ozow); admin must manually EFT seller
+    }
+
+    public enum DisputeStatus {
+        NONE,
+        OPEN,
+        RESOLVED_REFUND,
+        RESOLVED_RELEASE
     }
 }

@@ -48,13 +48,16 @@ public class User {
     private Boolean sellerVerified = false;
 
     @Column(name = "verification_status")
-    private String verificationStatus = "pending";
+    private String verificationStatus = "unverified";
 
     @Column(name = "id_document_url")
     private String idDocumentUrl;
 
     @Column(name = "proof_of_address_url")
     private String proofOfAddressUrl;
+
+    @Column(name = "bank_confirmation_url")
+    private String bankConfirmationUrl;
 
     @Column(name = "id_number")
     private String idNumber;

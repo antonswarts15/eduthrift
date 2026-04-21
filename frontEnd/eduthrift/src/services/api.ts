@@ -64,6 +64,16 @@ export const userApi = {
     });
   },
 
+  uploadBankConfirmation: (file: File) => {
+    const formData = new FormData();
+    formData.append('bankConfirmation', file);
+    return api.post('/auth/upload-bank-confirmation', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+  },
+
   saveFcmToken: (fcmToken: string) => api.put('/auth/fcm-token', { fcmToken }),
   deleteAccount: (password: string) => api.delete('/auth/account', { data: { password } }),
 };

@@ -14,6 +14,7 @@ import za.co.thrift.eduthrift.entity.User;
 import za.co.thrift.eduthrift.repository.ItemRepository;
 import za.co.thrift.eduthrift.repository.UserRepository;
 import za.co.thrift.eduthrift.security.JwtUtil;
+import za.co.thrift.eduthrift.service.EmailService;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -34,6 +35,7 @@ public class AuthController {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
+    private final EmailService emailService;
 
     @Value("${file.upload.dir:/app/uploads}")
     private String uploadDir;
@@ -42,12 +44,14 @@ public class AuthController {
                           ItemRepository itemRepository,
                           PasswordEncoder passwordEncoder,
                           AuthenticationManager authenticationManager,
-                          JwtUtil jwtUtil) {
+                          JwtUtil jwtUtil,
+                          EmailService emailService) {
         this.userRepository = userRepository;
         this.itemRepository = itemRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
+        this.emailService = emailService;
     }
 
     @PostMapping("/login")
@@ -252,6 +256,7 @@ public class AuthController {
         user.setIdNumber(null);
         user.setIdDocumentUrl(null);
         user.setProofOfAddressUrl(null);
+        user.setBankConfirmationUrl(null);
         user.setBankName(null);
         user.setBankAccountNumber(null);
         user.setBankAccountType(null);
@@ -282,7 +287,7 @@ public class AuthController {
             String savedPath = saveFile(file, "id-documents");
             User user = userOpt.get();
             user.setIdDocumentUrl(savedPath);
-            user.setVerificationStatus("pending");
+            checkAndSetPendingStatus(user);
             userRepository.save(user);
 
             return ResponseEntity.ok(Map.of(
@@ -312,7 +317,7 @@ public class AuthController {
             String savedPath = saveFile(file, "proof-of-residence");
             User user = userOpt.get();
             user.setProofOfAddressUrl(savedPath);
-            user.setVerificationStatus("pending");
+            checkAndSetPendingStatus(user);
             userRepository.save(user);
 
             return ResponseEntity.ok(Map.of(
@@ -321,6 +326,48 @@ public class AuthController {
             ));
         } catch (IOException e) {
             return ResponseEntity.status(500).body(new ErrorResponse("Failed to upload file"));
+        }
+    }
+
+    @PostMapping("/upload-bank-confirmation")
+    public ResponseEntity<?> uploadBankConfirmation(
+            @RequestParam("bankConfirmation") MultipartFile file,
+            Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(401).body(new ErrorResponse("Not authenticated"));
+        }
+
+        String email = authentication.getName();
+        Optional<User> userOpt = userRepository.findByEmail(email);
+        if (!userOpt.isPresent()) {
+            return ResponseEntity.status(404).body(new ErrorResponse("User not found"));
+        }
+
+        try {
+            String savedPath = saveFile(file, "bank-confirmations");
+            User user = userOpt.get();
+            user.setBankConfirmationUrl(savedPath);
+            checkAndSetPendingStatus(user);
+            userRepository.save(user);
+
+            return ResponseEntity.ok(Map.of(
+                    "message", "Bank confirmation letter uploaded successfully",
+                    "path", savedPath
+            ));
+        } catch (IOException e) {
+            return ResponseEntity.status(500).body(new ErrorResponse("Failed to upload file"));
+        }
+    }
+
+    /** Sets status to "pending" and emails admin only once all 3 docs are present. */
+    private void checkAndSetPendingStatus(User user) {
+        boolean allDocsPresent = user.getIdDocumentUrl() != null
+                && user.getProofOfAddressUrl() != null
+                && user.getBankConfirmationUrl() != null;
+        if (allDocsPresent && !"pending".equals(user.getVerificationStatus())
+                && !"verified".equals(user.getVerificationStatus())) {
+            user.setVerificationStatus("pending");
+            emailService.sendSellerDocumentsSubmittedEmail(user);
         }
     }
 
@@ -423,6 +470,7 @@ public class AuthController {
         private String postalCode;
         private String idDocumentPath;
         private String proofOfResidencePath;
+        private String bankConfirmationPath;
         private String verificationStatus;
         private Boolean sellerVerified;
         private String bankName;
@@ -445,6 +493,7 @@ public class AuthController {
             this.postalCode = user.getPostalCode();
             this.idDocumentPath = user.getIdDocumentUrl();
             this.proofOfResidencePath = user.getProofOfAddressUrl();
+            this.bankConfirmationPath = user.getBankConfirmationUrl();
             this.verificationStatus = user.getVerificationStatus();
             this.sellerVerified = user.getSellerVerified();
             this.bankName = user.getBankName();
@@ -467,6 +516,7 @@ public class AuthController {
         public String getPostalCode() { return postalCode; }
         public String getIdDocumentPath() { return idDocumentPath; }
         public String getProofOfResidencePath() { return proofOfResidencePath; }
+        public String getBankConfirmationPath() { return bankConfirmationPath; }
         public String getVerificationStatus() { return verificationStatus; }
         public Boolean getSellerVerified() { return sellerVerified; }
         public String getBankName() { return bankName; }

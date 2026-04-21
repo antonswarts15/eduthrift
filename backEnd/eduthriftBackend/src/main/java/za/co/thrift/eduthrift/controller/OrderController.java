@@ -231,6 +231,33 @@ public class OrderController {
         }
     }
 
+    @PostMapping("/{orderNumber}/raise-dispute")
+    public ResponseEntity<?> raiseDispute(@PathVariable String orderNumber,
+                                          @RequestBody Map<String, String> body,
+                                          Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(401).body(Map.of("error", "Not authenticated"));
+        }
+
+        String reason = body.get("reason");
+        if (reason == null || reason.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "reason is required"));
+        }
+
+        String email = authentication.getName();
+        return orderRepository.findByOrderNumber(orderNumber)
+            .filter(o -> o.getBuyer().getEmail().equals(email))
+            .map(o -> {
+                try {
+                    escrowService.raiseDispute(orderNumber, reason);
+                    return ResponseEntity.ok(Map.of("message", "Dispute raised. Our team will review within 24 hours and the funds remain frozen."));
+                } catch (RuntimeException e) {
+                    return ResponseEntity.status(400).<Object>body(Map.of("error", e.getMessage()));
+                }
+            })
+            .orElse(ResponseEntity.status(404).body(null));
+    }
+
     private Map<String, Object> toResponse(Order order) {
         Map<String, Object> map = new HashMap<>();
         map.put("orderNumber", order.getOrderNumber());
@@ -247,6 +274,8 @@ public class OrderController {
         map.put("sellerPayout", order.getSellerPayout());
         map.put("platformFee", order.getPlatformFee());
         map.put("deliveryConfirmed", order.getDeliveryConfirmed());
+        map.put("disputeStatus", order.getDisputeStatus().name());
+        map.put("disputeReason", order.getDisputeReason());
         map.put("pickupPoint", order.getPickupPoint());
         map.put("trackingNumber", order.getTrackingNumber());
         map.put("sellerAlias", "Seller #" + Long.toHexString(order.getSeller().getId()).toUpperCase());

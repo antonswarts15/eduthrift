@@ -7,13 +7,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import za.co.thrift.eduthrift.entity.Order;
 import za.co.thrift.eduthrift.repository.OrderRepository;
-import za.co.thrift.eduthrift.service.TradeSafeService;
+import za.co.thrift.eduthrift.service.EscrowService;
 
 import jakarta.servlet.http.HttpServletRequest;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.util.HexFormat;
 import java.util.Map;
 import java.util.Optional;
@@ -37,12 +38,12 @@ public class PudoWebhookController {
     private String webhookSecret;
 
     private final OrderRepository orderRepository;
-    private final TradeSafeService tradeSafeService;
+    private final EscrowService escrowService;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public PudoWebhookController(OrderRepository orderRepository, TradeSafeService tradeSafeService) {
+    public PudoWebhookController(OrderRepository orderRepository, EscrowService escrowService) {
         this.orderRepository = orderRepository;
-        this.tradeSafeService = tradeSafeService;
+        this.escrowService = escrowService;
     }
 
     @PostMapping("/pudo")
@@ -89,34 +90,33 @@ public class PudoWebhookController {
 
         return switch (status.toUpperCase()) {
             case "COLLECTED", "DELIVERED", "PARCEL_COLLECTED", "COLLECTION_COMPLETED" -> {
-                // Buyer collected from locker — mark delivered and release escrow funds
-                order.setOrderStatus(Order.OrderStatus.DELIVERED);
-                order.setDeliveryConfirmed(true);
-                orderRepository.save(order);
-
-                if (order.getTradeSafeAllocationId() != null) {
-                    try {
-                        tradeSafeService.acceptDelivery(order.getTradeSafeAllocationId());
-                    } catch (Exception e) {
-                        // Order is marked delivered locally but TradeSafe call failed.
-                        // Admin should manually accept delivery in the TradeSafe portal
-                        // for transaction: order.getTradeSafeTransactionId()
-                        yield ResponseEntity.ok(Map.of(
-                            "received", true,
-                            "action", "delivery_marked_tradesafe_call_failed",
-                            "orderNumber", order.getOrderNumber()
-                        ));
-                    }
+                // Buyer collected from locker — run the full escrow release state machine
+                try {
+                    escrowService.confirmDelivery(order.getOrderNumber());
+                } catch (Exception e) {
+                    // Delivery may already be confirmed (idempotent re-delivery from PUDO)
+                    yield ResponseEntity.ok(Map.of(
+                        "received", true,
+                        "action", "delivery_already_processed",
+                        "orderNumber", order.getOrderNumber()
+                    ));
                 }
-
                 yield ResponseEntity.ok(Map.of(
                     "received", true,
                     "action", "funds_released",
                     "orderNumber", order.getOrderNumber()
                 ));
             }
-            case "IN_TRANSIT", "AT_LOCKER", "PARCEL_RECEIVED", "READY_FOR_COLLECTION" -> {
-                // Item en route or waiting at locker — update status but hold funds
+            case "AT_LOCKER", "READY_FOR_COLLECTION" -> {
+                // Item arrived at locker — reset the 72h buyer confirmation window from now,
+                // so the timer reflects when the buyer can actually collect, not when they paid.
+                order.setOrderStatus(Order.OrderStatus.DELIVERED);
+                order.setPayoutScheduledAt(LocalDateTime.now().plusHours(72));
+                orderRepository.save(order);
+                yield ResponseEntity.ok(Map.of("received", true, "action", "timer_reset_awaiting_collection"));
+            }
+            case "IN_TRANSIT", "PARCEL_RECEIVED" -> {
+                // Item en route — update status, leave timer unchanged
                 order.setOrderStatus(Order.OrderStatus.SHIPPED);
                 orderRepository.save(order);
                 yield ResponseEntity.ok(Map.of("received", true, "action", "status_updated"));

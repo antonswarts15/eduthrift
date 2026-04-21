@@ -31,6 +31,16 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     List<Order> findByPayoutStatusAndPayoutAttemptsLessThan(
             Order.PayoutStatus payoutStatus, int maxAttempts);
 
+    List<Order> findByDisputeStatus(Order.DisputeStatus disputeStatus);
+
+    /**
+     * Orders eligible for auto-release: payment confirmed, timer expired, no open dispute.
+     */
+    @Query("SELECT o FROM Order o WHERE o.orderStatus = :status AND o.payoutScheduledAt IS NOT NULL AND o.payoutScheduledAt < :cutoff AND o.disputeStatus = :noDispute")
+    List<Order> findEligibleForAutoRelease(@Param("status") Order.OrderStatus status,
+                                           @Param("cutoff") LocalDateTime cutoff,
+                                           @Param("noDispute") Order.DisputeStatus noDispute);
+
     long countByOrderStatus(Order.OrderStatus status);
 
     long countByPayoutStatus(Order.PayoutStatus status);

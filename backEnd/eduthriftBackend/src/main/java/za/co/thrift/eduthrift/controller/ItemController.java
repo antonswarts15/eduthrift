@@ -44,6 +44,13 @@ public class ItemController {
 
         try {
             User user = userOpt.get();
+
+            if (!Boolean.TRUE.equals(user.getSellerVerified())) {
+                return ResponseEntity.status(403).body(Map.of(
+                    "error", "Your seller account has not been verified yet. Please submit your documents and wait for admin approval."
+                ));
+            }
+
             Item item = new Item();
             item.setUser(user);
             item.setItemName(request.itemName != null ? request.itemName : request.name);
