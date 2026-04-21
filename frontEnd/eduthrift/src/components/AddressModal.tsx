@@ -60,7 +60,7 @@ const AddressModal: React.FC<AddressModalProps> = ({ isOpen, onDismiss, onSave, 
       <IonContent>
         <IonList lines="full" style={{ paddingTop: '8px' }}>
           <IonItem>
-            <IonLabel labelPlacement="stacked">
+            <IonLabel position="stacked">
               Street Address <span style={{ color: 'var(--ion-color-danger)' }}>*</span>
             </IonLabel>
             <IonInput
@@ -70,7 +70,7 @@ const AddressModal: React.FC<AddressModalProps> = ({ isOpen, onDismiss, onSave, 
             />
           </IonItem>
           <IonItem>
-            <IonLabel labelPlacement="stacked">
+            <IonLabel position="stacked">
               Suburb <span style={{ color: 'var(--ion-color-danger)' }}>*</span>
             </IonLabel>
             <IonInput
@@ -80,7 +80,7 @@ const AddressModal: React.FC<AddressModalProps> = ({ isOpen, onDismiss, onSave, 
             />
           </IonItem>
           <IonItem>
-            <IonLabel labelPlacement="stacked">
+            <IonLabel position="stacked">
               Town / City <span style={{ color: 'var(--ion-color-danger)' }}>*</span>
             </IonLabel>
             <IonInput
@@ -90,7 +90,7 @@ const AddressModal: React.FC<AddressModalProps> = ({ isOpen, onDismiss, onSave, 
             />
           </IonItem>
           <IonItem>
-            <IonLabel labelPlacement="stacked">
+            <IonLabel position="stacked">
               Province <span style={{ color: 'var(--ion-color-danger)' }}>*</span>
             </IonLabel>
             <IonInput
@@ -100,7 +100,7 @@ const AddressModal: React.FC<AddressModalProps> = ({ isOpen, onDismiss, onSave, 
             />
           </IonItem>
           <IonItem lines="none">
-            <IonLabel labelPlacement="stacked">Postal Code</IonLabel>
+            <IonLabel position="stacked">Postal Code</IonLabel>
             <IonInput
               value={postalCode}
               onIonInput={e => setPostalCode((e.target as HTMLIonInputElement).value as string || '')}
