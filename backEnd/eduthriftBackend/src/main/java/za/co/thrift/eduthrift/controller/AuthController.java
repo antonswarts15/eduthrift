@@ -132,6 +132,7 @@ public class AuthController {
             }
 
             userRepository.save(user);
+            emailService.sendWelcomeEmail(user);
 
             // Generate token so user is logged in immediately after registration
             String typeName = user.getUserType().name();

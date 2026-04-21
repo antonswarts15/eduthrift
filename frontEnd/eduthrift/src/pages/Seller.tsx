@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
-import { IonContent, IonCard, IonCardContent } from '@ionic/react';
+import { IonContent, IonCard, IonCardContent, IonButton, IonIcon } from '@ionic/react';
+import { timeOutline, storefrontOutline, alertCircleOutline } from 'ionicons/icons';
 import Categories from '../components/Categories';
 import SellerVerification from '../components/SellerVerification';
 import { useAuthStore } from '../stores/authStore';
@@ -28,30 +29,76 @@ const Seller: React.FC = () => {
   if (!isVerified) {
     return (
       <IonContent>
-        <div style={{ padding: '16px', paddingTop: '60px' }}>
+        <div style={{ padding: '20px 16px', paddingTop: '48px', maxWidth: '480px', margin: '0 auto' }}>
           {verificationStatus === 'pending' ? (
-            <IonCard>
-              <IonCardContent style={{ textAlign: 'center', padding: '32px 16px' }}>
-                <h2 style={{ marginBottom: '12px' }}>Documents Under Review</h2>
-                <p style={{ color: '#666', fontSize: '15px' }}>
+            <IonCard style={{ borderRadius: '16px', boxShadow: '0 2px 16px rgba(0,0,0,0.08)', margin: 0 }}>
+              <IonCardContent style={{ padding: '40px 28px 32px', textAlign: 'center' }}>
+                <div style={{
+                  width: '72px', height: '72px', borderRadius: '50%',
+                  backgroundColor: '#FFF8E7', display: 'flex', alignItems: 'center',
+                  justifyContent: 'center', margin: '0 auto 24px'
+                }}>
+                  <IonIcon icon={timeOutline} style={{ fontSize: '36px', color: '#F59E0B' }} />
+                </div>
+
+                <h2 style={{ margin: '0 0 12px', fontSize: '21px', fontWeight: '700', color: '#111', letterSpacing: '-0.3px' }}>
+                  Documents Under Review
+                </h2>
+                <p style={{ color: '#555', fontSize: '15px', lineHeight: '1.65', margin: '0 0 6px' }}>
                   Thank you for submitting your documents. Our team will review your application within 24–48 hours.
-                  You'll be able to list items once approved.
                 </p>
-                <p style={{ color: '#999', fontSize: '13px', marginTop: '16px' }}>
-                  Questions? Email <a href="mailto:support@eduthrift.co.za">support@eduthrift.co.za</a>
+                <p style={{ color: '#888', fontSize: '13px', margin: '0 0 32px' }}>
+                  You'll be able to list items as soon as you're approved.
+                </p>
+
+                <IonButton
+                  expand="block"
+                  fill="outline"
+                  onClick={() => history.push('/buyer')}
+                  style={{ '--border-radius': '10px', fontWeight: '600', marginBottom: '16px' } as any}
+                >
+                  <IonIcon icon={storefrontOutline} slot="start" />
+                  Browse Listings
+                </IonButton>
+
+                <p style={{ color: '#bbb', fontSize: '12px', margin: 0 }}>
+                  Questions?{' '}
+                  <a href="mailto:support@eduthrift.co.za" style={{ color: 'var(--ion-color-primary)' }}>
+                    support@eduthrift.co.za
+                  </a>
                 </p>
               </IonCardContent>
             </IonCard>
           ) : verificationStatus === 'rejected' ? (
-            <IonCard>
-              <IonCardContent style={{ padding: '16px' }}>
-                <h2 style={{ textAlign: 'center', color: '#e74c3c', marginBottom: '12px' }}>Verification Rejected</h2>
-                <p style={{ color: '#666', fontSize: '14px', textAlign: 'center', marginBottom: '20px' }}>
-                  Your previous documents were not approved. Please resubmit with clearer copies.
-                </p>
-                <SellerVerification onVerificationComplete={fetchUserProfile} />
-              </IonCardContent>
-            </IonCard>
+            <>
+              <IonCard style={{ borderRadius: '16px', boxShadow: '0 2px 16px rgba(0,0,0,0.08)', margin: '0 0 16px' }}>
+                <IonCardContent style={{ padding: '28px 24px', textAlign: 'center' }}>
+                  <div style={{
+                    width: '64px', height: '64px', borderRadius: '50%',
+                    backgroundColor: '#FEF2F2', display: 'flex', alignItems: 'center',
+                    justifyContent: 'center', margin: '0 auto 20px'
+                  }}>
+                    <IonIcon icon={alertCircleOutline} style={{ fontSize: '32px', color: '#EF4444' }} />
+                  </div>
+                  <h2 style={{ margin: '0 0 10px', fontSize: '20px', fontWeight: '700', color: '#111' }}>
+                    Verification Rejected
+                  </h2>
+                  <p style={{ color: '#666', fontSize: '14px', lineHeight: '1.6', margin: '0 0 20px' }}>
+                    Your previous documents were not approved. Please resubmit with clearer copies.
+                  </p>
+                  <IonButton
+                    expand="block"
+                    fill="outline"
+                    onClick={() => history.push('/buyer')}
+                    style={{ '--border-radius': '10px' } as any}
+                  >
+                    <IonIcon icon={storefrontOutline} slot="start" />
+                    Browse Listings
+                  </IonButton>
+                </IonCardContent>
+              </IonCard>
+              <SellerVerification onVerificationComplete={fetchUserProfile} />
+            </>
           ) : (
             <SellerVerification onVerificationComplete={fetchUserProfile} />
           )}

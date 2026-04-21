@@ -35,6 +35,156 @@ public class EmailService {
         this.mailSender = mailSender;
     }
 
+    // ── Welcome email ─────────────────────────────────────────────────────────
+
+    public void sendWelcomeEmail(za.co.thrift.eduthrift.entity.User user) {
+        try {
+            String logoUrl = appBaseUrl + "/eduLogo.png";
+            String html = """
+                    <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#ffffff">
+
+                      <!-- Header with logo -->
+                      <div style="background:#004aad;padding:32px 24px;border-radius:12px 12px 0 0;text-align:center">
+                        <img src="%s" alt="Eduthrift" style="height:52px;width:auto;display:inline-block" />
+                      </div>
+
+                      <!-- Body -->
+                      <div style="background:#f9f9f9;padding:36px 32px;border:1px solid #eee;border-top:none">
+                        <h1 style="margin:0 0 8px;font-size:24px;color:#111;font-weight:700">
+                          Welcome to Eduthrift, %s! 🎉
+                        </h1>
+                        <p style="margin:0 0 20px;font-size:15px;color:#555;line-height:1.65">
+                          You've joined South Africa's school uniform and equipment marketplace — where parents
+                          save money and great items find new homes.
+                        </p>
+
+                        <!-- What you can do -->
+                        <div style="background:white;border:1px solid #e0e0e0;border-radius:10px;padding:20px 24px;margin:0 0 24px">
+                          <p style="margin:0 0 14px;font-size:13px;font-weight:700;color:#888;letter-spacing:0.5px;text-transform:uppercase">
+                            What you can do on Eduthrift
+                          </p>
+                          <table style="width:100%%;border-collapse:collapse">
+                            <tr>
+                              <td style="padding:8px 0;vertical-align:top;width:28px;font-size:18px">🛍️</td>
+                              <td style="padding:8px 0;font-size:14px;color:#333">
+                                <strong>Buy</strong> — Browse hundreds of school uniforms, sports gear &amp; stationery at a fraction of the original price.
+                              </td>
+                            </tr>
+                            <tr>
+                              <td style="padding:8px 0;vertical-align:top;font-size:18px">📦</td>
+                              <td style="padding:8px 0;font-size:14px;color:#333">
+                                <strong>Sell</strong> — List items your kids have outgrown and earn money while clearing space.
+                              </td>
+                            </tr>
+                            <tr>
+                              <td style="padding:8px 0;vertical-align:top;font-size:18px">🔒</td>
+                              <td style="padding:8px 0;font-size:14px;color:#333">
+                                <strong>Safe transactions</strong> — Buyer protection and escrow on every order. Pay only when you're happy.
+                              </td>
+                            </tr>
+                          </table>
+                        </div>
+
+                        <!-- CTA buttons -->
+                        <div style="text-align:center;margin:28px 0 8px">
+                          <a href="%s/buyer"
+                             style="display:inline-block;background:#004aad;color:white;padding:13px 28px;border-radius:8px;text-decoration:none;font-weight:700;font-size:15px;margin:0 8px 12px">
+                            Browse Listings
+                          </a>
+                          <a href="%s/seller"
+                             style="display:inline-block;background:white;color:#004aad;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:700;font-size:15px;border:2px solid #004aad;margin:0 8px 12px">
+                            Start Selling
+                          </a>
+                        </div>
+
+                        <p style="margin:24px 0 0;font-size:13px;color:#888;text-align:center;line-height:1.6">
+                          Questions? We're here to help —
+                          <a href="mailto:support@eduthrift.co.za" style="color:#004aad;text-decoration:none">support@eduthrift.co.za</a>
+                        </p>
+                      </div>
+
+                      %s
+                    </div>
+                    """.formatted(
+                    logoUrl,
+                    user.getFirstName(),
+                    appBaseUrl,
+                    appBaseUrl,
+                    footer()
+            );
+
+            send(user.getEmail(), "Welcome to Eduthrift, " + user.getFirstName() + "!", html);
+        } catch (Exception e) {
+            log.warn("Failed to send welcome email to {}: {}", user.getEmail(), e.getMessage());
+        }
+    }
+
+    // ── Password reset (admin-initiated) ─────────────────────────────────────
+
+    public void sendPasswordResetEmail(za.co.thrift.eduthrift.entity.User user, String tempPassword) {
+        try {
+            String logoUrl = appBaseUrl + "/eduLogo.png";
+            String html = """
+                    <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#ffffff">
+
+                      <div style="background:#004aad;padding:28px 24px;border-radius:12px 12px 0 0;text-align:center">
+                        <img src="%s" alt="Eduthrift" style="height:48px;width:auto;display:inline-block" />
+                      </div>
+
+                      <div style="background:#f9f9f9;padding:36px 32px;border:1px solid #eee;border-top:none">
+                        <h1 style="margin:0 0 8px;font-size:22px;color:#111;font-weight:700">
+                          Your password has been reset
+                        </h1>
+                        <p style="margin:0 0 24px;font-size:15px;color:#555;line-height:1.6">
+                          Hi <strong>%s</strong>, an Eduthrift administrator has reset your password.
+                          Use the temporary password below to sign in, then change it immediately in your profile settings.
+                        </p>
+
+                        <div style="background:white;border:2px solid #004aad;border-radius:10px;padding:20px 24px;margin:0 0 24px;text-align:center">
+                          <p style="margin:0 0 6px;font-size:12px;font-weight:700;color:#888;letter-spacing:0.8px;text-transform:uppercase">
+                            Temporary Password
+                          </p>
+                          <p style="margin:0;font-size:26px;font-weight:700;color:#004aad;letter-spacing:3px;font-family:monospace">
+                            %s
+                          </p>
+                        </div>
+
+                        <div style="background:#FFF8E7;border-radius:8px;padding:14px 16px;margin:0 0 28px;border-left:4px solid #F59E0B">
+                          <p style="margin:0;font-size:13px;color:#92400E;line-height:1.6">
+                            <strong>⚠️ Important:</strong> This is a temporary password. Please sign in and change it immediately under
+                            <strong>Profile → Update Personal Details</strong>. Do not share this password with anyone.
+                          </p>
+                        </div>
+
+                        <div style="text-align:center;margin:0 0 8px">
+                          <a href="%s/login"
+                             style="display:inline-block;background:#004aad;color:white;padding:13px 36px;border-radius:8px;text-decoration:none;font-weight:700;font-size:15px">
+                            Sign In Now
+                          </a>
+                        </div>
+
+                        <p style="margin:24px 0 0;font-size:13px;color:#888;text-align:center">
+                          Didn't request this? Contact us at
+                          <a href="mailto:support@eduthrift.co.za" style="color:#004aad;text-decoration:none">support@eduthrift.co.za</a>
+                        </p>
+                      </div>
+
+                      %s
+                    </div>
+                    """.formatted(
+                    logoUrl,
+                    user.getFirstName(),
+                    tempPassword,
+                    appBaseUrl,
+                    footer()
+            );
+
+            send(user.getEmail(), "Your Eduthrift password has been reset", html);
+        } catch (Exception e) {
+            log.warn("Failed to send password reset email to {}: {}", user.getEmail(), e.getMessage());
+        }
+    }
+
     // ── Order creation ────────────────────────────────────────────────────────
 
     public void sendBuyerOrderConfirmation(Order order) {

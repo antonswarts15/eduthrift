@@ -11,6 +11,7 @@ import za.co.thrift.eduthrift.repository.LedgerEntryRepository;
 import za.co.thrift.eduthrift.repository.OrderRepository;
 import za.co.thrift.eduthrift.repository.PaymentTransactionRepository;
 import za.co.thrift.eduthrift.repository.UserRepository;
+import za.co.thrift.eduthrift.service.EmailService;
 import za.co.thrift.eduthrift.service.EscrowService;
 
 import java.math.BigDecimal;
@@ -33,19 +34,22 @@ public class AdminController {
     private final PaymentTransactionRepository paymentTransactionRepository;
     private final PasswordEncoder passwordEncoder;
     private final EscrowService escrowService;
+    private final EmailService emailService;
 
     public AdminController(UserRepository userRepository,
                            OrderRepository orderRepository,
                            LedgerEntryRepository ledgerEntryRepository,
                            PaymentTransactionRepository paymentTransactionRepository,
                            PasswordEncoder passwordEncoder,
-                           EscrowService escrowService) {
+                           EscrowService escrowService,
+                           EmailService emailService) {
         this.userRepository = userRepository;
         this.orderRepository = orderRepository;
         this.ledgerEntryRepository = ledgerEntryRepository;
         this.paymentTransactionRepository = paymentTransactionRepository;
         this.passwordEncoder = passwordEncoder;
         this.escrowService = escrowService;
+        this.emailService = emailService;
     }
 
     @GetMapping("/dashboard/stats")
@@ -206,9 +210,9 @@ public class AdminController {
         user.setPasswordHash(passwordEncoder.encode(tempPassword));
         userRepository.save(user);
 
-        // Note: in production, send the temp password via email to the user.
-        // It is intentionally NOT returned in the response body for security.
-        return ResponseEntity.ok(Map.of("message", "Password reset successful. User must contact support to receive their temporary password."));
+        emailService.sendPasswordResetEmail(user, tempPassword);
+
+        return ResponseEntity.ok(Map.of("message", "Password reset — temporary password sent to " + user.getEmail()));
     }
 
     @PutMapping("/users/{id}/suspend")

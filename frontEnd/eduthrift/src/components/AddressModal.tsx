@@ -5,12 +5,14 @@ import {
   IonToolbar,
   IonTitle,
   IonContent,
+  IonFooter,
   IonButton,
   IonList,
   IonItem,
   IonLabel,
   IonInput,
-  IonButtons
+  IonButtons,
+  IonToast
 } from '@ionic/react';
 
 interface AddressModalProps {
@@ -34,10 +36,11 @@ const AddressModal: React.FC<AddressModalProps> = ({ isOpen, onDismiss, onSave, 
   const [town, setTown] = useState(initialData?.town || '');
   const [province, setProvince] = useState(initialData?.province || '');
   const [postalCode, setPostalCode] = useState(initialData?.postalCode || '');
+  const [showError, setShowError] = useState(false);
 
   const handleSave = () => {
     if (!streetAddress || !suburb || !town || !province) {
-      alert('Please fill in all required fields');
+      setShowError(true);
       return;
     }
     onSave({ streetAddress, suburb, town, province, postalCode });
@@ -47,52 +50,57 @@ const AddressModal: React.FC<AddressModalProps> = ({ isOpen, onDismiss, onSave, 
     <IonModal isOpen={isOpen} onDidDismiss={onDismiss}>
       <IonHeader>
         <IonToolbar>
-          <IonTitle>Enter Delivery Address</IonTitle>
+          <IonTitle>Delivery Address</IonTitle>
           <IonButtons slot="end">
-            <IonButton onClick={onDismiss}>Cancel</IonButton>
+            <IonButton onClick={onDismiss} fill="clear">Cancel</IonButton>
           </IonButtons>
         </IonToolbar>
       </IonHeader>
+
       <IonContent>
-        <IonList>
+        <IonList lines="full" style={{ paddingTop: '8px' }}>
           <IonItem>
-            <IonLabel position="stacked">Street Address *</IonLabel>
+            <IonLabel labelPlacement="stacked">
+              Street Address <span style={{ color: 'var(--ion-color-danger)' }}>*</span>
+            </IonLabel>
             <IonInput
               value={streetAddress}
               onIonInput={e => setStreetAddress((e.target as HTMLIonInputElement).value as string || '')}
-              placeholder="123 Main Street"
-              required
+              placeholder="12 Oak Avenue"
             />
           </IonItem>
           <IonItem>
-            <IonLabel position="stacked">Suburb *</IonLabel>
+            <IonLabel labelPlacement="stacked">
+              Suburb <span style={{ color: 'var(--ion-color-danger)' }}>*</span>
+            </IonLabel>
             <IonInput
               value={suburb}
               onIonInput={e => setSuburb((e.target as HTMLIonInputElement).value as string || '')}
               placeholder="Sandton"
-              required
             />
           </IonItem>
           <IonItem>
-            <IonLabel position="stacked">Town/City *</IonLabel>
+            <IonLabel labelPlacement="stacked">
+              Town / City <span style={{ color: 'var(--ion-color-danger)' }}>*</span>
+            </IonLabel>
             <IonInput
               value={town}
               onIonInput={e => setTown((e.target as HTMLIonInputElement).value as string || '')}
               placeholder="Johannesburg"
-              required
             />
           </IonItem>
           <IonItem>
-            <IonLabel position="stacked">Province *</IonLabel>
+            <IonLabel labelPlacement="stacked">
+              Province <span style={{ color: 'var(--ion-color-danger)' }}>*</span>
+            </IonLabel>
             <IonInput
               value={province}
               onIonInput={e => setProvince((e.target as HTMLIonInputElement).value as string || '')}
               placeholder="Gauteng"
-              required
             />
           </IonItem>
-          <IonItem>
-            <IonLabel position="stacked">Postal Code</IonLabel>
+          <IonItem lines="none">
+            <IonLabel labelPlacement="stacked">Postal Code</IonLabel>
             <IonInput
               value={postalCode}
               onIonInput={e => setPostalCode((e.target as HTMLIonInputElement).value as string || '')}
@@ -101,10 +109,27 @@ const AddressModal: React.FC<AddressModalProps> = ({ isOpen, onDismiss, onSave, 
             />
           </IonItem>
         </IonList>
-        <IonButton expand="block" onClick={handleSave} style={{ margin: '16px' }}>
-          Save Address
-        </IonButton>
       </IonContent>
+
+      <IonFooter>
+        <IonToolbar style={{ '--padding-start': '16px', '--padding-end': '16px', '--padding-top': '8px', '--padding-bottom': '8px' }}>
+          <IonButton
+            expand="block"
+            onClick={handleSave}
+            style={{ '--border-radius': '10px', fontWeight: '600' } as any}
+          >
+            Save Address
+          </IonButton>
+        </IonToolbar>
+      </IonFooter>
+
+      <IonToast
+        isOpen={showError}
+        message="Please fill in all required fields."
+        duration={3000}
+        color="danger"
+        onDidDismiss={() => setShowError(false)}
+      />
     </IonModal>
   );
 };

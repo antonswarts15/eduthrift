@@ -119,13 +119,13 @@ const DocumentUploadComponent: React.FC<DocumentUploadComponentProps> = ({
   );
 
   return (
-    <IonCard>
-      <IonCardHeader>
-        <h2 className="ion-text-center">
-          <IonIcon icon={documentTextOutline} style={{ marginRight: '8px' }} />
-          Document Verification
-        </h2>
-        <p style={{ textAlign: 'center', fontSize: '14px', color: '#666', margin: '8px 0 0 0' }}>
+    <IonCard style={{ borderRadius: '14px', boxShadow: '0 2px 12px rgba(0,0,0,0.07)', margin: 0 }}>
+      <IonCardHeader style={{ paddingBottom: '4px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '6px' }}>
+          <IonIcon icon={documentTextOutline} style={{ fontSize: '22px', color: 'var(--ion-color-primary)' }} />
+          <h2 style={{ margin: 0, fontSize: '18px', fontWeight: '700', color: '#111' }}>Document Verification</h2>
+        </div>
+        <p style={{ textAlign: 'center', fontSize: '13px', color: '#777', margin: 0, lineHeight: '1.5' }}>
           All three documents are required before your application can be reviewed.
         </p>
       </IonCardHeader>
@@ -157,15 +157,16 @@ const DocumentUploadComponent: React.FC<DocumentUploadComponentProps> = ({
           />
 
           <IonRow>
-            <IonCol size="12">
+            <IonCol size="12" style={{ paddingTop: '8px' }}>
               <IonButton
-                expand="full"
+                expand="block"
                 onClick={handleUpload}
                 disabled={!allSelected || uploading}
                 color="primary"
+                style={{ '--border-radius': '10px', fontWeight: '600' } as any}
               >
                 <IonIcon icon={cloudUploadOutline} slot="start" />
-                {uploading ? 'Uploading...' : 'Upload All Documents'}
+                {uploading ? 'Uploading...' : 'Submit Documents'}
               </IonButton>
             </IonCol>
           </IonRow>
