@@ -107,8 +107,10 @@ export const itemsApi = {
 
 // Payments API
 export const paymentsApi = {
-  initiateTradeSafe: (orderNumber: string) =>
-    api.post('/payments/tradesafe/initiate', { orderNumber }),
+  initiateOzow: (orderNumber: string) =>
+    api.post('/payments/ozow/initiate', { orderNumber }),
+  initiatePaystack: (orderNumber: string) =>
+    api.post('/payments/paystack/initiate', { orderNumber }),
 };
 
 // Orders API

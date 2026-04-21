@@ -134,6 +134,20 @@ public class PaymentService {
             return false;
         }
 
+        // For a payment confirmation, verify the webhook amount matches what we charged.
+        // Hash verification (done upstream) proves Ozow sent the data, but this guards
+        // against edge cases where the amount could differ (partial payment, rounding, etc.).
+        if (event.type() == PaymentEventType.PAYMENT_CONFIRMED
+                && event.amount() != null
+                && event.amount().compareTo(BigDecimal.ZERO) > 0
+                && order.getTotalAmount().compareTo(event.amount()) != 0) {
+            log.error("Amount mismatch for order {} — expected R{}, webhook reported R{} — rejecting event",
+                    order.getOrderNumber(), order.getTotalAmount(), event.amount());
+            recordTransaction(order, event.providerName(), event.providerTransactionId(),
+                    "AMOUNT_MISMATCH", event.amount(), "REJECTED", event.rawPayload());
+            return false;
+        }
+
         // Audit first — then mutate state. Any mutation failure will roll back both.
         recordTransaction(order,
                 event.providerName(),

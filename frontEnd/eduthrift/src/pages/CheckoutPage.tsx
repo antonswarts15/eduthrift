@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import {
   IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonItem, IonLabel,
-  IonButton, IonLoading, IonToast, IonIcon, IonSearchbar
+  IonButton, IonLoading, IonToast, IonIcon, IonSearchbar, IonRadioGroup, IonRadio
 } from '@ionic/react';
-import { locationOutline, cubeOutline, cashOutline, checkmarkCircleOutline, arrowUndoOutline } from 'ionicons/icons';
+import { locationOutline, cubeOutline, cashOutline, checkmarkCircleOutline, arrowUndoOutline, cardOutline } from 'ionicons/icons';
 import { useHistory, useLocation } from 'react-router-dom';
 import { Browser } from '@capacitor/browser';
 import { App } from '@capacitor/app';
@@ -47,6 +47,7 @@ const CheckoutPage: React.FC = () => {
   const [pickupLocked, setPickupLocked] = useState(false);
   const [pickupSearch, setPickupSearch] = useState('');
   const [selectedBoxSize, setSelectedBoxSize] = useState<string>('');
+  const [paymentMethod, setPaymentMethod] = useState<'ozow' | 'paystack'>('ozow');
   const [loading, setLoading] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
@@ -162,9 +163,11 @@ const CheckoutPage: React.FC = () => {
         });
 
         const backendOrderNumber = orderResponse.data.orderNumber;
-        const paymentResponse = await paymentsApi.initiateTradeSafe(backendOrderNumber);
-        const { depositUrl } = paymentResponse.data;
-        if (depositUrl) depositUrls.push(depositUrl);
+        const paymentResponse = paymentMethod === 'paystack'
+          ? await paymentsApi.initiatePaystack(backendOrderNumber)
+          : await paymentsApi.initiateOzow(backendOrderNumber);
+        const redirectUrl = paymentResponse.data.authorizationUrl || paymentResponse.data.paymentUrl;
+        if (redirectUrl) depositUrls.push(redirectUrl);
       }
 
       if (depositUrls.length === 0) throw new Error('No deposit URLs returned');
@@ -361,6 +364,43 @@ const CheckoutPage: React.FC = () => {
         </IonCard>
       )}
 
+      {/* Payment Method Selection */}
+      {(pickupLocked || requiresCourier) && selectedBoxSize && (
+        <IonCard>
+          <IonCardHeader><IonCardTitle>Payment Method</IonCardTitle></IonCardHeader>
+          <IonCardContent>
+            <IonRadioGroup value={paymentMethod} onIonChange={e => setPaymentMethod(e.detail.value)}>
+              <IonItem button detail={false}
+                onClick={() => setPaymentMethod('ozow')}
+                style={{ '--background': paymentMethod === 'ozow' ? 'var(--ion-color-primary)' : '', '--border-radius': '8px', marginBottom: '8px' }}
+              >
+                <IonIcon icon={cashOutline} slot="start" style={{ color: paymentMethod === 'ozow' ? '#fff' : undefined }} />
+                <IonLabel style={{ color: paymentMethod === 'ozow' ? '#fff' : undefined }}>
+                  <h3 style={{ color: paymentMethod === 'ozow' ? '#fff' : undefined }}>Instant EFT (Ozow)</h3>
+                  <p style={{ color: paymentMethod === 'ozow' ? 'rgba(255,255,255,0.8)' : '#666', fontSize: '12px' }}>
+                    Pay directly from your bank account — no card needed
+                  </p>
+                </IonLabel>
+                <IonRadio value="ozow" slot="end" style={{ color: paymentMethod === 'ozow' ? '#fff' : undefined }} />
+              </IonItem>
+              <IonItem button detail={false}
+                onClick={() => setPaymentMethod('paystack')}
+                style={{ '--background': paymentMethod === 'paystack' ? 'var(--ion-color-primary)' : '', '--border-radius': '8px' }}
+              >
+                <IonIcon icon={cardOutline} slot="start" style={{ color: paymentMethod === 'paystack' ? '#fff' : undefined }} />
+                <IonLabel style={{ color: paymentMethod === 'paystack' ? '#fff' : undefined }}>
+                  <h3 style={{ color: paymentMethod === 'paystack' ? '#fff' : undefined }}>Card Payment (Paystack)</h3>
+                  <p style={{ color: paymentMethod === 'paystack' ? 'rgba(255,255,255,0.8)' : '#666', fontSize: '12px' }}>
+                    Visa, Mastercard or bank card
+                  </p>
+                </IonLabel>
+                <IonRadio value="paystack" slot="end" style={{ color: paymentMethod === 'paystack' ? '#fff' : undefined }} />
+              </IonItem>
+            </IonRadioGroup>
+          </IonCardContent>
+        </IonCard>
+      )}
+
       {/* Order Confirmation Summary */}
       {selectedBoxSize && selectedBox && (pickupLocked || requiresCourier) && (
         <>
@@ -415,7 +455,7 @@ const CheckoutPage: React.FC = () => {
                   <strong>✅ Zero seller fees:</strong> Seller receives the full R{totalItemAmount.toFixed(2)}.
                 </p>
                 <p style={{ margin: '0 0 4px', fontSize: '12px', color: '#2d5a2d', lineHeight: '1.5' }}>
-                  <strong>🔒 Buyer Protection (R{buyerProtectionFee.toFixed(2)}):</strong> Held in TradeSafe escrow until you confirm delivery.
+                  <strong>🔒 Buyer Protection (R{buyerProtectionFee.toFixed(2)}):</strong> Held in escrow until you confirm delivery.
                 </p>
                 <p style={{ margin: '0', fontSize: '12px', color: '#2d5a2d', lineHeight: '1.5' }}>
                   <strong>📦 Pudo Shipping (R{shippingCost.toFixed(2)}):</strong> Locker-to-locker, anywhere in South Africa.
