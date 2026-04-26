@@ -112,9 +112,8 @@ const Home: React.FC = () => {
             <IonIcon icon={schoolOutline} style={{ fontSize: '48px', color: '#004aad', marginBottom: '16px' }} />
             <h2 style={{ color: '#2C3E50', marginBottom: '16px' }}>What is Eduthrift?</h2>
             <p style={{ color: '#666', lineHeight: '1.6' }}>
-              A secure marketplace for second-hand educational items in South Africa.
-              Buy and sell quality pre-owned materials through our anonymous platform,
-              reducing costs while promoting sustainability in education.
+              Eduthrift is a secure anonymous marketplace for second-hand educational items in South Africa. 
+              It allows you to buy and sell quality pre-owned school materials easily, helping you save money while promoting sustainability.
             </p>
           </IonCardContent>
         </IonCard>
