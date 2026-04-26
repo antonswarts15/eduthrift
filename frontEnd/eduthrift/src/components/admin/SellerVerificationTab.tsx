@@ -17,8 +17,8 @@ import {
   IonToast,
   IonSpinner
 } from '@ionic/react';
-import { checkmarkCircleOutline, closeCircleOutline, documentOutline, homeOutline, closeOutline, imageOutline } from 'ionicons/icons';
-import api, { adminApi } from '../../services/api';
+import { checkmarkCircleOutline, closeCircleOutline, documentOutline, homeOutline, closeOutline, imageOutline, cardOutline } from 'ionicons/icons';
+import { adminApi } from '../../services/api';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
@@ -30,9 +30,45 @@ interface PendingSeller {
   school: string;
   idDocument: string;
   proofOfAddress: string;
+  bankConfirmation: string;
   submittedAt: string;
-  status: 'pending' | 'verified' | 'rejected';
+  status: 'unverified' | 'pending' | 'verified' | 'rejected';
 }
+
+const buildDocUrl = (path: string | null): string => {
+  if (!path) return '';
+  if (path.startsWith('http')) return path;
+  return `${API_BASE_URL}${path}`;
+};
+
+const DocImage: React.FC<{ url: string; alt: string }> = ({ url, alt }) => {
+  if (!url) {
+    return (
+      <div style={{ padding: '40px', textAlign: 'center', backgroundColor: '#f0f0f0', borderRadius: '8px' }}>
+        <IonIcon icon={imageOutline} style={{ fontSize: '48px', color: '#999' }} />
+        <p style={{ color: '#999', margin: '8px 0 0' }}>Not uploaded</p>
+      </div>
+    );
+  }
+  const isPdf = url.toLowerCase().includes('.pdf');
+  if (isPdf) {
+    return (
+      <div style={{ textAlign: 'center', padding: '16px' }}>
+        <IonIcon icon={documentOutline} style={{ fontSize: '48px', color: '#004aad' }} />
+        <p style={{ margin: '8px 0 0' }}>
+          <a href={url} target="_blank" rel="noopener noreferrer">View PDF</a>
+        </p>
+      </div>
+    );
+  }
+  return (
+    <img
+      src={url}
+      alt={alt}
+      style={{ width: '100%', maxHeight: '300px', objectFit: 'contain', borderRadius: '4px' }}
+    />
+  );
+};
 
 const SellerVerificationTab: React.FC = () => {
   const [pendingSellers, setPendingSellers] = useState<PendingSeller[]>([]);
@@ -42,8 +78,6 @@ const SellerVerificationTab: React.FC = () => {
   const [toastMessage, setToastMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [docImages, setDocImages] = useState<{ id: string | null; proof: string | null }>({ id: null, proof: null });
-  const [loadingDocs, setLoadingDocs] = useState(false);
 
   useEffect(() => {
     loadPendingSellers();
@@ -55,26 +89,19 @@ const SellerVerificationTab: React.FC = () => {
     try {
       const response = await adminApi.getPendingSellers();
       const data = response.data;
-      setPendingSellers(data.map((seller: any) => {
-        const buildUrl = (path: string | null) => {
-          if (!path) return '';
-          if (path.startsWith('http')) return path;
-          return `${API_BASE_URL}${path}`;
-        };
-        return {
-          id: seller.id,
-          name: `${seller.first_name} ${seller.last_name}`,
-          email: seller.email,
-          phone: seller.phone,
-          school: seller.school_name,
-          idDocument: buildUrl(seller.id_document_url),
-          proofOfAddress: buildUrl(seller.proof_of_address_url),
-          submittedAt: seller.created_at,
-          status: seller.verification_status || 'pending'
-        };
-      }));
+      setPendingSellers(data.map((seller: any) => ({
+        id: seller.id,
+        name: `${seller.first_name} ${seller.last_name}`,
+        email: seller.email,
+        phone: seller.phone,
+        school: seller.school_name,
+        idDocument: buildDocUrl(seller.id_document_url),
+        proofOfAddress: buildDocUrl(seller.proof_of_address_url),
+        bankConfirmation: buildDocUrl(seller.bank_confirmation_url),
+        submittedAt: seller.created_at,
+        status: seller.verification_status || 'pending'
+      })));
     } catch (err: any) {
-      console.error('Error loading sellers:', err);
       setError(err.response?.data?.message || 'Failed to load pending sellers');
     } finally {
       setLoading(false);
@@ -85,11 +112,9 @@ const SellerVerificationTab: React.FC = () => {
     try {
       await adminApi.verifySeller(sellerId);
       setPendingSellers(prev => prev.map(seller =>
-        seller.id === sellerId
-          ? { ...seller, status: 'verified' as const }
-          : seller
+        seller.id === sellerId ? { ...seller, status: 'verified' as const } : seller
       ));
-      setToastMessage('Seller verified successfully! They can now upload products.');
+      setToastMessage('Seller verified successfully! They can now list items.');
       setShowToast(true);
       setShowModal(false);
     } catch (err: any) {
@@ -102,11 +127,9 @@ const SellerVerificationTab: React.FC = () => {
     try {
       await adminApi.rejectSeller(sellerId);
       setPendingSellers(prev => prev.map(seller =>
-        seller.id === sellerId
-          ? { ...seller, status: 'rejected' as const }
-          : seller
+        seller.id === sellerId ? { ...seller, status: 'rejected' as const } : seller
       ));
-      setToastMessage('Seller rejected. They will be notified to submit valid documents.');
+      setToastMessage('Seller rejected. They will need to resubmit valid documents.');
       setShowToast(true);
       setShowModal(false);
     } catch (err: any) {
@@ -115,27 +138,9 @@ const SellerVerificationTab: React.FC = () => {
     }
   };
 
-  const openSellerDetails = async (seller: PendingSeller) => {
+  const openSellerDetails = (seller: PendingSeller) => {
     setSelectedSeller(seller);
     setShowModal(true);
-    setDocImages({ id: null, proof: null });
-    setLoadingDocs(true);
-
-    try {
-      const [idResp, proofResp] = await Promise.allSettled([
-        api.get(`/auth/document/${seller.id}/id`, { responseType: 'blob' }),
-        api.get(`/auth/document/${seller.id}/proof`, { responseType: 'blob' })
-      ]);
-
-      setDocImages({
-        id: idResp.status === 'fulfilled' ? URL.createObjectURL(idResp.value.data) : null,
-        proof: proofResp.status === 'fulfilled' ? URL.createObjectURL(proofResp.value.data) : null
-      });
-    } catch (err) {
-      console.error('Error loading documents:', err);
-    } finally {
-      setLoadingDocs(false);
-    }
   };
 
   const formatDate = (dateString: string) => {
@@ -227,7 +232,7 @@ const SellerVerificationTab: React.FC = () => {
       <IonModal isOpen={showModal} onDidDismiss={() => setShowModal(false)}>
         <IonHeader>
           <IonToolbar>
-            <IonTitle>Verify Seller: {selectedSeller?.name}</IonTitle>
+            <IonTitle>Review: {selectedSeller?.name}</IonTitle>
             <IonButton fill="clear" slot="end" onClick={() => setShowModal(false)}>
               <IonIcon icon={closeOutline} />
             </IonButton>
@@ -237,74 +242,70 @@ const SellerVerificationTab: React.FC = () => {
           {selectedSeller && (
             <div style={{ padding: '16px' }}>
               <IonCard>
-                <IonCardHeader>
-                  <IonCardTitle>
-                    <IonIcon icon={documentOutline} style={{ marginRight: '8px' }} />
-                    ID Document
-                  </IonCardTitle>
-                </IonCardHeader>
                 <IonCardContent>
-                  {loadingDocs ? (
-                    <div style={{ padding: '40px', textAlign: 'center' }}><IonSpinner /></div>
-                  ) : docImages.id ? (
-                    <img
-                      src={docImages.id}
-                      alt="ID Document"
-                      style={{ width: '100%', maxHeight: '300px', objectFit: 'contain' }}
-                    />
-                  ) : (
-                    <div style={{ padding: '40px', textAlign: 'center', backgroundColor: '#f0f0f0', borderRadius: '8px' }}>
-                      <IonIcon icon={imageOutline} style={{ fontSize: '48px', color: '#999' }} />
-                      <p style={{ color: '#999' }}>No ID document uploaded</p>
-                    </div>
-                  )}
+                  <p><strong>Email:</strong> {selectedSeller.email}</p>
+                  <p><strong>Phone:</strong> {selectedSeller.phone}</p>
+                  <p><strong>School:</strong> {selectedSeller.school}</p>
                 </IonCardContent>
               </IonCard>
 
               <IonCard>
                 <IonCardHeader>
-                  <IonCardTitle>
-                    <IonIcon icon={homeOutline} style={{ marginRight: '8px' }} />
-                    Proof of Address
+                  <IonCardTitle style={{ fontSize: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <IonIcon icon={documentOutline} />
+                    ID / Passport Document
                   </IonCardTitle>
                 </IonCardHeader>
                 <IonCardContent>
-                  {loadingDocs ? (
-                    <div style={{ padding: '40px', textAlign: 'center' }}><IonSpinner /></div>
-                  ) : docImages.proof ? (
-                    <img
-                      src={docImages.proof}
-                      alt="Proof of Address"
-                      style={{ width: '100%', maxHeight: '300px', objectFit: 'contain' }}
-                    />
-                  ) : (
-                    <div style={{ padding: '40px', textAlign: 'center', backgroundColor: '#f0f0f0', borderRadius: '8px' }}>
-                      <IonIcon icon={imageOutline} style={{ fontSize: '48px', color: '#999' }} />
-                      <p style={{ color: '#999' }}>No proof of address uploaded</p>
-                    </div>
-                  )}
+                  <DocImage url={selectedSeller.idDocument} alt="ID Document" />
                 </IonCardContent>
               </IonCard>
 
-              <div style={{ marginTop: '20px', display: 'flex', gap: '12px' }}>
-                <IonButton
-                  expand="block"
-                  color="success"
-                  onClick={() => verifySeller(selectedSeller.id)}
-                >
-                  <IonIcon icon={checkmarkCircleOutline} slot="start" />
-                  Verify Seller
-                </IonButton>
-                <IonButton
-                  expand="block"
-                  color="danger"
-                  fill="outline"
-                  onClick={() => rejectSeller(selectedSeller.id)}
-                >
-                  <IonIcon icon={closeCircleOutline} slot="start" />
-                  Reject
-                </IonButton>
-              </div>
+              <IonCard>
+                <IonCardHeader>
+                  <IonCardTitle style={{ fontSize: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <IonIcon icon={homeOutline} />
+                    Proof of Residence
+                  </IonCardTitle>
+                </IonCardHeader>
+                <IonCardContent>
+                  <DocImage url={selectedSeller.proofOfAddress} alt="Proof of Address" />
+                </IonCardContent>
+              </IonCard>
+
+              <IonCard>
+                <IonCardHeader>
+                  <IonCardTitle style={{ fontSize: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <IonIcon icon={cardOutline} />
+                    Bank Confirmation Letter
+                  </IonCardTitle>
+                </IonCardHeader>
+                <IonCardContent>
+                  <DocImage url={selectedSeller.bankConfirmation} alt="Bank Confirmation" />
+                </IonCardContent>
+              </IonCard>
+
+              {selectedSeller.status === 'pending' && (
+                <div style={{ marginTop: '20px', display: 'flex', gap: '12px' }}>
+                  <IonButton
+                    expand="block"
+                    color="success"
+                    onClick={() => verifySeller(selectedSeller.id)}
+                  >
+                    <IonIcon icon={checkmarkCircleOutline} slot="start" />
+                    Approve Seller
+                  </IonButton>
+                  <IonButton
+                    expand="block"
+                    color="danger"
+                    fill="outline"
+                    onClick={() => rejectSeller(selectedSeller.id)}
+                  >
+                    <IonIcon icon={closeCircleOutline} slot="start" />
+                    Reject
+                  </IonButton>
+                </div>
+              )}
             </div>
           )}
         </IonContent>

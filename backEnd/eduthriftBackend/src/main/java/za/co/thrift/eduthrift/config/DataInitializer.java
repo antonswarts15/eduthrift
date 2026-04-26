@@ -77,12 +77,26 @@ public class DataInitializer implements CommandLineRunner {
     /** Promote the owner account to ADMIN if it exists and isn't already. */
     private void promoteOwnerToAdmin() {
         userRepository.findByEmail("antons@eduthrift.co.za").ifPresent(user -> {
+            boolean changed = false;
             if (user.getUserType() != User.UserType.ADMIN) {
                 user.setUserType(User.UserType.ADMIN);
+                changed = true;
+            }
+            if (!"active".equals(user.getStatus())) {
                 user.setStatus("active");
+                changed = true;
+            }
+            if (!"verified".equals(user.getVerificationStatus())) {
                 user.setVerificationStatus("verified");
+                changed = true;
+            }
+            if (!Boolean.TRUE.equals(user.getSellerVerified())) {
+                user.setSellerVerified(true);
+                changed = true;
+            }
+            if (changed) {
                 userRepository.save(user);
-                log.info("Promoted antons@eduthrift.co.za to ADMIN");
+                log.info("Updated antons@eduthrift.co.za to ADMIN with seller access");
             }
         });
     }

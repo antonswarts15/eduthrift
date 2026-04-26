@@ -17,9 +17,11 @@ CREATE TABLE IF NOT EXISTS users (
     google_id VARCHAR(255),
     facebook_id VARCHAR(255),
     status ENUM('active', 'suspended', 'deleted') DEFAULT 'active',
-    verification_status ENUM('pending', 'verified', 'rejected') DEFAULT 'pending',
+    seller_verified BOOLEAN DEFAULT FALSE,
+    verification_status VARCHAR(20) NOT NULL DEFAULT 'unverified',
     id_document_url VARCHAR(500),
     proof_of_address_url VARCHAR(500),
+    bank_confirmation_url VARCHAR(500),
     bank_name VARCHAR(100),
     bank_account_number VARCHAR(50),
     bank_branch_code VARCHAR(20),
@@ -274,10 +276,10 @@ GRANT ALL PRIVILEGES ON *.* TO 'antons'@'%' WITH GRANT OPTION;
 FLUSH PRIVILEGES;
 
 -- Insert sample users (password hash for '@Nt0n101!')
-INSERT IGNORE INTO users (email, password_hash, first_name, last_name, phone, user_type, school_name, status, verification_status) VALUES
-('antons@eduthrift.co.za', '$2a$10$N94Wn2xngRGr9dY10vNr0OqFxVggK7mYQC0iR78FC6EkxGP3pj9I2', 'Antons', 'Swarts', '0123456789', 'ADMIN', 'Hoërskool Waterkloof', 'active', 'verified'),
-('seller@example.com', '$2a$10$N94Wn2xngRGr9dY10vNr0OqFxVggK7mYQC0iR78FC6EkxGP3pj9I2', 'John', 'Seller', '0123456789', 'SELLER', 'Hoërskool Waterkloof', 'active', 'pending'),
-('buyer@example.com', '$2a$10$N94Wn2xngRGr9dY10vNr0OqFxVggK7mYQC0iR78FC6EkxGP3pj9I2', 'Jane', 'Buyer', '0987654321', 'BUYER', 'Pretoria Boys High School', 'active', 'verified');
+INSERT IGNORE INTO users (email, password_hash, first_name, last_name, phone, user_type, school_name, status, seller_verified, verification_status) VALUES
+('antons@eduthrift.co.za', '$2a$10$N94Wn2xngRGr9dY10vNr0OqFxVggK7mYQC0iR78FC6EkxGP3pj9I2', 'Antons', 'Swarts', '0123456789', 'ADMIN', 'Hoërskool Waterkloof', 'active', TRUE, 'verified'),
+('seller@example.com', '$2a$10$N94Wn2xngRGr9dY10vNr0OqFxVggK7mYQC0iR78FC6EkxGP3pj9I2', 'John', 'Seller', '0123456789', 'BOTH', 'Hoërskool Waterkloof', 'active', FALSE, 'unverified'),
+('buyer@example.com', '$2a$10$N94Wn2xngRGr9dY10vNr0OqFxVggK7mYQC0iR78FC6EkxGP3pj9I2', 'Jane', 'Buyer', '0987654321', 'BUYER', 'Pretoria Boys High School', 'active', FALSE, 'unverified');
 
 -- Insert sample items
 INSERT IGNORE INTO items (user_id, item_type_id, school_name, size, gender, condition_grade, price, description, status) VALUES

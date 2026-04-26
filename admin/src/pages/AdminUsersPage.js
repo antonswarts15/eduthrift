@@ -110,6 +110,22 @@ const AdminUsersPage = () => {
     }
   };
 
+  const handleDelete = async (id, name) => {
+    if (!window.confirm(`Are you sure you want to permanently delete ${name}? This cannot be undone.`)) return;
+
+    const loadingToast = toast.loading('Deleting user...');
+    try {
+      await api.delete(`/admin/users/${id}`);
+      toast.dismiss(loadingToast);
+      toast.success('User deleted');
+      fetchUsers();
+    } catch (error) {
+      toast.dismiss(loadingToast);
+      console.error('Error deleting user:', error);
+      toast.error(error.response?.data?.error || 'Failed to delete user');
+    }
+  };
+
   const handleCreateAdmin = async (e) => {
     e.preventDefault();
     const loadingToast = toast.loading('Creating admin user...');
@@ -274,32 +290,48 @@ const AdminUsersPage = () => {
                         Reset Pwd
                       </button>
 
-                      {user.status === 'active' ? (
-                        <button
-                          onClick={() => handleSuspend(user.id)}
-                          style={{
-                            width: 'auto',
-                            backgroundColor: '#e74c3c',
-                            padding: '6px 12px',
-                            fontSize: '12px'
-                          }}
-                          title="Suspend User"
-                        >
-                          Suspend
-                        </button>
-                      ) : (
-                        <button
-                          onClick={() => handleReactivate(user.id)}
-                          style={{
-                            width: 'auto',
-                            backgroundColor: '#27ae60',
-                            padding: '6px 12px',
-                            fontSize: '12px'
-                          }}
-                          title="Reactivate User"
-                        >
-                          Activate
-                        </button>
+                      {user.user_type !== 'admin' && (
+                        <>
+                          {user.status === 'active' ? (
+                            <button
+                              onClick={() => handleSuspend(user.id)}
+                              style={{
+                                width: 'auto',
+                                backgroundColor: '#e67e22',
+                                padding: '6px 12px',
+                                fontSize: '12px'
+                              }}
+                              title="Suspend User"
+                            >
+                              Suspend
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => handleReactivate(user.id)}
+                              style={{
+                                width: 'auto',
+                                backgroundColor: '#27ae60',
+                                padding: '6px 12px',
+                                fontSize: '12px'
+                              }}
+                              title="Reactivate User"
+                            >
+                              Activate
+                            </button>
+                          )}
+                          <button
+                            onClick={() => handleDelete(user.id, `${user.first_name} ${user.last_name}`)}
+                            style={{
+                              width: 'auto',
+                              backgroundColor: '#e74c3c',
+                              padding: '6px 12px',
+                              fontSize: '12px'
+                            }}
+                            title="Delete User"
+                          >
+                            Delete
+                          </button>
+                        </>
                       )}
                     </div>
                   </td>

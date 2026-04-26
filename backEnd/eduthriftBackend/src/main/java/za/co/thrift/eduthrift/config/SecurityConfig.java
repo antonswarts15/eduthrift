@@ -2,6 +2,7 @@ package za.co.thrift.eduthrift.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -82,10 +83,17 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**").permitAll()
+                        // Public auth endpoints (login, register)
+                        .requestMatchers(HttpMethod.POST, "/auth/login", "/auth/register").permitAll()
+                        // All other /auth/** endpoints require authentication
+                        .requestMatchers("/auth/**").authenticated()
                         .requestMatchers("/health/**").permitAll()
                         .requestMatchers("/categories/**").permitAll()
-                        .requestMatchers("/items/**").permitAll()
+                        // Browsing items is public; creating/updating/deleting requires auth
+                        .requestMatchers(HttpMethod.GET, "/items/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/items/**").authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/items/**").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/items/**").authenticated()
                         .requestMatchers("/item-types/**").permitAll()
                         .requestMatchers("/uploads/**").permitAll()
                         .requestMatchers("/payments/paystack/webhook").permitAll()

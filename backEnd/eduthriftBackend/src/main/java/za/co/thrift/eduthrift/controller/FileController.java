@@ -19,7 +19,7 @@ public class FileController {
     @Value("${file.upload.dir:/app/uploads}")
     private String uploadDir;
 
-    private static final Set<String> ALLOWED_TYPES = Set.of("items", "id-documents", "proof-of-residence");
+    private static final Set<String> ALLOWED_TYPES = Set.of("items", "id-documents", "proof-of-residence", "bank-confirmations");
 
     @GetMapping("/{type}/{filename:.+}")
     public ResponseEntity<Resource> serveFile(@PathVariable String type, @PathVariable String filename) {

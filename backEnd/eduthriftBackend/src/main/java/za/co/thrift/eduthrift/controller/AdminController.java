@@ -223,6 +223,9 @@ public class AdminController {
         }
 
         User user = userOpt.get();
+        if (user.getUserType() == User.UserType.ADMIN) {
+            return ResponseEntity.status(403).body(Map.of("error", "Admin accounts cannot be suspended"));
+        }
         user.setStatus("suspended");
         userRepository.save(user);
 
@@ -234,6 +237,9 @@ public class AdminController {
         Optional<User> userOpt = userRepository.findById(id);
         if (!userOpt.isPresent()) {
             return ResponseEntity.status(404).body(Map.of("error", "User not found"));
+        }
+        if (userOpt.get().getUserType() == User.UserType.ADMIN) {
+            return ResponseEntity.status(403).body(Map.of("error", "Admin accounts cannot be deleted"));
         }
         userRepository.deleteById(id);
         return ResponseEntity.ok(Map.of("message", "User deleted"));
@@ -585,6 +591,7 @@ public class AdminController {
         map.put("verification_status", user.getVerificationStatus());
         map.put("id_document_url", user.getIdDocumentUrl());
         map.put("proof_of_address_url", user.getProofOfAddressUrl());
+        map.put("bank_confirmation_url", user.getBankConfirmationUrl());
         map.put("id_number", user.getIdNumber());
         map.put("street_address", user.getStreetAddress());
         map.put("bank_name", user.getBankName());

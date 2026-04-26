@@ -4,11 +4,79 @@ import 'react-photo-view/dist/react-photo-view.css';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080';
 
+const buildDocUrl = (path) => {
+  if (!path) return null;
+  if (path.startsWith('http')) return path;
+  return `${API_URL}${path}`;
+};
+
+const DocViewer = ({ url, label }) => {
+  if (!url) {
+    return (
+      <div style={{
+        width: '100%',
+        height: '250px',
+        borderRadius: '8px',
+        backgroundColor: '#f8f9fa',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: '#999',
+        border: '2px dashed #ddd'
+      }}>
+        Not uploaded
+      </div>
+    );
+  }
+
+  if (url.toLowerCase().endsWith('.pdf')) {
+    return (
+      <div style={{
+        width: '100%',
+        height: '250px',
+        borderRadius: '8px',
+        backgroundColor: '#f0f4ff',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        border: '2px solid #c5d3f0'
+      }}>
+        <div style={{ fontSize: '48px', marginBottom: '12px' }}>📄</div>
+        <a
+          href={url}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ color: '#2980b9', fontWeight: 'bold', fontSize: '14px' }}
+        >
+          View PDF — {label}
+        </a>
+      </div>
+    );
+  }
+
+  return (
+    <PhotoView src={url}>
+      <img
+        src={url}
+        alt={label}
+        style={{
+          width: '100%',
+          height: '250px',
+          objectFit: 'cover',
+          borderRadius: '8px',
+          cursor: 'pointer',
+          border: '2px solid #ddd'
+        }}
+      />
+    </PhotoView>
+  );
+};
+
 const DocumentModal = ({ seller, onClose, onVerify, onReject }) => {
-  // Documents are served publicly from /uploads/** (no auth required).
-  // The seller object already contains the URL paths from the backend.
-  const idDocUrl = seller?.id_document_url ? `${API_URL}${seller.id_document_url}` : null;
-  const proofDocUrl = seller?.proof_of_address_url ? `${API_URL}${seller.proof_of_address_url}` : null;
+  const idDocUrl = buildDocUrl(seller?.id_document_url);
+  const proofDocUrl = buildDocUrl(seller?.proof_of_address_url);
+  const bankDocUrl = buildDocUrl(seller?.bank_confirmation_url);
 
   if (!seller) return null;
 
@@ -39,7 +107,7 @@ const DocumentModal = ({ seller, onClose, onVerify, onReject }) => {
       <div style={{
         backgroundColor: 'white',
         borderRadius: '12px',
-        maxWidth: '1000px',
+        maxWidth: '1100px',
         width: '100%',
         maxHeight: '90vh',
         overflow: 'auto',
@@ -67,11 +135,8 @@ const DocumentModal = ({ seller, onClose, onVerify, onReject }) => {
         </button>
 
         {/* Header */}
-        <div style={{
-          padding: '30px',
-          borderBottom: '1px solid #eee'
-        }}>
-          <h2 style={{ margin: '0 0 15px 0', color: '#2c3e50' }}>Seller Verification - Complete Details</h2>
+        <div style={{ padding: '30px', borderBottom: '1px solid #eee' }}>
+          <h2 style={{ margin: '0 0 15px 0', color: '#2c3e50' }}>Seller Verification — Complete Details</h2>
 
           {/* Personal Information */}
           <div style={{ marginBottom: '20px' }}>
@@ -79,28 +144,19 @@ const DocumentModal = ({ seller, onClose, onVerify, onReject }) => {
               Personal Information
             </h3>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', color: '#666', fontSize: '14px' }}>
+              <div><strong>Name:</strong> {seller.first_name} {seller.last_name}</div>
+              <div><strong>Email:</strong> {seller.email}</div>
+              <div><strong>Phone:</strong> {seller.phone || 'Not provided'}</div>
               <div>
-                <strong>Name:</strong> {seller.first_name} {seller.last_name}
-              </div>
-              <div>
-                <strong>Email:</strong> {seller.email}
-              </div>
-              <div>
-                <strong>Phone:</strong> {seller.phone || 'Not provided'}
-              </div>
-              <div>
-                <strong>ID Number:</strong> {seller.id_number ? (
+                <strong>ID Number:</strong>{' '}
+                {seller.id_number ? (
                   <span style={{ backgroundColor: '#fff3cd', padding: '2px 6px', borderRadius: '3px', fontFamily: 'monospace' }}>
                     {seller.id_number}
                   </span>
                 ) : 'Not provided'}
               </div>
-              <div>
-                <strong>School:</strong> {seller.school_name || 'Not provided'}
-              </div>
-              <div>
-                <strong>Submitted:</strong> {formatDate(seller.created_at)}
-              </div>
+              <div><strong>School:</strong> {seller.school_name || 'Not provided'}</div>
+              <div><strong>Submitted:</strong> {formatDate(seller.created_at)}</div>
             </div>
           </div>
 
@@ -116,15 +172,9 @@ const DocumentModal = ({ seller, onClose, onVerify, onReject }) => {
                 </div>
               )}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
-                <div>
-                  <strong>Suburb:</strong> {seller.suburb || 'Not provided'}
-                </div>
-                <div>
-                  <strong>Town:</strong> {seller.town || 'Not provided'}
-                </div>
-                <div>
-                  <strong>Province:</strong> {seller.province || 'Not provided'}
-                </div>
+                <div><strong>Suburb:</strong> {seller.suburb || 'Not provided'}</div>
+                <div><strong>Town:</strong> {seller.town || 'Not provided'}</div>
+                <div><strong>Province:</strong> {seller.province || 'Not provided'}</div>
               </div>
             </div>
           </div>
@@ -136,22 +186,17 @@ const DocumentModal = ({ seller, onClose, onVerify, onReject }) => {
                 Banking Details
               </h3>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', color: '#666', fontSize: '14px' }}>
+                <div><strong>Bank:</strong> {seller.bank_name || 'Not provided'}</div>
+                <div><strong>Account Type:</strong> {seller.bank_account_type || 'Not provided'}</div>
                 <div>
-                  <strong>Bank:</strong> {seller.bank_name || 'Not provided'}
-                </div>
-                <div>
-                  <strong>Account Type:</strong> {seller.bank_account_type || 'Not provided'}
-                </div>
-                <div>
-                  <strong>Account Number:</strong> {seller.bank_account_number ? (
+                  <strong>Account Number:</strong>{' '}
+                  {seller.bank_account_number ? (
                     <span style={{ backgroundColor: '#d4edda', padding: '2px 6px', borderRadius: '3px', fontFamily: 'monospace' }}>
                       {seller.bank_account_number}
                     </span>
                   ) : 'Not provided'}
                 </div>
-                <div>
-                  <strong>Branch Code:</strong> {seller.bank_branch_code || 'Not provided'}
-                </div>
+                <div><strong>Branch Code:</strong> {seller.bank_branch_code || 'Not provided'}</div>
               </div>
             </div>
           )}
@@ -171,83 +216,33 @@ const DocumentModal = ({ seller, onClose, onVerify, onReject }) => {
           </div>
         </div>
 
-        {/* Documents */}
+        {/* Documents — 3 columns */}
         <div style={{ padding: '30px' }}>
           <h3 style={{ marginTop: 0, marginBottom: '20px', color: '#2c3e50' }}>Uploaded Documents</h3>
 
           <PhotoProvider>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-              {/* ID Document */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '20px' }}>
               <div>
                 <h4 style={{ marginBottom: '10px', color: '#34495e' }}>ID Document</h4>
-                {idDocUrl ? (
-                  <PhotoView src={idDocUrl}>
-                    <img
-                      src={idDocUrl}
-                      alt="ID Document"
-                      style={{
-                        width: '100%',
-                        height: '250px',
-                        objectFit: 'cover',
-                        borderRadius: '8px',
-                        cursor: 'pointer',
-                        border: '2px solid #ddd'
-                      }}
-                    />
-                  </PhotoView>
-                ) : (
-                  <div style={{
-                    width: '100%',
-                    height: '250px',
-                    borderRadius: '8px',
-                    backgroundColor: '#f8f9fa',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: '#999'
-                  }}>
-                    No document uploaded
-                  </div>
-                )}
+                <DocViewer url={idDocUrl} label="ID Document" />
                 <p style={{ fontSize: '12px', color: '#7f8c8d', marginTop: '5px' }}>
-                  Click to zoom
+                  {idDocUrl && !idDocUrl.toLowerCase().endsWith('.pdf') ? 'Click to zoom' : ' '}
                 </p>
               </div>
 
-              {/* Proof of Address */}
               <div>
                 <h4 style={{ marginBottom: '10px', color: '#34495e' }}>Proof of Address</h4>
-                {proofDocUrl ? (
-                  <PhotoView src={proofDocUrl}>
-                    <img
-                      src={proofDocUrl}
-                      alt="Proof of Address"
-                      style={{
-                        width: '100%',
-                        height: '250px',
-                        objectFit: 'cover',
-                        borderRadius: '8px',
-                        cursor: 'pointer',
-                        border: '2px solid #ddd'
-                      }}
-                    />
-                  </PhotoView>
-                ) : (
-                  <div style={{
-                    width: '100%',
-                    height: '250px',
-                    borderRadius: '8px',
-                    backgroundColor: '#f8f9fa',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: '#999'
-                  }}>
-                    No document uploaded
-                  </div>
-                )}
+                <DocViewer url={proofDocUrl} label="Proof of Address" />
                 <p style={{ fontSize: '12px', color: '#7f8c8d', marginTop: '5px' }}>
-                  Click to zoom
+                  {proofDocUrl && !proofDocUrl.toLowerCase().endsWith('.pdf') ? 'Click to zoom' : ' '}
+                </p>
+              </div>
+
+              <div>
+                <h4 style={{ marginBottom: '10px', color: '#34495e' }}>Bank Confirmation Letter</h4>
+                <DocViewer url={bankDocUrl} label="Bank Confirmation" />
+                <p style={{ fontSize: '12px', color: '#7f8c8d', marginTop: '5px' }}>
+                  {bankDocUrl && !bankDocUrl.toLowerCase().endsWith('.pdf') ? 'Click to zoom' : ' '}
                 </p>
               </div>
             </div>
