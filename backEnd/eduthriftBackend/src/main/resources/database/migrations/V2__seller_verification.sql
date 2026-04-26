@@ -1,14 +1,11 @@
 -- Migration: Fix seller verification schema
--- Run this against existing databases where init.sql was applied before these columns existed.
 USE eduthrift;
 
--- Add seller_verified column if missing
 ALTER TABLE users
-ADD COLUMN IF NOT EXISTS seller_verified BOOLEAN DEFAULT FALSE;
+ADD COLUMN seller_verified BOOLEAN DEFAULT FALSE;
 
--- Add bank_confirmation_url column if missing
 ALTER TABLE users
-ADD COLUMN IF NOT EXISTS bank_confirmation_url VARCHAR(500);
+ADD COLUMN bank_confirmation_url VARCHAR(500);
 
 -- Fix any rows with NULL or empty verification_status before changing the column type
 UPDATE users SET verification_status = 'unverified'
@@ -33,4 +30,3 @@ WHERE verification_status = 'pending'
 UPDATE users SET seller_verified = TRUE, verification_status = 'verified'
 WHERE user_type = 'ADMIN' AND seller_verified = FALSE;
 
-INSERT IGNORE INTO schema_version (version) VALUES (3);
