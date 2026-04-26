@@ -1,7 +1,7 @@
 import { IonContent, IonCard, IonCardContent, IonToast } from '@ionic/react';
 import { useEffect } from 'react';
 import Categories from '../components/Categories';
-import adBanner from '../assets/adbanner1.jpg';
+import adBanner from '../assets/NewAddBanner.jpg';
 import { useToast } from '../hooks/useToast';
 import { useListingsStore } from '../stores/listingsStore';
 import { useUserStore } from '../stores/userStore';

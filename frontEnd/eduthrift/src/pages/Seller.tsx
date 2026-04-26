@@ -6,7 +6,7 @@ import Categories from '../components/Categories';
 import SellerVerification from '../components/SellerVerification';
 import { useAuthStore } from '../stores/authStore';
 import { useUserStore } from '../stores/userStore';
-import adBanner from '../assets/adbanner1.jpg';
+import adBanner from '../assets/NewAddBanner.jpg';
 
 const Seller: React.FC = () => {
   const history = useHistory();
