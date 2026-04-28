@@ -6,6 +6,7 @@ import { useToast } from '../hooks/useToast';
 import { useListingsStore } from '../stores/listingsStore';
 import { useUserStore } from '../stores/userStore';
 
+
 const Buyer: React.FC = () => {
   const { isOpen, message, color, hideToast } = useToast();
   const { fetchListings } = useListingsStore();
