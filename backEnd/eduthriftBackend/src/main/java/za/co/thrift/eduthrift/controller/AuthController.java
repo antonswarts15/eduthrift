@@ -199,6 +199,30 @@ public class AuthController {
         }
     }
 
+    @PutMapping("/change-password")
+    public ResponseEntity<?> changePassword(@RequestBody Map<String, String> body, Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(401).body(new ErrorResponse("Not authenticated"));
+        }
+        String currentPassword = body.get("currentPassword");
+        String newPassword = body.get("newPassword");
+        if (currentPassword == null || newPassword == null || newPassword.length() < 8) {
+            return ResponseEntity.badRequest().body(new ErrorResponse("Current password and a new password of at least 8 characters are required"));
+        }
+        String email = authentication.getName();
+        Optional<User> userOpt = userRepository.findByEmail(email);
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.status(404).body(new ErrorResponse("User not found"));
+        }
+        User user = userOpt.get();
+        if (!passwordEncoder.matches(currentPassword, user.getPasswordHash())) {
+            return ResponseEntity.status(401).body(new ErrorResponse("Current password is incorrect"));
+        }
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+        return ResponseEntity.ok(Map.of("message", "Password updated successfully"));
+    }
+
     @PutMapping("/fcm-token")
     public ResponseEntity<?> saveFcmToken(@RequestBody Map<String, Object> body, Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated()) {
