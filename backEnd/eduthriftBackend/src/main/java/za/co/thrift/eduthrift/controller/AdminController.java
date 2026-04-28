@@ -238,10 +238,12 @@ public class AdminController {
         if (!userOpt.isPresent()) {
             return ResponseEntity.status(404).body(Map.of("error", "User not found"));
         }
-        if (userOpt.get().getUserType() == User.UserType.ADMIN) {
+        User user = userOpt.get();
+        if (user.getUserType() == User.UserType.ADMIN) {
             return ResponseEntity.status(403).body(Map.of("error", "Admin accounts cannot be deleted"));
         }
-        userRepository.deleteById(id);
+        user.setStatus("deleted");
+        userRepository.save(user);
         return ResponseEntity.ok(Map.of("message", "User deleted"));
     }
 

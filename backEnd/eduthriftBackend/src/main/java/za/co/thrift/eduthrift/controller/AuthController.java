@@ -131,6 +131,8 @@ public class AuthController {
                 user.setUserType(User.UserType.BOTH);
             }
 
+            user.setVerificationStatus("unverified");
+            user.setSellerVerified(false);
             userRepository.save(user);
             emailService.sendWelcomeEmail(user);
 
