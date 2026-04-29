@@ -4,10 +4,11 @@ import {
   IonBadge, IonGrid, IonRow, IonCol, IonButton, IonIcon, IonModal,
   IonHeader, IonToolbar, IonTitle, IonSpinner, IonAlert
 } from '@ionic/react';
-import { trainOutline as trackingOutline, closeOutline, closeCircleOutline } from 'ionicons/icons';
+import { trainOutline as trackingOutline, closeOutline, closeCircleOutline, warningOutline } from 'ionicons/icons';
 import { useOrdersStore } from '../stores/ordersStore';
 import { useCartStore } from '../stores/cartStore';
 import api from '../services/api';
+import DisputeForm from '../components/DisputeForm';
 
 const OrdersPage: React.FC = () => {
   const [selectedTab, setSelectedTab] = useState('current');
@@ -15,6 +16,7 @@ const OrdersPage: React.FC = () => {
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [cancelConfirmOrder, setCancelConfirmOrder] = useState<string | null>(null);
+  const [disputeOrderNumber, setDisputeOrderNumber] = useState<string | null>(null);
   const { orders, fetchOrders } = useOrdersStore();
   const { clearCart } = useCartStore();
 
@@ -91,7 +93,18 @@ const OrdersPage: React.FC = () => {
               </p>
             )}
           </div>
-          <IonBadge color={getStatusColor(order.status)}>{getStatusLabel(order.status)}</IonBadge>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'flex-end' }}>
+            <IonBadge color={getStatusColor(order.status)}>{getStatusLabel(order.status)}</IonBadge>
+            {order.disputeStatus === 'OPEN' && (
+              <IonBadge color="warning">Dispute Open</IonBadge>
+            )}
+            {order.disputeStatus === 'RESOLVED_REFUND' && (
+              <IonBadge color="medium">Refunded</IonBadge>
+            )}
+            {order.disputeStatus === 'RESOLVED_RELEASE' && (
+              <IonBadge color="success">Dispute Resolved</IonBadge>
+            )}
+          </div>
         </div>
 
         {order.items && order.items.length > 0 && (
@@ -149,6 +162,21 @@ const OrdersPage: React.FC = () => {
                     Cancel
                   </IonButton>
                 )}
+                {order.isBuyer
+                  && ['payment_confirmed', 'processing', 'shipped', 'delivered'].includes(order.status)
+                  && !order.deliveryConfirmed
+                  && (!order.disputeStatus || order.disputeStatus === 'NONE') && (
+                  <IonButton
+                    size="small"
+                    fill="outline"
+                    color="warning"
+                    onClick={() => setDisputeOrderNumber(order.id)}
+                    style={{ marginTop: '4px' }}
+                  >
+                    <IonIcon icon={warningOutline} slot="start" />
+                    Report Issue
+                  </IonButton>
+                )}
               </IonCol>
             </IonRow>
           </IonGrid>
@@ -193,6 +221,15 @@ const OrdersPage: React.FC = () => {
           </>
         )}
       </div>
+
+      {disputeOrderNumber && (
+        <DisputeForm
+          orderNumber={disputeOrderNumber}
+          isOpen={!!disputeOrderNumber}
+          onClose={() => setDisputeOrderNumber(null)}
+          onSuccess={() => { setDisputeOrderNumber(null); fetchOrders(); }}
+        />
+      )}
 
       <IonAlert
         isOpen={!!cancelConfirmOrder}

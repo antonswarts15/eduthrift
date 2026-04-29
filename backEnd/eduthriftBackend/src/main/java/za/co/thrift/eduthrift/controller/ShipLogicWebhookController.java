@@ -14,6 +14,7 @@ import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.util.HexFormat;
 import java.util.Map;
 import java.util.Optional;
@@ -97,6 +98,10 @@ public class ShipLogicWebhookController {
             case "DELIVERED", "DELIVERY_CONFIRMED", "PARCEL_DELIVERED" -> {
                 order.setOrderStatus(Order.OrderStatus.DELIVERED);
                 order.setDeliveryConfirmed(true);
+                // Start 48h dispute window — auto-release scheduler fires if buyer doesn't dispute
+                if (order.getPayoutScheduledAt() == null) {
+                    order.setPayoutScheduledAt(LocalDateTime.now().plusHours(48));
+                }
                 orderRepository.save(order);
 
                 if (order.getTradeSafeAllocationId() != null) {

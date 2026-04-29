@@ -5,6 +5,7 @@ import DashboardPage from './pages/DashboardPage';
 import SellersPage from './pages/SellersPage';
 import ReportsPage from './pages/ReportsPage';
 import AdminUsersPage from './pages/AdminUsersPage';
+import DisputesPage from './pages/DisputesPage';
 import Layout from './components/Layout';
 
 function App() {
@@ -29,6 +30,7 @@ function App() {
                   <Route path="/sellers" element={<SellersPage />} />
                   <Route path="/reports" element={<ReportsPage />} />
                   <Route path="/admin-users" element={<AdminUsersPage />} />
+                  <Route path="/disputes" element={<DisputesPage />} />
                   <Route path="/" element={<Navigate to="/dashboard" />} />
                 </Routes>
               </Layout>

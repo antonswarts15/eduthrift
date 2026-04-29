@@ -17,6 +17,9 @@ export interface Order {
   sellerAlias?: string;
   buyerAlias?: string;
   isBuyer?: boolean;
+  disputeStatus?: 'NONE' | 'OPEN' | 'RESOLVED_REFUND' | 'RESOLVED_RELEASE';
+  disputeReason?: string;
+  deliveryConfirmed?: boolean;
 }
 
 interface OrdersStore {
@@ -65,7 +68,10 @@ export const useOrdersStore = create<OrdersStore>()(
         trackingNumber: o.trackingNumber,
         sellerAlias: o.sellerAlias,
         buyerAlias: o.buyerAlias,
-        isBuyer: o.isBuyer
+        isBuyer: o.isBuyer,
+        disputeStatus: o.disputeStatus,
+        disputeReason: o.disputeReason,
+        deliveryConfirmed: o.deliveryConfirmed ?? false
       }));
       set({ orders: backendOrders });
     } catch {

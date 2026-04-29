@@ -1,10 +1,7 @@
 import React, { useState } from 'react';
 import {
   IonButton,
-  IonCard,
-  IonCardContent,
-  IonCardHeader,
-  IonCardTitle,
+  IonIcon,
   IonItem,
   IonLabel,
   IonSelect,
@@ -16,126 +13,144 @@ import {
   IonToolbar,
   IonTitle,
   IonContent,
-  IonIcon
+  IonSpinner
 } from '@ionic/react';
-import { warningOutline, closeOutline } from 'ionicons/icons';
+import { warningOutline, closeOutline, checkmarkCircleOutline } from 'ionicons/icons';
+import { ordersApi } from '../services/api';
 
 interface DisputeFormProps {
-  orderId: string;
+  orderNumber: string;
   isOpen: boolean;
   onClose: () => void;
+  onSuccess: () => void;
 }
 
-const DisputeForm: React.FC<DisputeFormProps> = ({ orderId, isOpen, onClose }) => {
+const DISPUTE_TYPES: { value: string; label: string }[] = [
+  { value: 'Item not delivered', label: 'Item not delivered' },
+  { value: 'Item not as described', label: 'Item not as described' },
+  { value: 'Item arrived damaged', label: 'Item arrived damaged' },
+  { value: 'Other issue', label: 'Other issue' },
+];
+
+const DisputeForm: React.FC<DisputeFormProps> = ({ orderNumber, isOpen, onClose, onSuccess }) => {
   const [disputeType, setDisputeType] = useState('');
   const [description, setDescription] = useState('');
-  const [showToast, setShowToast] = useState(false);
-  const [toastMessage, setToastMessage] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
 
-  const submitDispute = async () => {
+  const reset = () => {
+    setDisputeType('');
+    setDescription('');
+    setSubmitting(false);
+    setSubmitted(false);
+    setErrorMsg('');
+  };
+
+  const handleClose = () => {
+    reset();
+    onClose();
+  };
+
+  const submit = async () => {
     if (!disputeType || !description.trim()) {
-      setToastMessage('Please select dispute type and provide description');
-      setShowToast(true);
+      setErrorMsg('Please select an issue type and describe the problem.');
       return;
     }
-
+    setSubmitting(true);
     try {
-      const response = await fetch('/api/disputes', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({
-          orderId,
-          disputeType,
-          description
-        })
-      });
-
-      if (response.ok) {
-        setToastMessage('Dispute submitted successfully. Our team will investigate within 24 hours.');
-        setShowToast(true);
-        onClose();
-      } else {
-        setToastMessage('Failed to submit dispute');
-        setShowToast(true);
-      }
-    } catch (error) {
-      setToastMessage('Failed to submit dispute');
-      setShowToast(true);
+      const reason = `${disputeType}: ${description.trim()}`;
+      await ordersApi.raiseDispute(orderNumber, reason);
+      setSubmitted(true);
+      onSuccess();
+    } catch (e: any) {
+      setErrorMsg(e.response?.data?.error || 'Failed to submit dispute. Please try again.');
+    } finally {
+      setSubmitting(false);
     }
   };
 
   return (
-    <>
-      <IonModal isOpen={isOpen} onDidDismiss={onClose}>
-        <IonHeader>
-          <IonToolbar>
-            <IonTitle>Report Issue</IonTitle>
-            <IonButton fill="clear" slot="end" onClick={onClose}>
-              <IonIcon icon={closeOutline} />
+    <IonModal isOpen={isOpen} onDidDismiss={handleClose}>
+      <IonHeader>
+        <IonToolbar>
+          <IonTitle>Report an Issue</IonTitle>
+          <IonButton fill="clear" slot="end" onClick={handleClose}>
+            <IonIcon icon={closeOutline} />
+          </IonButton>
+        </IonToolbar>
+      </IonHeader>
+      <IonContent className="ion-padding">
+        {submitted ? (
+          <div style={{ textAlign: 'center', padding: '40px 20px' }}>
+            <IonIcon icon={checkmarkCircleOutline} style={{ fontSize: '56px', color: '#22C55E' }} />
+            <h3 style={{ margin: '16px 0 8px' }}>Dispute Submitted</h3>
+            <p style={{ color: '#666', fontSize: '14px', lineHeight: '1.6' }}>
+              Our team will investigate and respond within 24 hours. Funds remain frozen until resolved.
+            </p>
+            <IonButton expand="block" onClick={handleClose} style={{ marginTop: '24px' }}>
+              Close
             </IonButton>
-          </IonToolbar>
-        </IonHeader>
-        <IonContent>
-          <div style={{ padding: '16px' }}>
-            <IonCard>
-              <IonCardHeader>
-                <IonCardTitle>
-                  <IonIcon icon={warningOutline} style={{ marginRight: '8px' }} />
-                  What's the issue?
-                </IonCardTitle>
-              </IonCardHeader>
-              <IonCardContent>
-                <IonItem>
-                  <IonLabel position="stacked">Issue Type</IonLabel>
-                  <IonSelect value={disputeType} onIonChange={e => setDisputeType(e.detail.value)}>
-                    <IonSelectOption value="non_delivery">Item not delivered</IonSelectOption>
-                    <IonSelectOption value="item_not_as_described">Item not as described</IonSelectOption>
-                    <IonSelectOption value="damaged_item">Item damaged</IonSelectOption>
-                    <IonSelectOption value="other">Other issue</IonSelectOption>
-                  </IonSelect>
-                </IonItem>
-
-                <IonItem>
-                  <IonLabel position="stacked">Description</IonLabel>
-                  <IonTextarea
-                    value={description}
-                    onIonInput={e => setDescription(e.detail.value!)}
-                    placeholder="Please describe the issue in detail..."
-                    rows={4}
-                  />
-                </IonItem>
-
-                <div style={{ marginTop: '16px', padding: '12px', backgroundColor: '#fff3cd', borderRadius: '8px' }}>
-                  <p style={{ margin: '0', fontSize: '12px', color: '#856404' }}>
-                    <strong>Note:</strong> Filing a dispute will pause any automatic refund process while we investigate. 
-                    Our team will review your case within 24 hours.
-                  </p>
-                </div>
-
-                <IonButton 
-                  expand="block" 
-                  color="warning"
-                  onClick={submitDispute}
-                  style={{ marginTop: '16px' }}
-                >
-                  Submit Dispute
-                </IonButton>
-              </IonCardContent>
-            </IonCard>
           </div>
-        </IonContent>
-      </IonModal>
+        ) : (
+          <>
+            <div style={{ padding: '12px 0 20px', borderBottom: '1px solid #eee', marginBottom: '16px' }}>
+              <p style={{ margin: 0, fontSize: '13px', color: '#856404', backgroundColor: '#fff3cd', padding: '12px', borderRadius: '8px', lineHeight: '1.6' }}>
+                <strong>Note:</strong> Submitting a dispute freezes the funds in escrow while we investigate.
+                Our team aims to resolve all disputes within 24 hours.
+              </p>
+            </div>
+
+            <IonItem>
+              <IonLabel position="stacked">Issue Type</IonLabel>
+              <IonSelect
+                value={disputeType}
+                onIonChange={e => setDisputeType(e.detail.value)}
+                placeholder="Select an issue type"
+              >
+                {DISPUTE_TYPES.map(t => (
+                  <IonSelectOption key={t.value} value={t.value}>{t.label}</IonSelectOption>
+                ))}
+              </IonSelect>
+            </IonItem>
+
+            <IonItem style={{ marginTop: '12px' }}>
+              <IonLabel position="stacked">Description</IonLabel>
+              <IonTextarea
+                value={description}
+                onIonInput={e => setDescription(e.detail.value!)}
+                placeholder="Please describe the issue in detail..."
+                rows={5}
+                maxlength={900}
+              />
+            </IonItem>
+
+            <IonButton
+              expand="block"
+              color="warning"
+              onClick={submit}
+              disabled={submitting}
+              style={{ marginTop: '24px' }}
+            >
+              {submitting ? <IonSpinner name="crescent" /> : (
+                <>
+                  <IonIcon icon={warningOutline} slot="start" />
+                  Submit Dispute
+                </>
+              )}
+            </IonButton>
+          </>
+        )}
+      </IonContent>
 
       <IonToast
-        isOpen={showToast}
-        message={toastMessage}
+        isOpen={!!errorMsg}
+        message={errorMsg}
         duration={4000}
-        onDidDismiss={() => setShowToast(false)}
+        color="danger"
+        onDidDismiss={() => setErrorMsg('')}
       />
-    </>
+    </IonModal>
   );
 };
 

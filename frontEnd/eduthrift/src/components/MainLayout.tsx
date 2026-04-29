@@ -129,6 +129,13 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   return (
     <>
       <IonMenu side="start" contentId="main-content">
+        <IonHeader>
+          <IonToolbar>
+            <div style={{ display: 'flex', alignItems: 'center', padding: '8px 16px' }}>
+              <img src={logo} alt="Eduthrift" style={{ height: '40px', objectFit: 'contain' }} />
+            </div>
+          </IonToolbar>
+        </IonHeader>
         <IonContent>
           <IonList>
             <IonItem button onClick={() => history.push('/home')}>

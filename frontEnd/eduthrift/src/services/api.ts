@@ -119,6 +119,8 @@ export const ordersApi = {
   getOrders: () => api.get('/orders'),
   getOrderById: (id: string) => api.get(`/orders/${id}`),
   updateOrderStatus: (id: string, status: string) => api.put(`/orders/${id}/status`, { status }),
+  raiseDispute: (orderNumber: string, reason: string) =>
+    api.post(`/orders/${orderNumber}/raise-dispute`, { reason }),
 };
 
 // Admin API

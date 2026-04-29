@@ -22,6 +22,7 @@ const Layout = ({ children }) => {
             <li><Link to="/sellers">Verify Sellers</Link></li>
             <li><Link to="/reports">Reports</Link></li>
             <li><Link to="/admin-users">Manage Admins</Link></li>
+            <li><Link to="/disputes">Disputes</Link></li>
           </ul>
         </nav>
 
