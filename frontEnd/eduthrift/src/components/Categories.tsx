@@ -99,7 +99,7 @@ import ClubSelector from './ClubSelector';
 import shopping from '../assets/shopping.svg';
 import clubClothing from '../assets/clubClothing.svg';
 import schoolUniform from '../assets/schoolUniform.svg';
-import stationery from '../assets/stationery.svg';
+import stationery from '../assets/shopping.svg';
 import matric from '../assets/matric.svg';
 
 
@@ -954,9 +954,9 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
                   e.currentTarget.style.boxShadow = '';
                 }}
               >
-                <IonCardContent style={{
-                  textAlign: 'center',
-                  padding: '16px',
+                <IonCardContent style={{ 
+                  textAlign: 'center', 
+                  padding: '16px', 
                   position: 'relative',
                   height: '100%',
                   display: 'flex',
@@ -976,6 +976,7 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
                           left: '50%',
                           transform: 'translate(-50%, -50%)',
                           zIndex: 1,
+                          strokeWidth: '0.3px',
                           opacity: 0.25,
                           filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))'
                         }}
