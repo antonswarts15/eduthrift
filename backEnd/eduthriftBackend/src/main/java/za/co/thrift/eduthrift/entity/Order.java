@@ -202,10 +202,7 @@ public class Order {
     }
 
     public enum PaymentMethod {
-        PAYSTACK,   // card — Paystack holds funds via sub-account split
-        OZOW,       // instant EFT — funds land in Eduthrift collection account
-        PEACH,      // Peach Payments — card / EFT (integration pending)
-        STITCH      // Stitch Pay by Bank — instant EFT (integration pending)
+        TRADESAFE   // instant EFT via TradeSafe licensed escrow — funds held by TradeSafe, not Eduthrift
     }
 
     public enum PayoutStatus {

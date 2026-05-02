@@ -12,20 +12,11 @@ import java.util.Map;
  *
  * Example application.properties:
  * <pre>
- * payment.default-provider=PAYSTACK
- * payment.providers.paystack.enabled=true
- * payment.providers.ozow.enabled=true
- * payment.providers.peach.enabled=false
- * payment.providers.stitch.enabled=false
+ * payment.default-provider=TRADESAFE
  * </pre>
  *
  * {@link za.co.thrift.eduthrift.service.payment.PaymentService} reads
  * {@link #getDefaultProvider()} when an order has no {@code paymentMethod} set.
- *
- * Individual provider beans are conditionally registered via
- * {@code @ConditionalOnProperty(name="payment.providers.<name>.enabled", havingValue="true")}
- * on each {@link za.co.thrift.eduthrift.service.payment.PaymentProvider} implementation.
- * Paystack and Ozow are always-on (no conditional) because they are live in production.
  */
 @Configuration
 @ConfigurationProperties(prefix = "payment")
@@ -34,9 +25,9 @@ public class PaymentConfig {
 
     /**
      * Name of the default provider to use when an order has no explicit payment method.
-     * Must match an {@code Order.PaymentMethod} enum constant name (e.g. {@code PAYSTACK}).
+     * Must match an {@code Order.PaymentMethod} enum constant name.
      */
-    private String defaultProvider = "PAYSTACK";
+    private String defaultProvider = "TRADESAFE";
 
     /**
      * Per-provider enabled flags. The key must be lower-case (e.g. {@code paystack}, {@code ozow}).

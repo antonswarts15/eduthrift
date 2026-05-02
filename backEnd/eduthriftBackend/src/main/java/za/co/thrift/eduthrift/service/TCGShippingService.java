@@ -13,7 +13,8 @@ import java.util.*;
 @Service
 public class TCGShippingService {
 
-    private static final String BASE_URL = "https://api.shiplogic.com";
+    @Value("${shiplogic.api.url:https://api.portal.thecourierguy.co.za}")
+    private String baseUrl;
 
     @Value("${shiplogic.api.key:}")
     private String apiKey;
@@ -32,7 +33,7 @@ public class TCGShippingService {
      */
     @SuppressWarnings("unchecked")
     public List<Map<String, Object>> getPickupPoints(double lat, double lng) {
-        String url = BASE_URL + "/pickup-points?lat=" + lat + "&lng=" + lng
+        String url = baseUrl + "/pickup-points?lat=" + lat + "&lng=" + lng
                 + "&order_closest=true&type=locker";
         ResponseEntity<Map> response = restTemplate.exchange(
                 url, HttpMethod.GET, new HttpEntity<>(headers()), Map.class);
@@ -58,7 +59,7 @@ public class TCGShippingService {
         body.put("delivery_min_date", LocalDate.now().plusDays(2).toString());
 
         ResponseEntity<Map> response = restTemplate.exchange(
-                BASE_URL + "/v2/rates",
+                baseUrl + "/v2/rates",
                 HttpMethod.POST,
                 new HttpEntity<>(body, headers()),
                 Map.class);
@@ -102,7 +103,7 @@ public class TCGShippingService {
         body.put("mute_notifications", false);
 
         ResponseEntity<Map> response = restTemplate.exchange(
-                BASE_URL + "/shipments",
+                baseUrl + "/shipments",
                 HttpMethod.POST,
                 new HttpEntity<>(body, headers()),
                 Map.class);
@@ -135,7 +136,7 @@ public class TCGShippingService {
         body.put("delivery_min_date", LocalDate.now().plusDays(2).toString());
 
         ResponseEntity<Map> response = restTemplate.exchange(
-                BASE_URL + "/v2/rates",
+                baseUrl + "/v2/rates",
                 HttpMethod.POST,
                 new HttpEntity<>(body, headers()),
                 Map.class);

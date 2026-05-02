@@ -8,6 +8,7 @@ import { useAuthStore } from '../stores/authStore';
 import { useUserStore } from '../stores/userStore';
 import adBanner from '../assets/NewAddBanner.jpg';
 
+
 const Seller: React.FC = () => {
   const history = useHistory();
   const { isAuthenticated } = useAuthStore();

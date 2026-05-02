@@ -17,6 +17,7 @@ import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
 import { Item } from '../types/models';
 
+
 const CategoryPage: React.FC = () => {
   const { category, subcategory, sport } = useParams<{
     category: string;

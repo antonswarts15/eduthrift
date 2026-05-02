@@ -39,19 +39,23 @@ services:
       FILE_UPLOAD_DIR: /app/uploads
       APP_BASE_URL: ${APP_BASE_URL:-https://eduthrift.co.za}
 
+      # TradeSafe — sole payment and escrow provider
+      TRADESAFE_CLIENT_ID: ${TRADESAFE_CLIENT_ID}
+      TRADESAFE_CLIENT_SECRET: ${TRADESAFE_CLIENT_SECRET}
+      TRADESAFE_API_URL: ${TRADESAFE_API_URL:-https://api.tradesafe.co.za}
+      TRADESAFE_AUTH_URL: ${TRADESAFE_AUTH_URL:-https://auth.tradesafe.co.za}
+      TRADESAFE_CF_CLIENT_ID: ${TRADESAFE_CF_CLIENT_ID:-}
+      TRADESAFE_CF_CLIENT_SECRET: ${TRADESAFE_CF_CLIENT_SECRET:-}
+
       # PUDO
       PUDO_API_KEY: ${PUDO_API_KEY}
       PUDO_API_URL: ${PUDO_API_URL:-https://api.pudo.co.za}
       PUDO_WEBHOOK_SECRET: ${PUDO_WEBHOOK_SECRET}
 
-      # Courier Guy (ShipLogic)
+      # Courier Guy (formerly ShipLogic)
+      SHIPLOGIC_API_URL: ${SHIPLOGIC_API_URL:-https://api.portal.thecourierguy.co.za}
       SHIPLOGIC_API_KEY: ${SHIPLOGIC_API_KEY}
-
-      # TradeSafe
-      TRADESAFE_CLIENT_ID: ${TRADESAFE_CLIENT_ID}
-      TRADESAFE_CLIENT_SECRET: ${TRADESAFE_CLIENT_SECRET}
-      TRADESAFE_API_URL: ${TRADESAFE_API_URL:-https://api.tradesafe.co.za}
-      TRADESAFE_AUTH_URL: ${TRADESAFE_AUTH_URL:-https://auth.tradesafe.co.za}
+      SHIPLOGIC_WEBHOOK_SECRET: ${SHIPLOGIC_WEBHOOK_SECRET:-}
 
       # Zoho Mail (SMTP)
       MAIL_HOST: ${MAIL_HOST:-smtppro.zoho.com}
@@ -59,6 +63,16 @@ services:
       MAIL_USERNAME: ${MAIL_USERNAME:-support@eduthrift.co.za}
       MAIL_PASSWORD: ${MAIL_PASSWORD}
       MAIL_ADMIN_EMAIL: ${MAIL_ADMIN_EMAIL:-support@eduthrift.co.za}
+
+      # Firebase push notifications
+      FIREBASE_SERVICE_ACCOUNT_JSON: ${FIREBASE_SERVICE_ACCOUNT_JSON}
+
+      # Admin seed account
+      ADMIN_INITIAL_PASSWORD: ${ADMIN_INITIAL_PASSWORD}
+      CREATE_TEST_DATA: ${CREATE_TEST_DATA:-false}
+
+      # Internal API base URL (used in webhook notify URLs)
+      API_BASE_URL: ${API_BASE_URL:-https://api.eduthrift.co.za}
     volumes:
       - /home/almalinux/eduthrift-uploads:/app/uploads:z
     depends_on:

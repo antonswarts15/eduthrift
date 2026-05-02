@@ -39,15 +39,18 @@ public class EscrowService {
     private final PaymentService paymentService;
     private final LedgerService ledgerService;
     private final EmailService emailService;
+    private final TradeSafeService tradeSafeService;
 
     public EscrowService(OrderRepository orderRepository,
                           PaymentService paymentService,
                           LedgerService ledgerService,
-                          EmailService emailService) {
-        this.orderRepository = orderRepository;
-        this.paymentService  = paymentService;
-        this.ledgerService   = ledgerService;
-        this.emailService    = emailService;
+                          EmailService emailService,
+                          TradeSafeService tradeSafeService) {
+        this.orderRepository  = orderRepository;
+        this.paymentService   = paymentService;
+        this.ledgerService    = ledgerService;
+        this.emailService     = emailService;
+        this.tradeSafeService = tradeSafeService;
     }
 
     /**
@@ -83,8 +86,24 @@ public class EscrowService {
         order.setDeliveryConfirmedDate(LocalDateTime.now());
         order.setOrderStatus(Order.OrderStatus.DELIVERED);
         orderRepository.save(order);
-
         emailService.sendDeliveryConfirmedEmails(order);
+
+        // For TradeSafe orders, notify TradeSafe that delivery is accepted.
+        // Their COMPLETED webhook then triggers the actual escrow release to the seller —
+        // we must NOT call releaseToSeller() here or the state will advance prematurely.
+        if (order.getPaymentMethod() == Order.PaymentMethod.TRADESAFE) {
+            if (order.getTradeSafeAllocationId() != null) {
+                try {
+                    tradeSafeService.acceptDelivery(order.getTradeSafeAllocationId());
+                    log.info("TradeSafe acceptDelivery called for order {}", orderNumber);
+                } catch (Exception e) {
+                    log.warn("TradeSafe acceptDelivery failed for order {} — delivery still confirmed locally: {}",
+                            orderNumber, e.getMessage());
+                }
+            }
+            return;
+        }
+
         releaseToSeller(order);
     }
 
@@ -207,6 +226,13 @@ public class EscrowService {
         log.info("Auto-releasing {} orders with expired 72h escrow hold", expired.size());
 
         for (Order order : expired) {
+            // TradeSafe manages its own inspection/release timeline — skip these orders entirely.
+            // TradeSafe's daysToInspect window handles the auto-release on their side.
+            if (order.getPaymentMethod() == Order.PaymentMethod.TRADESAFE) {
+                log.debug("Skipping auto-release for TradeSafe order {} — managed by TradeSafe escrow",
+                        order.getOrderNumber());
+                continue;
+            }
             try {
                 log.info("Auto-releasing order {} (72h hold expired)", order.getOrderNumber());
                 order.setDeliveryConfirmed(true);

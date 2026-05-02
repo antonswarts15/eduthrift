@@ -51,14 +51,14 @@ const Home: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   const categories = [
-    { name: 'School & sport uniform', icon: schoolOutline, color: '#004aad' },
-    { name: 'Club clothing',          icon: shirtOutline,   color: '#E74C3C' },
-    { name: 'Training wear',          icon: fitnessOutline, color: '#27AE60' },
-    { name: 'Belts, bags & shoes',    icon: bagOutline,     color: '#8E44AD' },
-    { name: 'Sports equipment',       icon: basketballOutline, color: '#E67E22' },
-    { name: 'Textbooks',              icon: libraryOutline, color: '#16A085' },
-    { name: 'Stationery',             icon: pencilOutline,  color: '#F39C12' },
-    { name: 'Matric dance clothing',  icon: roseOutline,    color: '#E91E63' },
+    { name: 'School & sport uniform', icon: schoolOutline,      color: '#004aad' },
+    { name: 'Club clothing',          icon: shirtOutline,       color: '#E74C3C' },
+    { name: 'Training wear',          icon: fitnessOutline,     color: '#27AE60' },
+    { name: 'Belts, bags & shoes',    icon: bagOutline,         color: '#8E44AD' },
+    { name: 'Sports equipment',       icon: basketballOutline,  color: '#E67E22' },
+    { name: 'Textbooks',              icon: libraryOutline,     color: '#16A085' },
+    { name: 'Stationery',             icon: pencilOutline,      color: '#F39C12' },
+    { name: 'Matric dance clothing',  icon: roseOutline,        color: '#E91E63' },
   ];
 
   useEffect(() => {

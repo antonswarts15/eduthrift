@@ -96,6 +96,13 @@ import {
 import SchoolSelector from './SchoolSelector';
 import ClubSelector from './ClubSelector';
 
+import shopping from '../assets/shopping.svg';
+import clubClothing from '../assets/clubClothing.svg';
+import schoolUniform from '../assets/schoolUniform.svg';
+import stationery from '../assets/stationery.svg';
+import matric from '../assets/matric.svg';
+
+
 const CropModal: React.FC<{ 
   isOpen: boolean, 
   onClose: () => void, 
@@ -502,14 +509,14 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
   };
 
   const mainCategories = [
-    { name: 'School & sport uniform', icon: schoolOutline },
-    { name: 'Club clothing', icon: shirtOutline },
+    { name: 'School & sport uniform', icon: schoolUniform },
+    { name: 'Club clothing', icon: clubClothing },
     { name: 'Training wear', icon: fitnessOutline },
     { name: 'Belts, bags & shoes', icon: bagOutline },
     { name: 'Sports equipment', icon: basketballOutline },
     { name: 'Textbooks', icon: libraryOutline },
-    { name: 'Stationery', icon: pencilOutline },
-    { name: 'Matric dance clothing', icon: roseOutline }
+    { name: 'Stationery', icon: stationery },
+    { name: 'Matric dance clothing', icon: matric }
   ];
 
   const uniformTypes = ['School Uniform', 'Sports Uniform'];
@@ -947,9 +954,9 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
                   e.currentTarget.style.boxShadow = '';
                 }}
               >
-                <IonCardContent style={{ 
-                  textAlign: 'center', 
-                  padding: '16px', 
+                <IonCardContent style={{
+                  textAlign: 'center',
+                  padding: '16px',
                   position: 'relative',
                   height: '100%',
                   display: 'flex',
@@ -958,21 +965,55 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
                   alignItems: 'center'
                 }}>
                   {hasIcons && (
-                    <IonIcon 
-                      icon={item.icon} 
-                      style={{ 
-                        fontSize: '70px', 
-                        color: rainbowColors[index % rainbowColors.length], 
-                        position: 'absolute', 
-                        top: '50%', 
-                        left: '50%', 
-                        transform: 'translate(-50%, -50%)', 
-                        zIndex: 1,
-                        strokeWidth: '0.3px',
-                        opacity: 0.25,
-                        filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))'
-                      }} 
-                    />
+                    typeof item.icon === 'string' && item.icon.includes('.svg') ? (
+                      <IonIcon
+                        src={item.icon}
+                        style={{
+                          fontSize: '70px',
+                          color: rainbowColors[index % rainbowColors.length],
+                          position: 'absolute',
+                          top: '50%',
+                          left: '50%',
+                          transform: 'translate(-50%, -50%)',
+                          zIndex: 1,
+                          opacity: 0.25,
+                          filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))'
+                        }}
+                      />
+                    ) : typeof item.icon === 'string' && item.icon.includes('.png') ? (
+                      <img
+                        src={item.icon}
+                        alt=""
+                        style={{
+                          width: '70px',
+                          height: '70px',
+                          objectFit: 'contain',
+                          position: 'absolute',
+                          top: '50%',
+                          left: '50%',
+                          transform: 'translate(-50%, -50%)',
+                          zIndex: 1,
+                          opacity: 0.25,
+                          filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))'
+                        }}
+                      />
+                    ) : (
+                      <IonIcon
+                        icon={item.icon}
+                        style={{
+                          fontSize: '70px',
+                          color: rainbowColors[index % rainbowColors.length],
+                          position: 'absolute',
+                          top: '50%',
+                          left: '50%',
+                          transform: 'translate(-50%, -50%)',
+                          zIndex: 1,
+                          strokeWidth: '0.3px',
+                          opacity: 0.25,
+                          filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))'
+                        }}
+                      />
+                    )
                   )}
                   <div style={{
                     position: 'relative',
