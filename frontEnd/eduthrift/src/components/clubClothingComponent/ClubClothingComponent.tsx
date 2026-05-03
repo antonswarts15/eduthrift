@@ -580,8 +580,20 @@ const ClubClothingComponent: React.FC<ClubClothingProps> = ({ userType, onItemSe
 
   return (
     <div>
-      {categoryFilter === 'all' && <h2>Club Clothing</h2>}
-      
+      <div style={{
+        marginBottom: '16px', textAlign: 'center',
+        backgroundColor: 'rgba(231, 76, 60, 0.1)', border: '2px solid #E74C3C',
+        borderRadius: '12px', padding: '16px'
+      }}>
+        <IonIcon icon={shirtOutline} style={{ fontSize: '32px', color: '#E74C3C', marginBottom: '8px' }} />
+        <h2 style={{ margin: '0', color: '#E74C3C', fontSize: '18px', fontWeight: 'bold' }}>
+          Club Clothing
+        </h2>
+        <p style={{ margin: '4px 0 0 0', color: '#666', fontSize: '14px' }}>
+          Sports club & team clothing
+        </p>
+      </div>
+
       {/* Prominent Club Header */}
       {propClubName && (
         <div style={{ 

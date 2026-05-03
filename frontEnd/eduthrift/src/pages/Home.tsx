@@ -12,7 +12,6 @@ import {
 } from '@ionic/react';
 import {
   schoolOutline,
-  basketballOutline,
   shieldCheckmarkOutline,
   locationOutline,
   phonePortraitOutline,
@@ -27,17 +26,19 @@ import {
   notificationsOutline,
   cameraOutline,
   libraryOutline,
-  pencilOutline,
-  shirtOutline,
-  roseOutline,
-  fitnessOutline,
   bagOutline
 } from 'ionicons/icons';
 import { useHistory } from 'react-router-dom';
 import logo from '../assets/logo.png';
-import homeVideo from '../assets/Homevid.mp4';
+import homeVideo from '../assets/1.mp4';
 import buyerIcon from '../assets/buyerIcon.jpg';
 import sellerIcon from '../assets/sellerIcon.jpg';
+import sportingIcon from '../assets/sportEquipment.svg';
+import clubClothingIcon from '../assets/clubClothing1.svg';
+import schoolUniformIcon from '../assets/schoolUniform1.svg';
+import stationeryIcon from '../assets/stationery.svg';
+import matricIcon from '../assets/dress.svg';
+import trainingIcon from '../assets/training.svg';
 import { itemsApi } from '../services/api';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay } from 'swiper/modules';
@@ -51,14 +52,14 @@ const Home: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   const categories = [
-    { name: 'School & sport uniform', icon: schoolOutline,      color: '#004aad' },
-    { name: 'Club clothing',          icon: shirtOutline,       color: '#E74C3C' },
-    { name: 'Training wear',          icon: fitnessOutline,     color: '#27AE60' },
+    { name: 'School & sport uniform', icon: schoolUniformIcon,  color: '#004aad' },
+    { name: 'Club clothing',          icon: clubClothingIcon,   color: '#E74C3C' },
+    { name: 'Training wear',          icon: trainingIcon,       color: '#27AE60' },
     { name: 'Belts, bags & shoes',    icon: bagOutline,         color: '#8E44AD' },
-    { name: 'Sports equipment',       icon: basketballOutline,  color: '#E67E22' },
+    { name: 'Sports equipment',       icon: sportingIcon,       color: '#E67E22' },
     { name: 'Textbooks',              icon: libraryOutline,     color: '#16A085' },
-    { name: 'Stationery',             icon: pencilOutline,      color: '#F39C12' },
-    { name: 'Matric dance clothing',  icon: roseOutline,        color: '#E91E63' },
+    { name: 'Stationery',             icon: stationeryIcon,     color: '#F39C12' },
+    { name: 'Matric dance clothing',  icon: matricIcon,         color: '#E91E63' },
   ];
 
   useEffect(() => {
@@ -90,12 +91,19 @@ const Home: React.FC = () => {
 
         {/* Video */}
         <IonCard>
-          <IonCardContent style={{ padding: '0' }}>
-            <video autoPlay muted loop playsInline style={{ width: '100%', objectFit: 'cover', borderRadius: '8px' }}>
-              <source src={homeVideo} type="video/mp4" />
-            </video>
-          </IonCardContent>
-        </IonCard>
+  <IonCardContent style={{ padding: '0' }}>
+    <video
+      autoPlay
+      muted
+      loop
+      playsInline
+      className="home-video"
+      style={{ width: '100%', objectFit: 'cover', objectPosition: 'bottom', borderRadius: '8px' }}
+    >
+      <source src={homeVideo} type="video/mp4" />
+    </video>
+  </IonCardContent>
+</IonCard>
 
         {/* Logo overlay */}
         <div style={{
@@ -183,7 +191,11 @@ const Home: React.FC = () => {
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         margin: '0 auto 6px'
                       }}>
-                        <IonIcon icon={cat.icon} style={{ fontSize: '26px', color: cat.color }} />
+                        {typeof cat.icon === 'string' && cat.icon.includes('.svg') ? (
+                          <IonIcon src={cat.icon} style={{ fontSize: '26px', color: cat.color }} />
+                        ) : (
+                          <IonIcon icon={cat.icon as any} style={{ fontSize: '26px', color: cat.color }} />
+                        )}
                       </div>
                       <p style={{ margin: '0 0 3px', fontSize: '10px', color: '#2C3E50', lineHeight: '1.3' }}>{cat.name}</p>
                       {categoryCounts[cat.name] > 0 && (
@@ -319,15 +331,7 @@ const Home: React.FC = () => {
                     </div>
                   </div>
                 </IonCol>
-                <IonCol size="12" sizeMd="6">
-                  <div style={{ display: 'flex', alignItems: 'center', padding: '8px' }}>
-                    <IonIcon icon={cardOutline} style={{ fontSize: '24px', color: '#E74C3C', marginRight: '12px' }} />
-                    <div style={{ textAlign: 'left' }}>
-                      <h4 style={{ fontSize: '14px', margin: '0', color: '#2C3E50' }}>Payment Methods</h4>
-                      <p style={{ fontSize: '12px', color: '#666', margin: '0' }}>Currently supporting Ozow and PayStack</p>
-                    </div>
-                  </div>
-                </IonCol>
+               
                 <IonCol size="12" sizeMd="6">
                   <div style={{ display: 'flex', alignItems: 'center', padding: '8px' }}>
                     <IonIcon icon={phonePortraitOutline} style={{ fontSize: '24px', color: '#8E44AD', marginRight: '12px' }} />

@@ -478,7 +478,19 @@ const BeltsBagsShoesComponent: React.FC<BeltsBagsShoesProps> = ({ userType, onIt
   // Main view with accordions
   return (
     <div>
-      <h2 style={{ textAlign: 'center', marginBottom: '16px' }}>Belts, Bags & Shoes</h2>
+      <div style={{
+        marginBottom: '16px', textAlign: 'center',
+        backgroundColor: 'rgba(142, 68, 173, 0.1)', border: '2px solid #8E44AD',
+        borderRadius: '12px', padding: '16px'
+      }}>
+        <IonIcon icon={bagOutline} style={{ fontSize: '32px', color: '#8E44AD', marginBottom: '8px' }} />
+        <h2 style={{ margin: '0', color: '#8E44AD', fontSize: '18px', fontWeight: 'bold' }}>
+          Belts, Bags & Shoes
+        </h2>
+        <p style={{ margin: '4px 0 0 0', color: '#666', fontSize: '14px' }}>
+          School & sports footwear, bags and accessories
+        </p>
+      </div>
 
       <IonAccordionGroup>
         {Object.entries(beltsBagsShoesCategories).map(([category, categoryData]) => (

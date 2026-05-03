@@ -310,9 +310,19 @@ const Stationery: React.FC<StationeryProps> = ({ userType, onItemSelect, categor
 
   return (
     <div style={{ padding: '16px' }}>
-      {categoryFilter === 'all' && <h2 style={{ margin: 0, marginBottom: '16px' }}>Stationery</h2>}
-
-      <h3 style={{ margin: '16px 0', color: '#666' }}>Available Stationery Items</h3>
+      <div style={{
+        marginBottom: '16px', textAlign: 'center',
+        backgroundColor: 'rgba(243, 156, 18, 0.1)', border: '2px solid #F39C12',
+        borderRadius: '12px', padding: '16px'
+      }}>
+        <IonIcon icon={pencilOutline} style={{ fontSize: '32px', color: '#F39C12', marginBottom: '8px' }} />
+        <h2 style={{ margin: '0', color: '#F39C12', fontSize: '18px', fontWeight: 'bold' }}>
+          Stationery
+        </h2>
+        <p style={{ margin: '4px 0 0 0', color: '#666', fontSize: '14px' }}>
+          School stationery & art supplies
+        </p>
+      </div>
       
       <div style={{ backgroundColor: 'transparent', border: '1px solid #444', padding: '12px', borderRadius: '8px', marginBottom: '16px' }}>
         <h4 style={{ margin: '0 0 12px 0', fontSize: '14px', color: '#666' }}>Filters</h4>

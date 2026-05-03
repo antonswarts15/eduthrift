@@ -404,3 +404,9 @@ ion-item:hover {
 .p-md { padding: 16px !important; }
 .p-lg { padding: 24px !important; }
 .p-xl { padding: 32px !important; }
+/* Home page video — full height on mobile, capped on desktop */
+@media (min-width: 768px) {
+  .home-video {
+    height: 40vh;
+  }
+}

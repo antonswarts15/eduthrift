@@ -685,8 +685,20 @@ const SchoolUniformComponent: React.FC<SchoolUniformProps> = ({ userType, onItem
 
   return (
     <div>
-      {categoryFilter === 'all' && <h2>School Uniform</h2>}
-      
+      <div style={{
+        marginBottom: '16px', textAlign: 'center',
+        backgroundColor: 'rgba(0, 74, 173, 0.1)', border: '2px solid #004aad',
+        borderRadius: '12px', padding: '16px'
+      }}>
+        <IonIcon icon={schoolOutline} style={{ fontSize: '32px', color: '#004aad', marginBottom: '8px' }} />
+        <h2 style={{ margin: '0', color: '#004aad', fontSize: '18px', fontWeight: 'bold' }}>
+          School & Sport Uniform
+        </h2>
+        <p style={{ margin: '4px 0 0 0', color: '#666', fontSize: '14px' }}>
+          School uniforms, sports kits & accessories
+        </p>
+      </div>
+
       {/* Prominent School Header */}
       {propSchoolName && (
         <div style={{ 

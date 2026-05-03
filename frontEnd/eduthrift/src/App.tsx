@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect } from 'react';
 import { Redirect, Route } from 'react-router-dom';
 import { isLoggedIn } from './utils/auth';
 import {
@@ -7,7 +7,6 @@ import {
   setupIonicReact
 } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
-import loginVideo from './assets/Loginvid.mp4';
 import Welcome from './pages/Welcome';
 import LoginRegisterPage from './pages/LoginRegisterPage';
 import MainLayout from './components/MainLayout';
@@ -84,48 +83,12 @@ const AdminRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 };
 
 const App: React.FC = () => {
-  const [showVideo, setShowVideo] = useState(true);
-  const videoRef = useRef<HTMLVideoElement>(null);
-
-  useEffect(() => {
-    if (videoRef.current) {
-      videoRef.current.play();
-    }
-  }, []);
-
   // Register for push notifications once the user is logged in
   useEffect(() => {
     if (isLoggedIn()) {
       setupPushNotifications();
     }
   }, []);
-
-  if (showVideo) {
-    return (
-      <IonApp>
-        <video
-          ref={videoRef}
-          onEnded={() => setShowVideo(false)}
-          onClick={() => setShowVideo(false)}
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: '50%',
-            transform: 'translateX(-50%)',
-            width: '100vw',
-            height: '100vh',
-            objectFit: 'fill',
-            cursor: 'pointer'
-          }}
-          muted
-          playsInline
-          webkit-playsinline="true"
-        >
-          <source src={loginVideo} type="video/mp4" />
-        </video>
-      </IonApp>
-    );
-  }
 
   return (
     <IonApp>

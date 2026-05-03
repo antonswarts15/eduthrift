@@ -86,6 +86,7 @@ import {
   cropOutline,
   peopleOutline,
   shieldCheckmarkOutline,
+  cutOutline,
   documentOutline,
   checkmarkCircle,
   trashOutline,
@@ -96,11 +97,12 @@ import {
 import SchoolSelector from './SchoolSelector';
 import ClubSelector from './ClubSelector';
 
-import shopping from '../assets/shopping.svg';
-import clubClothing from '../assets/clubClothing.svg';
-import schoolUniform from '../assets/schoolUniform.svg';
-import stationery from '../assets/shopping.svg';
-import matric from '../assets/matric.svg';
+import sporting from '../assets/sportEquipment.svg';
+import clubClothing from '../assets/clubClothing1.svg';
+import schoolUniform from '../assets/schoolUniform1.svg';
+import stationery from '../assets/stationery.svg';
+import matric from '../assets/dress.svg';
+import training from '../assets/training.svg';
 
 
 const CropModal: React.FC<{ 
@@ -511,9 +513,9 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
   const mainCategories = [
     { name: 'School & sport uniform', icon: schoolUniform },
     { name: 'Club clothing', icon: clubClothing },
-    { name: 'Training wear', icon: fitnessOutline },
+    { name: 'Training wear', icon: training },
     { name: 'Belts, bags & shoes', icon: bagOutline },
-    { name: 'Sports equipment', icon: basketballOutline },
+    { name: 'Sports equipment', icon: sporting },
     { name: 'Textbooks', icon: libraryOutline },
     { name: 'Stationery', icon: stationery },
     { name: 'Matric dance clothing', icon: matric }
@@ -969,9 +971,10 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
                       <IonIcon
                         src={item.icon}
                         style={{
-                          fontSize: '70px',
+                          fontSize: '80px',
                           color: rainbowColors[index % rainbowColors.length],
                           position: 'absolute',
+                          fontWeight: 'bold',
                           top: '50%',
                           left: '50%',
                           transform: 'translate(-50%, -50%)',
@@ -1002,7 +1005,7 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
                       <IonIcon
                         icon={item.icon}
                         style={{
-                          fontSize: '70px',
+                          fontSize: '80px',
                           color: rainbowColors[index % rainbowColors.length],
                           position: 'absolute',
                           top: '50%',
@@ -1040,7 +1043,7 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
                         backgroundColor: rainbowColors[index % rainbowColors.length] + '22',
                         color: rainbowColors[index % rainbowColors.length],
                         fontSize: '11px',
-                        fontWeight: '600',
+                        fontWeight: '800',
                         padding: '2px 8px',
                         borderRadius: '10px'
                       }}>
@@ -2030,6 +2033,20 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
             </div>
           )}
           {currentLevel === 'sportEquipment' && (
+            <div>
+            <div style={{
+              marginBottom: '16px', textAlign: 'center',
+              backgroundColor: 'rgba(230, 126, 34, 0.1)', border: '2px solid #E67E22',
+              borderRadius: '12px', padding: '16px'
+            }}>
+              <IonIcon icon={basketballOutline} style={{ fontSize: '32px', color: '#E67E22', marginBottom: '8px' }} />
+              <h2 style={{ margin: '0', color: '#E67E22', fontSize: '18px', fontWeight: 'bold' }}>
+                Sports Equipment
+              </h2>
+              <p style={{ margin: '4px 0 0 0', color: '#666', fontSize: '14px' }}>
+                Equipment & gear for all sports
+              </p>
+            </div>
             <IonAccordionGroup>
               {Object.entries(sportCategories).map(([categoryName, categoryData]) => (
                 <IonAccordion key={categoryName} value={categoryName}>
@@ -2059,6 +2076,7 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
                 </IonAccordion>
               ))}
             </IonAccordionGroup>
+            </div>
           )}
           {currentLevel === 'schoolItems' && (
             <SchoolUniformComponent

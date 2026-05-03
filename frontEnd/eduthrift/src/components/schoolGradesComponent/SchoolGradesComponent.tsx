@@ -1039,8 +1039,19 @@ const SchoolGradesComponent: React.FC<SchoolGradesComponentProps> = ({
 
   return (
     <div style={{ padding: '16px' }}>
-      <h2 style={{ margin: '0 0 16px 0' }}>School Textbooks</h2>
-      <h3 style={{ margin: '0 0 16px 0', color: '#666' }}>Select Grade Level</h3>
+      <div style={{
+        marginBottom: '16px', textAlign: 'center',
+        backgroundColor: 'rgba(22, 160, 133, 0.1)', border: '2px solid #16A085',
+        borderRadius: '12px', padding: '16px'
+      }}>
+        <IonIcon icon={libraryOutline} style={{ fontSize: '32px', color: '#16A085', marginBottom: '8px' }} />
+        <h2 style={{ margin: '0', color: '#16A085', fontSize: '18px', fontWeight: 'bold' }}>
+          School Textbooks
+        </h2>
+        <p style={{ margin: '4px 0 0 0', color: '#666', fontSize: '14px' }}>
+          Select a grade to browse available textbooks
+        </p>
+      </div>
       
       <IonGrid>
         <IonRow>
