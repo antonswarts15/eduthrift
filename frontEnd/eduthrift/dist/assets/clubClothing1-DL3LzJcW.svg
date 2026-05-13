@@ -1,6 +1,6 @@
 <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
-	 width="100%" viewBox="0 0 496 496" enable-background="new 0 0 496 496" xml:space="preserve">
-<path fill="currentColor" opacity="1.000000" stroke="currentColor" stroke-width="6.000000"
+	 width="120%" viewBox="0 0 496 496" enable-background="new 0 0 496 496" xml:space="preserve">
+<path fill="currentColor" opacity="1.000000" stroke="currentColor" stroke-width="5.000000"
 	d="
 M108.887184,210.892487 
 	C104.102211,215.315521 99.675026,219.611710 95.018402,223.642838 
@@ -246,7 +246,7 @@ M255.398361,336.918823
 	C250.476181,332.687378 251.973358,333.818359 252.980423,334.880798 
 	C253.549728,335.481354 254.233444,335.973450 255.398361,336.918823 
 z"/>
-<path fill="currentColor" opacity="1.000000" stroke="currentColor" stroke-width="6.000000"
+<path fill="currentColor" opacity="1.000000" stroke="none" 
 	d="
 M335.604492,180.831573 
 	C310.415619,190.926987 284.320190,175.624619 282.099701,149.193054 
@@ -261,7 +261,7 @@ M331.792206,127.594765
 	C333.405212,164.830322 339.558075,159.101318 341.479889,150.005478 
 	C343.403198,140.902618 340.464874,133.257568 331.792206,127.594765 
 z"/>
-<path fill="currentColor" opacity="1.000000" stroke="currentColor" stroke-width="6.000000"
+<path fill="currentColor" opacity="1.000000" stroke="none" 
 	d="
 M145.999847,450.420532 
 	C137.513840,450.418640 129.527832,450.427277 121.541893,450.404968 

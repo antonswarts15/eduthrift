@@ -92,7 +92,8 @@ import {
   trashOutline,
   eyeOutline,
   checkmarkOutline,
-  listOutline
+  listOutline,
+  baseballOutline
 } from 'ionicons/icons';
 import SchoolSelector from './SchoolSelector';
 import ClubSelector from './ClubSelector';
@@ -103,7 +104,41 @@ import schoolUniform from '../assets/schoolUniform1.svg';
 import stationery from '../assets/stationery.svg';
 import matric from '../assets/dress.svg';
 import training from '../assets/training.svg';
-
+import iceSkating from '../assets/iceSkating.svg';
+import archery from '../assets/archery.svg';
+import athletics from '../assets/athletics.svg';
+import badminton from '../assets/badminton.svg';
+import baseball from '../assets/baseball.svg';
+import boxing from '../assets/boxing.svg';
+import cricket from '../assets/cricket.svg';
+import crosscountry from '../assets/crosscountry.svg';
+import diving from '../assets/diving.svg';
+import gymnastics from '../assets/gymnastics.svg';
+import hockey from '../assets/hockey.svg';
+import padel from '../assets/padel.svg';
+import polo from '../assets/polo.svg';
+import ringtennis from '../assets/ringtennis.svg';
+import rowing from '../assets/rowing.svg';  
+import rugby from '../assets/rugby.svg';
+import softball from '../assets/softball.svg';
+import squash from '../assets/squash.svg';
+import swimming from '../assets/swimming.svg';
+import tabletennis from '../assets/tabletennis.svg';
+import target from '../assets/target.svg';
+import netball from '../assets/netball.svg';
+import bagshoe from '../assets/bagshoe.svg';
+import robot from '../assets/robot.svg';
+import rollerSkating from '../assets/rollerSkating.svg';
+import iceHockey from '../assets/iceHockey.svg';
+import horseRiding from '../assets/horseRiding.svg';
+import chess from '../assets/chess.svg';
+import ballet from '../assets/ballet.svg';
+import dance from '../assets/dance.svg';
+import bowling from '../assets/bowling.svg';
+import climbing from '../assets/climbing.svg';
+import roadBike from '../assets/roadBike.svg';
+import mountainBike from '../assets/mountainBike.svg';
+import jukskei from '../assets/jukskei.svg';
 
 const CropModal: React.FC<{ 
   isOpen: boolean, 
@@ -219,6 +254,7 @@ const CropModal: React.FC<{
                   setImageSize({ width: rect.width, height: rect.height });
                 }}
               />
+
               <div 
                 style={{
                   position: 'absolute',
@@ -511,14 +547,14 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
   };
 
   const mainCategories = [
-    { name: 'School & sport uniform', icon: schoolUniform },
-    { name: 'Club clothing', icon: clubClothing },
-    { name: 'Training wear', icon: training },
-    { name: 'Belts, bags & shoes', icon: bagOutline },
-    { name: 'Sports equipment', icon: sporting },
+    { name: 'School & sport uniform', icon: schoolUniform, iconSize: '90px', strokeWidth: 1.5 },
+    { name: 'Club clothing', icon: training, iconSize: '90px', strokeWidth: 1 },
+    { name: 'Training wear', icon: clubClothing,  strokeWidth: 1.5 },
+    { name: 'Belts, bags & shoes', icon: bagshoe, iconSize: '110px', strokeWidth: 1.5 },
+    { name: 'Sports equipment', icon: sporting, iconSize: '90px', strokeWidth: 1.5 },
     { name: 'Textbooks', icon: libraryOutline },
-    { name: 'Stationery', icon: stationery },
-    { name: 'Matric dance clothing', icon: matric }
+    { name: 'Stationery', icon: stationery, iconSize: '80px', strokeWidth: 1.5, strokeColor: 'currentColor' , color: 'currentColor' },
+    { name: 'Matric dance clothing', icon: matric, iconSize: '145px', strokeWidth: 1.5 }
   ];
 
   const uniformTypes = ['School Uniform', 'Sports Uniform'];
@@ -555,18 +591,18 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
   const sportCategories = {
     'Team Sports': {
       sports: [
-        { name: "Rugby", icon: footballOutline },
+        { name: "Rugby", icon: rugby },
         { name: "Football", icon: footballOutline },
-        { name: "Netball", icon: basketballOutline },
-        { name: "Hockey", icon: constructOutline },
+        { name: "Netball", icon: netball },
+        { name: "Hockey", icon: hockey },
         { name: "Basketball", icon: basketballOutline },
-        { name: "Cricket", icon: constructOutline },
+        { name: "Cricket", icon: cricket },
         { name: "Volleyball", icon: basketballOutline },
-        { name: "Waterpolo", icon: waterOutline },
+        // { name: "Waterpolo", icon: polo },
         { name: "Korfbal", icon: basketballOutline },
-        { name: "Baseball", icon: footballOutline },
-        { name: "Softball", icon: footballOutline },
-        { name: "Ringball", icon: basketballOutline }
+        { name: "Baseball", icon: baseball },
+        { name: "Softball", icon: softball },
+        { name: "Ringball", icon: ringtennis }
       ],
       icon: peopleOutline,
       color: '#E74C3C'
@@ -574,60 +610,60 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
     'Racket Sports': {
       sports: [
         { name: "Tennis", icon: tennisballOutline },
-        { name: "Squash", icon: tennisballOutline },
-        { name: "Tabletennis", icon: tennisballOutline },
-        { name: "Badminton", icon: tennisballOutline },
-        { name: "Padel", icon: tennisballOutline },
-        { name: "Ring tennis", icon: tennisballOutline }
+        { name: "Squash", icon: squash },
+        { name: "Tabletennis", icon: tabletennis },
+        { name: "Badminton", icon: badminton },
+        { name: "Padel", icon: padel },
+        { name: "Ring tennis", icon: ringtennis }
       ],
       icon: tennisballOutline,
       color: '#004aad'
     },
     'Water Sports': {
       sports: [
-        { name: "Swimming", icon: waterOutline },
-        { name: "Diving", icon: waterOutline },
-        { name: "Rowing", icon: boatOutline },
-        { name: "Waterpolo", icon: waterOutline }
+        { name: "Swimming", icon: swimming },
+        { name: "Diving", icon: diving },
+        { name: "Rowing", icon: rowing },
+        { name: "Waterpolo", icon: polo }
       ],
       icon: waterOutline,
       color: '#1ABC9C'
     },
     'Individual Sports': {
       sports: [
-        { name: "Athletics", icon: fitnessOutline },
-        { name: "Crosscountry", icon: fitnessOutline },
+        { name: "Athletics", icon: athletics },
+        { name: "Crosscountry", icon: crosscountry },
         { name: "Golf", icon: golfOutline },
-        { name: "Gymnastics", icon: fitnessOutline },
-        { name: "Boxing", icon: fitnessOutline },
-        { name: "Triathlon", icon: fitnessOutline },
-        { name: "Archery", icon: atOutline },
-        { name: "Target shooting", icon: atOutline }
+        { name: "Gymnastics", icon: gymnastics },
+        { name: "Boxing", icon: boxing },
+        { name: "Triathlon", icon: swimming },
+        { name: "Archery", icon: archery },
+        { name: "Target shooting", icon: target }
       ],
       icon: fitnessOutline,
       color: '#27AE60'
     },
     'Cycling & Skating': {
       sports: [
-        { name: "Mountainbike", icon: bicycleOutline },
-        { name: "Roadbike", icon: bicycleOutline },
-        { name: "Rollerskating", icon: footstepsOutline },
-        { name: "Ice skating", icon: snowOutline },
-        { name: "Ice hockey", icon: snowOutline }
+        { name: "Mountainbike", icon: mountainBike },
+        { name: "Roadbike", icon: roadBike },
+        { name: "Rollerskating", icon: rollerSkating },
+        { name: "Ice skating", icon: iceSkating },
+        { name: "Ice hockey", icon: iceHockey }
       ],
       icon: bicycleOutline,
       color: '#8E44AD'
     },
     'Other Sports': {
       sports: [
-        { name: "Dancing", icon: musicalNotesOutline },
-        { name: "Ballet", icon: musicalNotesOutline },
-        { name: "Rock climbing", icon: manOutline },
-        { name: "Horse riding", icon: homeOutline },
-        { name: "Chess", icon: extensionPuzzleOutline },
-        { name: "Robotics", icon: constructOutline },
-        { name: "Jukskei", icon: gameControllerOutline },
-        { name: "Bowling", icon: gameControllerOutline }
+        { name: "Dancing", icon: dance },
+        { name: "Ballet", icon: ballet },
+        { name: "Rock climbing", icon: climbing },
+        { name: "Horse riding", icon: horseRiding },
+        { name: "Chess", icon: chess },
+        { name: "Robotics", icon: robot, iconSize: '80px', strokeWidth: 1.5, strokeColor: 'currentColor' , color: 'currentColor'},
+        { name: "Jukskei", icon: jukskei },
+        { name: "Bowling", icon: bowling }
       ],
       icon: extensionPuzzleOutline,
       color: '#F39C12'
@@ -918,15 +954,15 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
       '#E74C3C', // Darker Red
       '#16A085', // Darker Teal
       '#004aad', // Darker Blue
-      '#27AE60', // Darker Green
+      '#D35400', // Darker Orange
       '#F39C12', // Darker Yellow/Orange
       '#8E44AD', // Darker Purple
       '#1ABC9C', // Darker Mint
-      '#E67E22', // Darker Orange
+      '#27AE60', // Darker Green
       '#9B59B6', // Darker Purple
       '#004aad', // Darker Blue
-      '#D35400', // Darker Orange
-      '#229954'  // Darker Green
+      '#ff2e8b', // Darker Orange
+      '#ff0000'  // Darker Dark Red
     ];
     
     return (
@@ -971,7 +1007,7 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
                       <IonIcon
                         src={item.icon}
                         style={{
-                          fontSize: '80px',
+                          fontSize: item.iconSize || '80px',
                           color: rainbowColors[index % rainbowColors.length],
                           position: 'absolute',
                           fontWeight: 'bold',
