@@ -83,6 +83,8 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        // Allow all CORS preflight requests
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         // Public auth endpoints (login, register)
                         .requestMatchers(HttpMethod.POST, "/auth/login", "/auth/register").permitAll()
                         // All other /auth/** endpoints require authentication
