@@ -61,7 +61,7 @@ export const useUserStore = create<UserStore>((set, get) => ({
 
   fetchUserProfile: async () => {
     try {
-      const response = await (await import('../services/api')).userApi.getProfile();
+      const response = await (await import('../services/api')).default.get('/auth/profile', { skipAuthLogout: true } as any);
       const profileData = response.data;
       const profile: UserProfile = {
         ...profileData,

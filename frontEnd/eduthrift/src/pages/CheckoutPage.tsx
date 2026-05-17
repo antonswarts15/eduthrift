@@ -171,8 +171,16 @@ const CheckoutPage: React.FC = () => {
 
       await Browser.open({ url: depositUrls[0], presentationStyle: 'popover' });
 
-      App.addListener('resume', () => { Browser.close(); clearCart(); history.replace('/orders'); });
-      Browser.addListener('browserFinished', () => { clearCart(); history.replace('/orders'); });
+      const handleBrowserDone = () => {
+        Browser.close();
+        clearCart();
+        history.replace('/orders');
+        resumeListener.then(h => h.remove());
+        finishedListener.then(h => h.remove());
+      };
+
+      const resumeListener = App.addListener('resume', handleBrowserDone);
+      const finishedListener = Browser.addListener('browserFinished', handleBrowserDone);
 
       setLoading(false);
     } catch (error: any) {

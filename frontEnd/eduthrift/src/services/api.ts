@@ -18,15 +18,20 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+let logoutRedirectPending = false;
+
 // Handle 401/403 responses (expired/invalid token)
 // Only redirect if the user was previously logged in (prevents guest redirect loops)
+// Pass { skipAuthLogout: true } in request config to suppress forced logout for background fetches
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     const requestUrl = error.config?.url || '';
     const isLoginOrRegister = requestUrl === '/auth/login' || requestUrl === '/auth/register';
+    const skipAuthLogout = error.config?.skipAuthLogout === true;
     const wasLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
-    if (!isLoginOrRegister && wasLoggedIn && (error.response?.status === 403 || error.response?.status === 401)) {
+    if (!isLoginOrRegister && !skipAuthLogout && !logoutRedirectPending && wasLoggedIn && (error.response?.status === 403 || error.response?.status === 401)) {
+      logoutRedirectPending = true;
       localStorage.removeItem('authToken');
       localStorage.setItem('isLoggedIn', 'false');
       window.location.href = '/login';

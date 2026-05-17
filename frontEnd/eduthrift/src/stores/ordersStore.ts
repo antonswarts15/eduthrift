@@ -51,7 +51,7 @@ export const useOrdersStore = create<OrdersStore>()(
 
   fetchOrders: async () => {
     try {
-      const response = await api.get('/orders');
+      const response = await api.get('/orders', { skipAuthLogout: true } as any);
       const data = response.data;
       const backendOrders: Order[] = [
         ...(data.buyerOrders || []).map((o: any) => ({ ...o, isBuyer: true })),
