@@ -42,6 +42,8 @@ import SchoolUniformComponent from './schoolUniformComponent/SchoolUniformCompon
 import ClubClothingComponent from './clubClothingComponent/ClubClothingComponent';
 import Stationery from './stationeryComponent/Stationery';
 import StationerySeller from './stationeryComponent/StationerySeller';
+import MusicalEquipment from './musicalEquipmentComponent/MusicalEquipment';
+import MusicalEquipmentSeller from './musicalEquipmentComponent/MusicalEquipmentSeller';
 import SchoolGradesComponent from './schoolGradesComponent/SchoolGradesComponent';
 import BeltsBagsShoesComponent from './beltsBagsShoesComponent/BeltsBagsShoesComponent';
 import TrainingWearComponent from './trainingWearComponent/TrainingWearComponent';
@@ -97,13 +99,13 @@ import {
 } from 'ionicons/icons';
 import SchoolSelector from './SchoolSelector';
 import ClubSelector from './ClubSelector';
-
-import sporting from '../assets/sportEquipment.svg';
-import clubClothing from '../assets/clubClothing1.svg';
-import schoolUniform from '../assets/schoolUniform1.svg';
-import stationery from '../assets/stationery.svg';
-import matric from '../assets/dress.svg';
-import training from '../assets/training.svg';
+import textbooks from '../assets/textbooks.png';
+import sporting from '../assets/sportEquipment.png';
+import clubClothing from '../assets/clubClothing.png';
+import schoolUniform from '../assets/schoolClothing.png';
+import stationery from '../assets/stationery.png';
+import matric from '../assets/dress.png';
+import training from '../assets/trainingWear.png';
 import iceSkating from '../assets/iceSkating.svg';
 import archery from '../assets/archery.svg';
 import athletics from '../assets/athletics.svg';
@@ -126,7 +128,7 @@ import swimming from '../assets/swimming.svg';
 import tabletennis from '../assets/tabletennis.svg';
 import target from '../assets/target.svg';
 import netball from '../assets/netball.svg';
-import bagshoe from '../assets/bagshoe.svg';
+import bagshoe from '../assets/bagshoe.png';
 import robot from '../assets/robot.svg';
 import rollerSkating from '../assets/rollerSkating.svg';
 import iceHockey from '../assets/iceHockey.svg';
@@ -139,6 +141,7 @@ import climbing from '../assets/climbing.svg';
 import roadBike from '../assets/roadBike.svg';
 import mountainBike from '../assets/mountainBike.svg';
 import jukskei from '../assets/jukskei.svg';
+import music from '../assets/music.png';
 
 const CropModal: React.FC<{ 
   isOpen: boolean, 
@@ -321,9 +324,10 @@ const CropModal: React.FC<{
 interface CategoriesProps {
   onCategorySelect?: (category: string, subcategory?: string, sport?: string, item?: string) => void;
   userType?: 'seller' | 'buyer';
+  initialCategory?: string;
 }
 
-const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 'seller' }) => {
+const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 'seller', initialCategory }) => {
   const history = useHistory();
   const { addToCart } = useCartStore();
   const { addNotification } = useNotificationStore();
@@ -354,6 +358,7 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
   const [showBeltsBagsShoes, setShowBeltsBagsShoes] = useState(false);
   const [showTrainingWear, setShowTrainingWear] = useState(false);
   const [showMatricDance, setShowMatricDance] = useState(false);
+  const [showMusicalEquipment, setShowMusicalEquipment] = useState(false);
   
   // Item details state
   const [gender, setGender] = useState('');
@@ -439,9 +444,17 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
       setShowBeltsBagsShoes(false);
       setShowTrainingWear(false);
       setShowMatricDance(false);
+      setShowMusicalEquipment(false);
       setShowLocationSearch(false);
     };
   }, []);
+
+  useEffect(() => {
+    if (initialCategory) {
+      handleMainCategoryClick(initialCategory);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialCategory]);
 
   const handleFileChange = async (file: File | null, setPhoto: (file: File | null) => void, setPreview: (preview: string | null) => void, photoType: 'front' | 'back') => {
     if (!file) {
@@ -548,13 +561,14 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
 
   const mainCategories = [
     { name: 'School & sport uniform', icon: schoolUniform, iconSize: '90px', strokeWidth: 1.5 },
-    { name: 'Club clothing', icon: training, iconSize: '90px', strokeWidth: 1 },
-    { name: 'Training wear', icon: clubClothing,  strokeWidth: 1.5 },
-    { name: 'Belts, bags & shoes', icon: bagshoe, iconSize: '110px', strokeWidth: 1.5 },
+    { name: 'Club clothing', icon: clubClothing, iconSize: '90px', strokeWidth: 1 },
+    { name: 'Training wear', icon: training, iconSize: '90px', strokeWidth: 1.5 },
+    { name: 'Belts, bags & shoes', icon: bagshoe, iconSize: '90px', strokeWidth: 1.5 },
     { name: 'Sports equipment', icon: sporting, iconSize: '90px', strokeWidth: 1.5 },
-    { name: 'Textbooks', icon: libraryOutline },
-    { name: 'Stationery', icon: stationery, iconSize: '80px', strokeWidth: 1.5, strokeColor: 'currentColor' , color: 'currentColor' },
-    { name: 'Matric dance clothing', icon: matric, iconSize: '145px', strokeWidth: 1.5 }
+    { name: 'Textbooks', icon: textbooks, iconSize: '90px', strokeWidth: 1.5 },
+    { name: 'Stationery', icon: stationery, iconSize: '90px', strokeWidth: 2 },
+    { name: 'Matric dance clothing', icon: matric, iconSize: '90px', strokeWidth: 1.5 },
+    { name: 'Musical equipment', icon: music, iconSize: '90px', strokeWidth: 1.5 },
   ];
 
   const uniformTypes = ['School Uniform', 'Sports Uniform'];
@@ -635,13 +649,26 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
         { name: "Crosscountry", icon: crosscountry },
         { name: "Golf", icon: golfOutline },
         { name: "Gymnastics", icon: gymnastics },
-        { name: "Boxing", icon: boxing },
         { name: "Triathlon", icon: swimming },
         { name: "Archery", icon: archery },
         { name: "Target shooting", icon: target }
       ],
       icon: fitnessOutline,
       color: '#27AE60'
+    },
+    'Contact Sports': {
+      sports: [
+        { name: "Boxing", icon: boxing },
+        { name: "Kickboxing", icon: manOutline },
+        { name: "Wrestling", icon: manOutline },
+        { name: "Karate", icon: manOutline },
+        { name: "Judo", icon: manOutline },
+        { name: "Taekwondo", icon: manOutline },
+        { name: "Jiu-Jitsu", icon: manOutline },
+        { name: "MMA", icon: manOutline },
+      ],
+      icon: manOutline,
+      color: '#C0392B'
     },
     'Cycling & Skating': {
       sports: [
@@ -690,6 +717,8 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
       setCurrentLevel('sportEquipment');
     } else if (category === 'Matric dance clothing') {
       setShowMatricDance(true);
+    } else if (category === 'Musical equipment') {
+      setShowMusicalEquipment(true);
     } else if (['Training wear & shoes'].includes(category)) {
       setSelectedSubcategory(category);
       setShowItemDetails(true);
@@ -783,6 +812,10 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
       setSelectedCategory('');
     } else if (showStationery) {
       setShowStationery(false);
+      setCurrentLevel('main');
+      setSelectedCategory('');
+    } else if (showMusicalEquipment) {
+      setShowMusicalEquipment(false);
       setCurrentLevel('main');
       setSelectedCategory('');
     } else if (showSchoolGrades) {
@@ -949,20 +982,12 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
   const renderGrid = (items: any[], onItemClick: (item: string) => void, hasIcons = false, getCount?: (name: string) => number) => {
     const isDarkTheme = false; // Force light theme
     
-    // Darker rainbow colors array for better text contrast
     const rainbowColors = [
-      '#E74C3C', // Darker Red
-      '#16A085', // Darker Teal
-      '#004aad', // Darker Blue
-      '#D35400', // Darker Orange
-      '#F39C12', // Darker Yellow/Orange
-      '#8E44AD', // Darker Purple
-      '#1ABC9C', // Darker Mint
-      '#27AE60', // Darker Green
-      '#9B59B6', // Darker Purple
-      '#004aad', // Darker Blue
-      '#ff2e8b', // Darker Orange
-      '#ff0000'  // Darker Dark Red
+      '#FF2090', // Hot Pink
+      '#FFA020', // Orange
+      '#A020C0', // Purple
+      '#5CC840', // Green
+      '#00AACC', // Teal
     ];
     
     return (
@@ -970,125 +995,107 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
         <IonRow>
           {items.map((item, index) => (
             <IonCol size="6" key={index}>
-              <IonCard 
-                button 
+              <div
                 onClick={() => onItemClick(hasIcons ? item.name : item)}
-                style={{
-                  transition: 'all 0.2s ease',
-                  cursor: 'pointer',
-                  height: '120px',
-                  display: 'flex',
-                  alignItems: 'center'
-                }}
-                onMouseEnter={(e) => {
-                  const color = rainbowColors[index % rainbowColors.length];
-                  e.currentTarget.style.border = `2px solid ${color}40`;
-                  e.currentTarget.style.transform = 'translateY(-2px)';
-                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.border = 'none';
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = '';
-                }}
+                style={{ cursor: 'pointer', textAlign: 'center' }}
               >
-                <IonCardContent style={{ 
-                  textAlign: 'center', 
-                  padding: '16px', 
-                  position: 'relative',
-                  height: '100%',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'center',
-                  alignItems: 'center'
-                }}>
-                  {hasIcons && (
-                    typeof item.icon === 'string' && item.icon.includes('.svg') ? (
-                      <IonIcon
-                        src={item.icon}
-                        style={{
-                          fontSize: item.iconSize || '80px',
-                          color: rainbowColors[index % rainbowColors.length],
-                          position: 'absolute',
-                          fontWeight: 'bold',
-                          top: '50%',
-                          left: '50%',
-                          transform: 'translate(-50%, -50%)',
-                          zIndex: 1,
-                          strokeWidth: '0.3px',
-                          opacity: 0.25,
-                          filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))'
-                        }}
-                      />
-                    ) : typeof item.icon === 'string' && item.icon.includes('.png') ? (
-                      <img
-                        src={item.icon}
-                        alt=""
-                        style={{
-                          width: '70px',
-                          height: '70px',
-                          objectFit: 'contain',
-                          position: 'absolute',
-                          top: '50%',
-                          left: '50%',
-                          transform: 'translate(-50%, -50%)',
-                          zIndex: 1,
-                          opacity: 0.25,
-                          filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))'
-                        }}
-                      />
-                    ) : (
-                      <IonIcon
-                        icon={item.icon}
-                        style={{
-                          fontSize: '80px',
-                          color: rainbowColors[index % rainbowColors.length],
-                          position: 'absolute',
-                          top: '50%',
-                          left: '50%',
-                          transform: 'translate(-50%, -50%)',
-                          zIndex: 1,
-                          strokeWidth: '0.3px',
-                          opacity: 0.25,
-                          filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))'
-                        }}
-                      />
-                    )
-                  )}
-                  <div style={{
+                {/* Icon box */}
+                <IonCard
+                  button
+                  style={{
+                    transition: 'all 0.2s ease',
+                    height: '110px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: item.boxColor || rainbowColors[index % rainbowColors.length],
+                    '--background': item.boxColor || rainbowColors[index % rainbowColors.length],
+                    margin: '0 0 6px 0'
+                  } as React.CSSProperties}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                    e.currentTarget.style.boxShadow = '0 6px 16px rgba(0,0,0,0.25)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = '';
+                  }}
+                >
+                  <IonCardContent style={{
+                    padding: '8px',
                     position: 'relative',
-                    zIndex: 2,
-                    fontWeight: 'bold',
-                    color: isDarkTheme ? '#e0e0e0' : '#333',
-                    fontSize: '14px',
-                    lineHeight: '1.2',
-                    textAlign: 'center',
-                    wordWrap: 'break-word',
-                    hyphens: 'auto'
+                    width: '100%',
+                    height: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
                   }}>
-                    {hasIcons ? item.name : item}
-                  </div>
-                  {getCount && (() => {
-                    const count = getCount(hasIcons ? item.name : item);
-                    return count > 0 ? (
-                      <div style={{
-                        position: 'relative',
-                        zIndex: 2,
-                        marginTop: '4px',
-                        display: 'inline-block',
-                        backgroundColor: rainbowColors[index % rainbowColors.length] + '22',
-                        color: rainbowColors[index % rainbowColors.length],
-                        fontSize: '11px',
-                        fontWeight: '800',
-                        padding: '2px 8px',
-                        borderRadius: '10px'
-                      }}>
-                        {count} {count === 1 ? 'item' : 'items'}
-                      </div>
-                    ) : null;
-                  })()}
-                </IonCardContent>
-              </IonCard>
+                    {hasIcons && (
+                      typeof item.icon === 'string' && item.icon.includes('.svg') ? (
+                        <IonIcon
+                          src={item.icon}
+                          style={{
+                            fontSize: item.iconSize || '80px',
+                            color: 'white',
+                            filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))'
+                          }}
+                        />
+                      ) : typeof item.icon === 'string' && item.icon.includes('.png') ? (
+                        <img
+                          src={item.icon}
+                          alt=""
+                          style={{
+                            width: item.iconSize || '70px',
+                            height: item.iconSize || '70px',
+                            objectFit: 'contain',
+                            filter: 'brightness(0) invert(1) drop-shadow(0 2px 4px rgba(0,0,0,0.2))'
+                          }}
+                        />
+                      ) : (
+                        <IonIcon
+                          icon={item.icon}
+                          style={{
+                            fontSize: item.iconSize || '80px',
+                            color: 'white',
+                            filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))'
+                          }}
+                        />
+                      )
+                    )}
+                  </IonCardContent>
+                </IonCard>
+
+                {/* Label below the box */}
+                <div style={{
+                  fontWeight: 'bold',
+                  color: '#333',
+                  fontSize: '13px',
+                  lineHeight: '1.2',
+                  textAlign: 'center',
+                  wordWrap: 'break-word',
+                  hyphens: 'auto',
+                  padding: '0 4px'
+                }}>
+                  {hasIcons ? item.name : item}
+                </div>
+                {getCount && (() => {
+                  const count = getCount(hasIcons ? item.name : item);
+                  return count > 0 ? (
+                    <div style={{
+                      marginTop: '4px',
+                      display: 'inline-block',
+                      backgroundColor: (item.iconColor || rainbowColors[index % rainbowColors.length]) + '22',
+                      color: item.iconColor || rainbowColors[index % rainbowColors.length],
+                      fontSize: '11px',
+                      fontWeight: '800',
+                      padding: '2px 8px',
+                      borderRadius: '10px'
+                    }}>
+                      {count} {count === 1 ? 'item' : 'items'}
+                    </div>
+                  ) : null;
+                })()}
+              </div>
             </IonCol>
           ))}
         </IonRow>
@@ -1098,7 +1105,7 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
 
   return (
     <div>
-      {(currentLevel !== 'main' || showItemDetails || showSportEquipment || showSchoolSelection || showClubClothing || showBeltsBagsShoes || showTrainingWear || showMatricDance || showStationery || showSchoolGrades || showLocationSearch || showPreview || showSuccessConfirmation) && (
+      {(currentLevel !== 'main' || showItemDetails || showSportEquipment || showSchoolSelection || showClubClothing || showBeltsBagsShoes || showTrainingWear || showMatricDance || showStationery || showMusicalEquipment || showSchoolGrades || showLocationSearch || showPreview || showSuccessConfirmation) && (
         <div style={{ marginBottom: '16px' }}>
           {!showSuccessConfirmation && (
             <IonButton fill="clear" onClick={goBack}>
@@ -1115,6 +1122,7 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
             {showTrainingWear && 'Training Wear'}
             {showMatricDance && 'Matric Dance Clothing'}
             {showStationery && 'Stationery'}
+            {showMusicalEquipment && 'Musical Equipment'}
             {showSchoolGrades && 'School Textbooks'}
             {showLocationSearch && `${selectedCategory} - Location & Details`}
             {currentLevel === 'uniform' && !showPreview && !showSuccessConfirmation && 'Select Uniform Type'}
@@ -1857,6 +1865,17 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
             <StationerySeller />
           ) : (
             <Stationery
+              userType={userType}
+              categoryFilter='all'
+            />
+          )}
+        </div>
+      ) : showMusicalEquipment ? (
+        <div style={{ padding: '16px' }}>
+          {userType === 'seller' ? (
+            <MusicalEquipmentSeller />
+          ) : (
+            <MusicalEquipment
               userType={userType}
               categoryFilter='all'
             />

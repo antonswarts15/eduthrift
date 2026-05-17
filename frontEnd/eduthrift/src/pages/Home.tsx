@@ -33,12 +33,14 @@ import logo from '../assets/logo.png';
 import homeVideo from '../assets/1.mp4';
 import buyerIcon from '../assets/buyerIcon.jpg';
 import sellerIcon from '../assets/sellerIcon.jpg';
-import sportingIcon from '../assets/sportEquipment.svg';
-import clubClothingIcon from '../assets/clubClothing1.svg';
-import schoolUniformIcon from '../assets/schoolUniform1.svg';
-import stationeryIcon from '../assets/stationery.svg';
-import matricIcon from '../assets/dress.svg';
-import trainingIcon from '../assets/training.svg';
+import sportingIcon from '../assets/sportEquipment.png';
+import bagshoe from '../assets/bagshoe.png';
+import clubClothingIcon from '../assets/clubClothing.png';
+import schoolUniformIcon from '../assets/schoolClothing.png';
+import stationeryIcon from '../assets/stationery.png';
+import matricIcon from '../assets/dress.png';
+import trainingIcon from '../assets/trainingWear.png';
+import musicIcon from '../assets/music.png';
 import { itemsApi } from '../services/api';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay } from 'swiper/modules';
@@ -52,14 +54,15 @@ const Home: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   const categories = [
-    { name: 'School & sport uniform', icon: schoolUniformIcon,  color: '#004aad' },
-    { name: 'Club clothing',          icon: clubClothingIcon,   color: '#E74C3C' },
-    { name: 'Training wear',          icon: trainingIcon,       color: '#27AE60' },
-    { name: 'Belts, bags & shoes',    icon: bagOutline,         color: '#8E44AD' },
-    { name: 'Sports equipment',       icon: sportingIcon,       color: '#E67E22' },
-    { name: 'Textbooks',              icon: libraryOutline,     color: '#16A085' },
-    { name: 'Stationery',             icon: stationeryIcon,     color: '#F39C12' },
-    { name: 'Matric dance clothing',  icon: matricIcon,         color: '#E91E63' },
+    { name: 'School & sport uniform', icon: schoolUniformIcon,  color: '#FF2090' },
+    { name: 'Club clothing',          icon: clubClothingIcon,   color: '#FFA020' },
+    { name: 'Training wear',          icon: trainingIcon,       color: '#A020C0' },
+    { name: 'Belts, bags & shoes',    icon: bagshoe,         color: '#5CC840' },
+    { name: 'Sports equipment',       icon: sportingIcon,       color: '#00AACC' },
+    { name: 'Textbooks',              icon: libraryOutline,     color: '#FF2090' },
+    { name: 'Stationery',             icon: stationeryIcon,     color: '#FFA020' },
+    { name: 'Matric dance clothing',  icon: matricIcon,         color: '#A020C0' },
+    { name: 'Musical equipment',      icon: musicIcon,          color: '#5CC840' },
   ];
 
   useEffect(() => {
@@ -113,18 +116,31 @@ const Home: React.FC = () => {
         }}>
           <img src={logo} alt="Eduthrift Logo" style={{ width: '200px', height: '200px', objectFit: 'contain' }} />
         </div>
-
-        {/* What is Eduthrift */}
-        <IonCard>
-          <IonCardContent style={{ textAlign: 'center', padding: '20px' }}>
-            <IonIcon icon={schoolOutline} style={{ fontSize: '48px', color: '#004aad', marginBottom: '16px' }} />
-            <h2 style={{ color: '#2C3E50', marginBottom: '16px' }}>What is Eduthrift?</h2>
-            <p style={{ color: '#666', lineHeight: '1.6' }}>
-              Eduthrift is a secure anonymous marketplace for second-hand educational items in South Africa. 
-              It allows you to buy and sell quality pre-owned school materials easily, helping you save money while promoting sustainability.
-            </p>
-          </IonCardContent>
-        </IonCard>
+ {/* Buy / Sell action cards */}
+        <IonGrid>
+          <IonRow>
+            <IonCol size="12" sizeMd="6">
+              <IonCard button onClick={() => history.push('/buyer')} style={{ height: '120px', position: 'relative', overflow: 'hidden' }}>
+                <img src={sellerIcon} alt="Buy" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '125%', objectFit: 'fill', zIndex: 1 }} />
+                <IonCardContent style={{ height: '100%', zIndex: 2, color: 'white', textAlign: 'left' }}>
+                  <div>
+                    <h1 style={{ paddingLeft: '45%', fontWeight: '800' }}>I want to Buy</h1>
+                    <p style={{ paddingLeft: '45%' }}>Find great deals on educational items</p>
+                  </div>
+                </IonCardContent>
+              </IonCard>
+              <IonCard button onClick={() => history.push('/seller')} style={{ height: '120px', position: 'relative', overflow: 'hidden' }}>
+                <img src={buyerIcon} alt="Sell" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '125%', objectFit: 'fill', zIndex: 1 }} />
+                <IonCardContent style={{ height: '100%', zIndex: 2, color: 'white', textAlign: 'left' }}>
+                  <div>
+                    <h1 style={{ paddingLeft: '45%', fontWeight: '800' }}>I want to Sell</h1>
+                    <p style={{ paddingLeft: '45%' }}>List your educational items for sale</p>
+                  </div>
+                </IonCardContent>
+              </IonCard>
+            </IonCol>
+          </IonRow>
+        </IonGrid>
 
         {/* Just Listed */}
         <IonCard>
@@ -182,19 +198,21 @@ const Home: React.FC = () => {
                 {categories.map(cat => (
                   <IonCol key={cat.name} size="3" style={{ padding: '4px' }}>
                     <div
-                      onClick={() => history.push('/buyer')}
+                      onClick={() => history.push('/buyer', { initialCategory: cat.name })}
                       style={{ textAlign: 'center', cursor: 'pointer', padding: '8px 4px' }}
                     >
                       <div style={{
                         width: '52px', height: '52px', borderRadius: '14px',
-                        backgroundColor: cat.color + '18',
+                        backgroundColor: cat.color,
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         margin: '0 auto 6px'
                       }}>
                         {typeof cat.icon === 'string' && cat.icon.includes('.svg') ? (
-                          <IonIcon src={cat.icon} style={{ fontSize: '26px', color: cat.color }} />
+                          <IonIcon src={cat.icon} style={{ fontSize: '26px', color: 'white' }} />
+                        ) : typeof cat.icon === 'string' && cat.icon.includes('.png') ? (
+                          <img src={cat.icon} alt="" style={{ width: '30px', height: '30px', objectFit: 'contain', filter: 'brightness(0) invert(1)' }} />
                         ) : (
-                          <IonIcon icon={cat.icon as any} style={{ fontSize: '26px', color: cat.color }} />
+                          <IonIcon icon={cat.icon as any} style={{ fontSize: '26px', color: 'white' }} />
                         )}
                       </div>
                       <p style={{ margin: '0 0 3px', fontSize: '10px', color: '#2C3E50', lineHeight: '1.3' }}>{cat.name}</p>
@@ -345,32 +363,18 @@ const Home: React.FC = () => {
             </IonGrid>
           </IonCardContent>
         </IonCard>
-
-        {/* Buy / Sell action cards */}
-        <IonGrid>
-          <IonRow>
-            <IonCol size="12" sizeMd="6">
-              <IonCard button onClick={() => history.push('/buyer')} style={{ height: '120px', position: 'relative', overflow: 'hidden' }}>
-                <img src={sellerIcon} alt="Buy" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '125%', objectFit: 'fill', zIndex: 1 }} />
-                <IonCardContent style={{ height: '100%', zIndex: 2, color: 'white', textAlign: 'left' }}>
-                  <div>
-                    <h1 style={{ paddingLeft: '45%', fontWeight: '800' }}>I want to Buy</h1>
-                    <p style={{ paddingLeft: '45%' }}>Find great deals on educational items</p>
-                  </div>
-                </IonCardContent>
-              </IonCard>
-              <IonCard button onClick={() => history.push('/seller')} style={{ height: '120px', position: 'relative', overflow: 'hidden' }}>
-                <img src={buyerIcon} alt="Sell" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '125%', objectFit: 'fill', zIndex: 1 }} />
-                <IonCardContent style={{ height: '100%', zIndex: 2, color: 'white', textAlign: 'left' }}>
-                  <div>
-                    <h1 style={{ paddingLeft: '45%', fontWeight: '800' }}>I want to Sell</h1>
-                    <p style={{ paddingLeft: '45%' }}>List your educational items for sale</p>
-                  </div>
-                </IonCardContent>
-              </IonCard>
-            </IonCol>
-          </IonRow>
-        </IonGrid>
+ {/* What is Eduthrift */}
+        <IonCard>
+          <IonCardContent style={{ textAlign: 'center', padding: '20px' }}>
+            {/* <IonIcon icon={schoolOutline} style={{ fontSize: '48px', color: '#004aad', marginBottom: '16px' }} /> */}
+            <h2 style={{ color: '#2C3E50', marginBottom: '16px' }}>What is Eduthrift?</h2>
+            <p style={{ color: '#666', lineHeight: '1.6' }}>
+              Eduthrift is a secure anonymous marketplace for second-hand educational items in South Africa. 
+              It allows you to buy and sell quality pre-owned school materials easily, helping you save money while promoting sustainability.
+            </p>
+          </IonCardContent>
+        </IonCard>
+       
 
         {/* Footer */}
         <div style={{ textAlign: 'center', padding: '20px', marginTop: '20px' }}>

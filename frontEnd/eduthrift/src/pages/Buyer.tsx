@@ -1,5 +1,6 @@
 import { IonContent, IonCard, IonCardContent, IonToast } from '@ionic/react';
 import { useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import Categories from '../components/Categories';
 import adBanner from '../assets/NewAddBanner.jpg';
 import { useToast } from '../hooks/useToast';
@@ -11,6 +12,8 @@ const Buyer: React.FC = () => {
   const { isOpen, message, color, hideToast } = useToast();
   const { fetchListings } = useListingsStore();
   const { userProfile } = useUserStore();
+  const location = useLocation<{ initialCategory?: string }>();
+  const initialCategory = location.state?.initialCategory;
   
   // Fetch listings with user location on component mount
   useEffect(() => {
@@ -44,7 +47,7 @@ const Buyer: React.FC = () => {
               }} 
             />
             
-            <Categories userType="buyer" onCategorySelect={handleCategorySelect} />
+            <Categories userType="buyer" onCategorySelect={handleCategorySelect} initialCategory={initialCategory} />
           </IonCardContent>
         </IonCard>
       </div>
