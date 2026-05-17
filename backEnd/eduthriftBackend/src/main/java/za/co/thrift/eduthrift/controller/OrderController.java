@@ -2,6 +2,7 @@ package za.co.thrift.eduthrift.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import za.co.thrift.eduthrift.entity.Item;
 import za.co.thrift.eduthrift.entity.Order;
@@ -125,6 +126,7 @@ public class OrderController {
     }
 
     @GetMapping
+    @Transactional(readOnly = true)
     public ResponseEntity<?> getMyOrders(Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated()) {
             return ResponseEntity.status(401).body(Map.of("error", "Not authenticated"));
@@ -261,8 +263,9 @@ public class OrderController {
     private Map<String, Object> toResponse(Order order) {
         Map<String, Object> map = new HashMap<>();
         map.put("orderNumber", order.getOrderNumber());
-        map.put("itemName", order.getItem().getItemName());
-        map.put("itemImage", order.getItem().getFrontPhoto());
+        Item item = order.getItem();
+        map.put("itemName", item != null ? item.getItemName() : "Unknown item");
+        map.put("itemImage", item != null ? item.getFrontPhoto() : null);
         map.put("itemPrice", order.getItemPrice());
         map.put("shippingCost", order.getShippingCost());
         map.put("buyerProtectionFee", order.getBuyerProtectionFee());

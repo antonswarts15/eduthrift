@@ -101,6 +101,7 @@ public class SecurityConfig {
                         .requestMatchers("/shipping/pickup-points").permitAll()
                         .requestMatchers("/upload/**").authenticated()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/error").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
