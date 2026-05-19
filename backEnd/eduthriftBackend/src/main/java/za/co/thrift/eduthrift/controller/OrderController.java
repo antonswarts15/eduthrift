@@ -271,13 +271,13 @@ public class OrderController {
         map.put("buyerProtectionFee", order.getBuyerProtectionFee());
         map.put("quantity", order.getQuantity());
         map.put("totalAmount", order.getTotalAmount());
-        map.put("orderStatus", order.getOrderStatus().name());
-        map.put("paymentStatus", order.getPaymentStatus().name());
-        map.put("escrowStatus", order.getEscrowStatus().name());
+        map.put("orderStatus", order.getOrderStatus() != null ? order.getOrderStatus().name() : Order.OrderStatus.PENDING_PAYMENT.name());
+        map.put("paymentStatus", order.getPaymentStatus() != null ? order.getPaymentStatus().name() : Order.PaymentStatus.PENDING.name());
+        map.put("escrowStatus", order.getEscrowStatus() != null ? order.getEscrowStatus().name() : Order.EscrowStatus.PENDING.name());
         map.put("sellerPayout", order.getSellerPayout());
         map.put("platformFee", order.getPlatformFee());
         map.put("deliveryConfirmed", order.getDeliveryConfirmed());
-        map.put("disputeStatus", order.getDisputeStatus().name());
+        map.put("disputeStatus", order.getDisputeStatus() != null ? order.getDisputeStatus().name() : Order.DisputeStatus.NONE.name());
         map.put("disputeReason", order.getDisputeReason());
         map.put("pickupPoint", order.getPickupPoint());
         map.put("trackingNumber", order.getTrackingNumber());

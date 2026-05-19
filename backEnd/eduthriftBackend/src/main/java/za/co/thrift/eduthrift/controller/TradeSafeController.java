@@ -90,16 +90,6 @@ public class TradeSafeController {
                             "Your payment for order " + order.getOrderNumber() + " is held in escrow. The seller will ship your item shortly."
                     );
 
-                    // Advance TradeSafe allocation to INITIATED state — must always happen after FUNDS_RECEIVED
-                    if (order.getTradeSafeAllocationId() != null) {
-                        try {
-                            tradeSafeService.startDelivery(order.getTradeSafeAllocationId());
-                        } catch (Exception e) {
-                            log.warn("TradeSafe startDelivery failed for order {} — funds still held: {}",
-                                    order.getOrderNumber(), e.getMessage());
-                        }
-                    }
-
                     // Create TCG shipment now that funds are secured in escrow
                     String trackingRef = null;
                     if (order.getDeliveryLockerId() != null && order.getServiceLevelCode() != null) {
@@ -115,6 +105,15 @@ public class TradeSafeController {
                             Object shipmentId = shipment.get("id");
                             if (shipmentId != null) {
                                 order.setTcgShipmentId(shipmentId.toString());
+                            }
+                            // Advance TradeSafe allocation to INITIATED now that shipment is booked
+                            if (order.getTradeSafeAllocationId() != null) {
+                                try {
+                                    tradeSafeService.startDelivery(order.getTradeSafeAllocationId());
+                                } catch (Exception e) {
+                                    log.warn("TradeSafe startDelivery failed for order {}: {}",
+                                            order.getOrderNumber(), e.getMessage());
+                                }
                             }
                         } catch (Exception ignored) {}
                     }
