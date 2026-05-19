@@ -1,4 +1,4 @@
-import { IonContent, IonCard, IonCardContent, IonToast } from '@ionic/react';
+import { IonContent, IonCard, IonCardContent, IonToast, useIonViewWillEnter } from '@ionic/react';
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import Categories from '../components/Categories';
@@ -15,15 +15,16 @@ const Buyer: React.FC = () => {
   const location = useLocation<{ initialCategory?: string }>();
   const initialCategory = location.state?.initialCategory;
   
-  // Fetch listings with user location on component mount
-  useEffect(() => {
+  const doFetch = () => {
     if (userProfile?.town && userProfile?.province) {
-      const userLocation = `${userProfile.town}, ${userProfile.province}`;
-      fetchListings(userLocation);
+      fetchListings(`${userProfile.town}, ${userProfile.province}`);
     } else {
-      fetchListings(); // Fetch without location if not available
+      fetchListings();
     }
-  }, [userProfile, fetchListings]);
+  };
+
+  useEffect(() => { doFetch(); }, [userProfile, fetchListings]);
+  useIonViewWillEnter(() => { doFetch(); });
   
   const handleCategorySelect = (category: string, subcategory?: string, sport?: string, item?: string, schoolName?: string, clubName?: string) => {
     console.log('Buyer selected:', { category, subcategory, sport, item, schoolName, clubName });

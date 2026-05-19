@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   IonContent,
   IonCard,
@@ -8,7 +8,8 @@ import {
   IonCol,
   IonText,
   IonIcon,
-  IonSpinner
+  IonSpinner,
+  useIonViewWillEnter
 } from '@ionic/react';
 import {
   schoolOutline,
@@ -65,28 +66,29 @@ const Home: React.FC = () => {
     { name: 'Musical equipment',      icon: musicIcon,          color: '#5CC840' },
   ];
 
-  useEffect(() => {
-    const fetchItems = async () => {
-      try {
-        const response = await itemsApi.getItems({ status: 'available' });
-        if (response.data && Array.isArray(response.data)) {
-          const all: Item[] = response.data;
-          setRecentItems(all.slice(0, 10));
-          const counts: Record<string, number> = {};
-          for (const item of all) {
-            const cat = (item as any).category;
-            if (cat) counts[cat] = (counts[cat] || 0) + 1;
-          }
-          setCategoryCounts(counts);
+  const fetchItems = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const response = await itemsApi.getItems({ status: 'available' });
+      if (response.data && Array.isArray(response.data)) {
+        const all: Item[] = response.data;
+        setRecentItems(all.slice(0, 10));
+        const counts: Record<string, number> = {};
+        for (const item of all) {
+          const cat = (item as any).category;
+          if (cat) counts[cat] = (counts[cat] || 0) + 1;
         }
-      } catch (error) {
-        // silently fail — just show nothing
-      } finally {
-        setIsLoading(false);
+        setCategoryCounts(counts);
       }
-    };
-    fetchItems();
+    } catch {
+      // silently fail — just show nothing
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
+
+  useEffect(() => { fetchItems(); }, [fetchItems]);
+  useIonViewWillEnter(() => { fetchItems(); });
 
   return (
     <IonContent>
@@ -202,6 +204,7 @@ const Home: React.FC = () => {
                       style={{ textAlign: 'center', cursor: 'pointer', padding: '8px 4px' }}
                     >
                       <div style={{
+                        position: 'relative',
                         width: '52px', height: '52px', borderRadius: '14px',
                         backgroundColor: cat.color,
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -214,22 +217,25 @@ const Home: React.FC = () => {
                         ) : (
                           <IonIcon icon={cat.icon as any} style={{ fontSize: '26px', color: 'white' }} />
                         )}
+                        {categoryCounts[cat.name] > 0 && (
+                          <span style={{
+                            position: 'absolute', top: '-5px', right: '-5px',
+                            backgroundColor: '#E74C3C',
+                            color: 'white',
+                            fontSize: '9px', fontWeight: '700',
+                            minWidth: '16px', height: '16px',
+                            borderRadius: '8px',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            padding: '0 3px',
+                            boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
+                            zIndex: 10,
+                            pointerEvents: 'none'
+                          }}>
+                            {categoryCounts[cat.name] > 99 ? '99+' : categoryCounts[cat.name]}
+                          </span>
+                        )}
                       </div>
-                      <p style={{ margin: '0 0 3px', fontSize: '10px', color: '#2C3E50', lineHeight: '1.3' }}>{cat.name}</p>
-                      {categoryCounts[cat.name] > 0 && (
-                        <span style={{
-                          display: 'inline-block',
-                          backgroundColor: cat.color + '22',
-                          color: cat.color,
-                          fontSize: '9px',
-                          fontWeight: '600',
-                          padding: '1px 5px',
-                          borderRadius: '8px',
-                          lineHeight: '1.4'
-                        }}>
-                          {categoryCounts[cat.name]}
-                        </span>
-                      )}
+                      <p style={{ margin: '0', fontSize: '10px', color: '#2C3E50', lineHeight: '1.3' }}>{cat.name}</p>
                     </div>
                   </IonCol>
                 ))}

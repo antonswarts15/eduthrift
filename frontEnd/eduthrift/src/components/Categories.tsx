@@ -1000,6 +1000,7 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
                 style={{ cursor: 'pointer', textAlign: 'center' }}
               >
                 {/* Icon box */}
+                <div style={{ position: 'relative' }}>
                 <IonCard
                   button
                   style={{
@@ -1064,6 +1065,27 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
                     )}
                   </IonCardContent>
                 </IonCard>
+                {getCount && (() => {
+                  const count = getCount(hasIcons ? item.name : item);
+                  return count > 0 ? (
+                    <span style={{
+                      position: 'absolute', top: '-5px', right: '-5px',
+                      backgroundColor: '#E74C3C',
+                      color: 'white',
+                      fontSize: '10px', fontWeight: '700',
+                      minWidth: '18px', height: '18px',
+                      borderRadius: '9px',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      padding: '0 4px',
+                      boxShadow: '0 1px 4px rgba(0,0,0,0.3)',
+                      zIndex: 10,
+                      pointerEvents: 'none'
+                    }}>
+                      {count > 99 ? '99+' : count}
+                    </span>
+                  ) : null;
+                })()}
+                </div>
 
                 {/* Label below the box */}
                 <div style={{
@@ -1078,23 +1100,6 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
                 }}>
                   {hasIcons ? item.name : item}
                 </div>
-                {getCount && (() => {
-                  const count = getCount(hasIcons ? item.name : item);
-                  return count > 0 ? (
-                    <div style={{
-                      marginTop: '4px',
-                      display: 'inline-block',
-                      backgroundColor: (item.iconColor || rainbowColors[index % rainbowColors.length]) + '22',
-                      color: item.iconColor || rainbowColors[index % rainbowColors.length],
-                      fontSize: '11px',
-                      fontWeight: '800',
-                      padding: '2px 8px',
-                      borderRadius: '10px'
-                    }}>
-                      {count} {count === 1 ? 'item' : 'items'}
-                    </div>
-                  ) : null;
-                })()}
               </div>
             </IonCol>
           ))}
