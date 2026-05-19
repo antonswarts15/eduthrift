@@ -90,6 +90,16 @@ public class TradeSafeController {
                             "Your payment for order " + order.getOrderNumber() + " is held in escrow. The seller will ship your item shortly."
                     );
 
+                    // Advance TradeSafe allocation to INITIATED state — must always happen after FUNDS_RECEIVED
+                    if (order.getTradeSafeAllocationId() != null) {
+                        try {
+                            tradeSafeService.startDelivery(order.getTradeSafeAllocationId());
+                        } catch (Exception e) {
+                            log.warn("TradeSafe startDelivery failed for order {} — funds still held: {}",
+                                    order.getOrderNumber(), e.getMessage());
+                        }
+                    }
+
                     // Create TCG shipment now that funds are secured in escrow
                     String trackingRef = null;
                     if (order.getDeliveryLockerId() != null && order.getServiceLevelCode() != null) {
@@ -105,11 +115,6 @@ public class TradeSafeController {
                             Object shipmentId = shipment.get("id");
                             if (shipmentId != null) {
                                 order.setTcgShipmentId(shipmentId.toString());
-                            }
-                            if (order.getTradeSafeAllocationId() != null) {
-                                try {
-                                    tradeSafeService.startDelivery(order.getTradeSafeAllocationId());
-                                } catch (Exception ignored) {}
                             }
                         } catch (Exception ignored) {}
                     }
@@ -212,6 +217,7 @@ public class TradeSafeController {
 
             order.setTradeSafeTransactionId(transaction.transactionId());
             order.setTradeSafeAllocationId(transaction.allocationId());
+            order.setPaymentMethod(Order.PaymentMethod.TRADESAFE);
             orderRepository.save(order);
 
             return ResponseEntity.ok(Map.of(
