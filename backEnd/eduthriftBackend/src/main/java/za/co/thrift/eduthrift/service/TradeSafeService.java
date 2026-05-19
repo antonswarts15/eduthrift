@@ -83,6 +83,10 @@ public class TradeSafeService {
         return cachedToken;
     }
 
+    public Map<String, Object> executeGraphQLPublic(String query, Map<String, Object> variables) {
+        return executeGraphQL(query, variables);
+    }
+
     @SuppressWarnings("unchecked")
     private Map<String, Object> executeGraphQL(String query, Map<String, Object> variables) {
         String token = getAccessToken();
@@ -124,15 +128,24 @@ public class TradeSafeService {
 
         if (response.containsKey("errors")) {
             Object errors = response.get("errors");
-            // Extract first error message for clarity
             String msg = errors.toString();
             try {
                 @SuppressWarnings("unchecked")
                 java.util.List<Map<String, Object>> errList = (java.util.List<Map<String, Object>>) errors;
                 if (!errList.isEmpty()) {
-                    msg = String.valueOf(errList.get(0).get("message"));
+                    Map<String, Object> first = errList.get(0);
+                    msg = String.valueOf(first.get("message"));
+                    // Append validation details when present (e.g. minimum value, missing field)
+                    Object ext = first.get("extensions");
+                    if (ext instanceof Map<?, ?> extMap) {
+                        Object validation = extMap.get("validation");
+                        if (validation != null) {
+                            msg += " | validation: " + validation;
+                        }
+                    }
                 }
             } catch (Exception ignored) {}
+            log.error("TradeSafe GraphQL error detail: {}", msg);
             throw new RuntimeException("TradeSafe GraphQL error: " + msg);
         }
 
@@ -247,9 +260,8 @@ public class TradeSafeService {
                 }
                 """;
 
-        double value = order.getItemPrice()
-                .multiply(new java.math.BigDecimal(order.getQuantity()))
-                .doubleValue();
+        // itemPrice already stores the bundle total — do not multiply by quantity again
+        double value = order.getItemPrice().doubleValue();
 
         Map<String, Object> variables = new HashMap<>();
         variables.put("title", "Eduthrift Order " + order.getOrderNumber());

@@ -207,6 +207,25 @@ public class TradeSafeController {
             return ResponseEntity.status(403).body(Map.of("error", "Not your order"));
         }
 
+        // If a TradeSafe transaction already exists for this order, return the existing checkout link
+        if (order.getTradeSafeTransactionId() != null && !order.getTradeSafeTransactionId().isBlank()) {
+            try {
+                String checkoutMutation = "mutation checkoutLink($id: ID!) { checkoutLink(transactionId: $id) }";
+                @SuppressWarnings("unchecked")
+                Map<String, Object> cd = (Map<String, Object>)
+                        ((Map<String, Object>) tradeSafeService.executeGraphQLPublic(checkoutMutation,
+                                Map.of("id", order.getTradeSafeTransactionId()))).get("data");
+                String existingUrl = (String) cd.get("checkoutLink");
+                if (existingUrl != null) {
+                    return ResponseEntity.ok(Map.of(
+                            "success", true,
+                            "transactionId", order.getTradeSafeTransactionId(),
+                            "depositUrl", existingUrl
+                    ));
+                }
+            } catch (Exception ignored) {}
+        }
+
         try {
             String buyerToken = tradeSafeService.createOrGetUserToken(buyer);
             String sellerToken = tradeSafeService.createOrGetUserToken(seller);
