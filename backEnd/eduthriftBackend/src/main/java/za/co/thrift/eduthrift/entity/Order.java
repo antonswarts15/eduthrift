@@ -93,7 +93,7 @@ public class Order {
     private String tradeSafeAllocationId;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "payment_method")
+    @Column(name = "payment_method", length = 20)
     private PaymentMethod paymentMethod;
 
     @Column(name = "payout_scheduled_at")
