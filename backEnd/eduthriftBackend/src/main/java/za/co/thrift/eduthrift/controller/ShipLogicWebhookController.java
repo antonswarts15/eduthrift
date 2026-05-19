@@ -7,14 +7,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import za.co.thrift.eduthrift.entity.Order;
 import za.co.thrift.eduthrift.repository.OrderRepository;
-import za.co.thrift.eduthrift.service.TradeSafeService;
+import za.co.thrift.eduthrift.service.EscrowService;
 
 import jakarta.servlet.http.HttpServletRequest;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
 import java.util.HexFormat;
 import java.util.Map;
 import java.util.Optional;
@@ -38,12 +37,12 @@ public class ShipLogicWebhookController {
     private String webhookSecret;
 
     private final OrderRepository orderRepository;
-    private final TradeSafeService tradeSafeService;
+    private final EscrowService escrowService;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public ShipLogicWebhookController(OrderRepository orderRepository, TradeSafeService tradeSafeService) {
+    public ShipLogicWebhookController(OrderRepository orderRepository, EscrowService escrowService) {
         this.orderRepository = orderRepository;
-        this.tradeSafeService = tradeSafeService;
+        this.escrowService = escrowService;
     }
 
     @PostMapping("/shiplogic")
@@ -96,29 +95,15 @@ public class ShipLogicWebhookController {
 
         return switch (status.toUpperCase()) {
             case "DELIVERED", "DELIVERY_CONFIRMED", "PARCEL_DELIVERED" -> {
-                order.setOrderStatus(Order.OrderStatus.DELIVERED);
-                order.setDeliveryConfirmed(true);
-                // Start 48h dispute window — auto-release scheduler fires if buyer doesn't dispute
-                if (order.getPayoutScheduledAt() == null) {
-                    order.setPayoutScheduledAt(LocalDateTime.now().plusHours(48));
+                try {
+                    escrowService.confirmDelivery(order.getOrderNumber());
+                } catch (Exception e) {
+                    yield ResponseEntity.ok(Map.of(
+                        "received", true,
+                        "action", "delivery_already_processed",
+                        "orderNumber", order.getOrderNumber()
+                    ));
                 }
-                orderRepository.save(order);
-
-                if (order.getTradeSafeAllocationId() != null) {
-                    try {
-                        tradeSafeService.acceptDelivery(order.getTradeSafeAllocationId());
-                    } catch (Exception e) {
-                        // Order marked delivered locally but TradeSafe call failed.
-                        // Admin should manually accept delivery in TradeSafe portal
-                        // for transaction: order.getTradeSafeTransactionId()
-                        yield ResponseEntity.ok(Map.of(
-                            "received", true,
-                            "action", "delivery_marked_tradesafe_call_failed",
-                            "orderNumber", order.getOrderNumber()
-                        ));
-                    }
-                }
-
                 yield ResponseEntity.ok(Map.of(
                     "received", true,
                     "action", "funds_released",
