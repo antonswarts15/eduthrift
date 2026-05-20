@@ -52,7 +52,7 @@ const CheckoutPage: React.FC = () => {
   const [toastMessage, setToastMessage] = useState('');
   const [showAddressModal, setShowAddressModal] = useState(false);
 
-  const totalItemAmount = items.reduce((sum: number, item: any) => sum + item.price, 0);
+  const totalItemAmount = items.reduce((sum: number, item: any) => sum + item.price * (item.selectedQuantity ?? 1), 0);
   const buyerProtectionFee = Math.min(Math.max(totalItemAmount * 0.10, 5), 75);
   const selectedBox = PUDO_BOX_SIZES.find(b => b.service_level_code === selectedBoxSize) ?? null;
   const shippingCost = selectedBox?.total_cost || 0;
@@ -146,11 +146,26 @@ const CheckoutPage: React.FC = () => {
       return groups;
     }, {});
 
+    // Validate each seller's bundle meets TradeSafe's R50 minimum before hitting the backend
+    for (const [, sellerItems] of Object.entries(itemsBySeller)) {
+      const sellerTotal = (sellerItems as any[]).reduce((sum: number, i: any) => sum + i.price * (i.selectedQuantity ?? 1), 0);
+      if (sellerTotal < 50) {
+        const names = (sellerItems as any[]).map((i: any) => i.name || i.item_name).join(', ');
+        setToastMessage(`Items from one seller total R${sellerTotal.toFixed(2)}, below the R50 TradeSafe minimum: ${names}`);
+        setShowToast(true);
+        setLoading(false);
+        return;
+      }
+    }
+
     try {
       const depositUrls: string[] = [];
 
       for (const sellerItems of Object.values(itemsBySeller)) {
-        const itemIds = (sellerItems as any[]).map((i: any) => parseInt(i.id));
+        // Expand by selectedQuantity so the backend calculates the correct bundle total
+        const itemIds = (sellerItems as any[]).flatMap((i: any) =>
+          Array(i.selectedQuantity ?? 1).fill(parseInt(i.id))
+        );
         const orderResponse = await ordersApi.createOrder({
           itemIds,
           shippingCost,

@@ -73,8 +73,8 @@ public class ItemController {
             if (request.price == null) {
                 return ResponseEntity.badRequest().body(Map.of("error", "Price is required"));
             }
-            if (request.price <= 0) {
-                return ResponseEntity.badRequest().body(Map.of("error", "Price must be greater than zero"));
+            if (request.price < 50) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Minimum listing price is R50 (required for TradeSafe escrow)"));
             }
             item.setPrice(BigDecimal.valueOf(request.price));
 
@@ -219,8 +219,8 @@ public class ItemController {
             Object priceObj = updates.get("price");
             if (priceObj instanceof Number) {
                 double price = ((Number) priceObj).doubleValue();
-                if (price <= 0) {
-                    return ResponseEntity.badRequest().body(Map.of("error", "Price must be greater than zero"));
+                if (price < 50) {
+                    return ResponseEntity.badRequest().body(Map.of("error", "Minimum listing price is R50 (required for TradeSafe escrow)"));
                 }
                 item.setPrice(BigDecimal.valueOf(price));
             }
