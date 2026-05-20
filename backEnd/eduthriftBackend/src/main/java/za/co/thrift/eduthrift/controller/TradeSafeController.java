@@ -244,6 +244,8 @@ public class TradeSafeController {
                     "depositUrl", transaction.depositUrl()
             ));
 
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
             log.error("TradeSafe payment initiation failed for order {}: {}", request.get("orderNumber"), e.getMessage(), e);
             String cause = e.getCause() != null ? e.getCause().getMessage() : e.getMessage();

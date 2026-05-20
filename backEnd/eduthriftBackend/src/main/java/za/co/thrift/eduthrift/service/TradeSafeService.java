@@ -41,6 +41,10 @@ public class TradeSafeService {
     @Value("${tradesafe.cf.client.secret:}")
     private String cfClientSecret;
 
+    // Eduthrift organisation token — set once via TRADESAFE_AGENT_TOKEN env var
+    @Value("${tradesafe.agent.token:}")
+    private String agentToken;
+
     private final RestTemplate restTemplate = new RestTemplate();
     private final UserRepository userRepository;
 
@@ -211,8 +215,79 @@ public class TradeSafeService {
      */
     @SuppressWarnings("unchecked")
     public TradeSafeTransaction createTransaction(Order order, String buyerToken, String sellerToken) {
-        // Step 1: Create the transaction
-        String transactionMutation = """
+        // itemPrice already stores the bundle total — do not multiply by quantity again
+        double value = order.getItemPrice().doubleValue();
+
+        // TradeSafe enforces a minimum allocation value based on their fee structure (~R43).
+        // Enforce R50 on our side to give a clear error before the GraphQL call.
+        if (value < 50.0) {
+            throw new IllegalArgumentException(
+                "Item value R" + String.format("%.2f", value)
+                + " is below the R50 minimum required for TradeSafe escrow."
+                + " Please list items at R50 or more.");
+        }
+
+        boolean hasAgentToken = agentToken != null && !agentToken.isBlank();
+
+        // Step 1: Create the transaction.
+        // feeAllocation: BUYER means TradeSafe's processing fee is added on top for the buyer.
+        // When Eduthrift is registered as AGENT, TradeSafe automatically pays out 10% of the
+        // allocation value to Eduthrift's account on completion (deducted from the seller).
+        String transactionMutation = hasAgentToken ? """
+                mutation transactionCreate(
+                    $title: String!,
+                    $description: String!,
+                    $industry: Industry!,
+                    $value: Float,
+                    $buyerToken: String,
+                    $sellerToken: String,
+                    $agentToken: String
+                ) {
+                    transactionCreate(input: {
+                        title: $title
+                        description: $description
+                        industry: $industry
+                        currency: ZAR
+                        feeAllocation: BUYER
+                        allocations: {
+                            create: [
+                                {
+                                    title: $title
+                                    description: $description
+                                    value: $value
+                                    daysToDeliver: 7
+                                    daysToInspect: 3
+                                }
+                            ]
+                        }
+                        parties: {
+                            create: [
+                                {
+                                    token: $buyerToken
+                                    role: BUYER
+                                }
+                                {
+                                    token: $sellerToken
+                                    role: SELLER
+                                }
+                                {
+                                    token: $agentToken
+                                    role: AGENT
+                                    fee: 10
+                                    feeType: PERCENT
+                                    feeAllocation: SELLER
+                                }
+                            ]
+                        }
+                    }) {
+                        id
+                        createdAt
+                        allocations {
+                            id
+                        }
+                    }
+                }
+                """ : """
                 mutation transactionCreate(
                     $title: String!,
                     $description: String!,
@@ -226,7 +301,7 @@ public class TradeSafeService {
                         description: $description
                         industry: $industry
                         currency: ZAR
-                        feeAllocation: SELLER
+                        feeAllocation: BUYER
                         allocations: {
                             create: [
                                 {
@@ -260,9 +335,6 @@ public class TradeSafeService {
                 }
                 """;
 
-        // itemPrice already stores the bundle total — do not multiply by quantity again
-        double value = order.getItemPrice().doubleValue();
-
         Map<String, Object> variables = new HashMap<>();
         variables.put("title", "Eduthrift Order " + order.getOrderNumber());
         variables.put("description", "Second-hand school item: " + order.getItem().getItemName());
@@ -270,6 +342,9 @@ public class TradeSafeService {
         variables.put("value", value);
         variables.put("buyerToken", buyerToken);
         variables.put("sellerToken", sellerToken);
+        if (hasAgentToken) {
+            variables.put("agentToken", agentToken);
+        }
 
         Map<String, Object> result = executeGraphQL(transactionMutation, variables);
         Map<String, Object> data = (Map<String, Object>) result.get("data");
