@@ -53,10 +53,9 @@ const CheckoutPage: React.FC = () => {
   const [showAddressModal, setShowAddressModal] = useState(false);
 
   const totalItemAmount = items.reduce((sum: number, item: any) => sum + item.price * (item.selectedQuantity ?? 1), 0);
-  const buyerProtectionFee = Math.min(Math.max(totalItemAmount * 0.10, 5), 75);
   const selectedBox = PUDO_BOX_SIZES.find(b => b.service_level_code === selectedBoxSize) ?? null;
   const shippingCost = selectedBox?.total_cost || 0;
-  const finalAmount = totalItemAmount + buyerProtectionFee + shippingCost;
+  const finalAmount = totalItemAmount + shippingCost;
 
   const handleAddressSave = async (addressData: AddressData) => {
     try {
@@ -420,10 +419,6 @@ const CheckoutPage: React.FC = () => {
                   <span>R{totalItemAmount.toFixed(2)}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', fontSize: '14px' }}>
-                  <span style={{ color: '#555' }}>Buyer Protection Fee</span>
-                  <span>R{buyerProtectionFee.toFixed(2)}</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', fontSize: '14px' }}>
                   <span style={{ color: '#555' }}>Pudo Shipping ({selectedBox.service_level_name})</span>
                   <span>R{shippingCost.toFixed(2)}</span>
                 </div>
@@ -438,7 +433,7 @@ const CheckoutPage: React.FC = () => {
                   <strong>✅ Zero seller fees:</strong> Seller receives the full R{totalItemAmount.toFixed(2)}.
                 </p>
                 <p style={{ margin: '0 0 4px', fontSize: '12px', color: '#2d5a2d', lineHeight: '1.5' }}>
-                  <strong>🔒 Buyer Protection (R{buyerProtectionFee.toFixed(2)}):</strong> Held in escrow until you confirm delivery.
+                  <strong>🔒 Secure escrow:</strong> Funds are held by TradeSafe until you confirm delivery.
                 </p>
                 <p style={{ margin: '0', fontSize: '12px', color: '#2d5a2d', lineHeight: '1.5' }}>
                   <strong>📦 Pudo Shipping (R{shippingCost.toFixed(2)}):</strong> Locker-to-locker, anywhere in South Africa.

@@ -136,6 +136,11 @@ public class TradeSafeController {
                 case "DELIVERY_ACCEPTED" -> {
                     order.setOrderStatus(Order.OrderStatus.DELIVERED);
                     order.setDeliveryConfirmed(true);
+                    fcmNotificationService.send(
+                            order.getSeller().getFcmToken(),
+                            "Delivery Confirmed",
+                            "The buyer has confirmed receipt of order " + order.getOrderNumber() + ". Funds will be released to you shortly."
+                    );
                 }
                 case "COMPLETED" -> {
                     order.setOrderStatus(Order.OrderStatus.COMPLETED);
@@ -145,6 +150,19 @@ public class TradeSafeController {
                             order.getSeller().getFcmToken(),
                             "Payment Released",
                             "Funds for order " + order.getOrderNumber() + " have been released to your account."
+                    );
+                }
+                case "DISPUTED" -> {
+                    order.setDisputeStatus(Order.DisputeStatus.OPEN);
+                    fcmNotificationService.send(
+                            order.getBuyer().getFcmToken(),
+                            "Dispute Opened",
+                            "A dispute has been opened for order " + order.getOrderNumber() + ". Our team will review within 24 hours."
+                    );
+                    fcmNotificationService.send(
+                            order.getSeller().getFcmToken(),
+                            "Dispute Opened",
+                            "A dispute has been opened for order " + order.getOrderNumber() + ". Funds remain frozen until resolved."
                     );
                 }
                 case "CANCELLED", "DECLINED" -> {

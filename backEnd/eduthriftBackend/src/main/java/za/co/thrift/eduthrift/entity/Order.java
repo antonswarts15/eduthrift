@@ -155,23 +155,14 @@ public class Order {
     }
 
     private void calculateFees() {
-        if (itemPrice != null && quantity != null) {
-            BigDecimal itemTotal = itemPrice.multiply(BigDecimal.valueOf(quantity));
-
-            // Vinted model: seller pays nothing, buyer pays a protection fee
-            // Protection fee: 10% of item price, min R5, max R50
-            BigDecimal rawFee = itemTotal.multiply(BigDecimal.valueOf(0.10))
-                    .setScale(2, java.math.RoundingMode.HALF_UP);
-            buyerProtectionFee = rawFee
-                    .max(BigDecimal.valueOf(5.00))
-                    .min(BigDecimal.valueOf(50.00));
-
-            platformFee = buyerProtectionFee;       // platform earns the protection fee
-            paymentProcessingFee = BigDecimal.ZERO; // absorbed in platform fee
-            sellerPayout = itemTotal;               // seller gets full item price
-
-            // Total buyer pays = item + protection fee + shipping (shipping added at checkout)
-            escrowAmount = itemTotal.add(buyerProtectionFee);
+        if (itemPrice != null) {
+            // TradeSafe model: seller pays nothing, Eduthrift earns via agent commission.
+            // itemPrice is the bundle total — no separate protection fee collected.
+            buyerProtectionFee = BigDecimal.ZERO;
+            platformFee = BigDecimal.ZERO;
+            paymentProcessingFee = BigDecimal.ZERO;
+            sellerPayout = itemPrice;
+            escrowAmount = itemPrice;
         }
     }
 
