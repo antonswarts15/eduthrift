@@ -231,8 +231,10 @@ public class TradeSafeService {
 
         // Step 1: Create the transaction.
         // feeAllocation: BUYER means TradeSafe's processing fee is added on top for the buyer.
-        // When Eduthrift is registered as AGENT, TradeSafe automatically pays out 10% of the
+        // When Eduthrift is registered as AGENT, TradeSafe automatically pays out 7% of the
         // allocation value to Eduthrift's account on completion (deducted from the seller).
+        // This 7% is the gross platform fee — it includes TradeSafe's own ~1.5–2.5% fee,
+        // so Eduthrift nets approximately 4.5–5.5% per transaction.
         String transactionMutation = hasAgentToken ? """
                 mutation transactionCreate(
                     $title: String!,
@@ -273,7 +275,7 @@ public class TradeSafeService {
                                 {
                                     token: $agentToken
                                     role: AGENT
-                                    fee: 10
+                                    fee: 7
                                     feeType: PERCENT
                                     feeAllocation: SELLER
                                 }

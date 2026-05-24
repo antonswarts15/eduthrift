@@ -18,7 +18,7 @@ interface PricingBreakdownProps {
 const PricingBreakdown: React.FC<PricingBreakdownProps> = ({ itemPrice, shippingCost }) => {
   const [pricingModel, setPricingModel] = useState<'buyer_pays_extra' | 'seller_pays_fee'>('buyer_pays_extra');
 
-  const serviceFeeRate = 0.1; // 10%
+  const serviceFeeRate = 0.07; // 7% (includes TradeSafe escrow fee)
   const serviceFee = itemPrice * serviceFeeRate;
 
   const buyerPaysExtraModel = {
@@ -68,7 +68,7 @@ const PricingBreakdown: React.FC<PricingBreakdownProps> = ({ itemPrice, shipping
           {pricingModel === 'buyer_pays_extra' && (
             <IonItem lines="none">
               <IonLabel>
-                <p>+ Service Fee (10%): R{serviceFee.toFixed(2)}</p>
+                <p>+ Service Fee (7%): R{serviceFee.toFixed(2)}</p>
               </IonLabel>
             </IonItem>
           )}

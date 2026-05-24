@@ -8,10 +8,8 @@ interface PaymentBreakdownProps {
 
 const PaymentBreakdown: React.FC<PaymentBreakdownProps> = ({ itemPrice, quantity = 1 }) => {
   const totalSaleAmount = itemPrice * quantity;
-  const platformFee = totalSaleAmount * 0.10; // 10% platform fee
-  const paymentProcessingFee = totalSaleAmount * 0.025; // 2.5% payment processing
-  const totalDeductions = platformFee + paymentProcessingFee;
-  const sellerPayout = totalSaleAmount - totalDeductions;
+  const platformFee = totalSaleAmount * 0.07; // 7% platform fee (includes TradeSafe escrow fee)
+  const sellerPayout = totalSaleAmount - platformFee;
 
   return (
     <IonCard>
@@ -33,21 +31,11 @@ const PaymentBreakdown: React.FC<PaymentBreakdownProps> = ({ itemPrice, quantity
         
         <IonItem lines="none">
           <IonLabel>
-            <h3 style={{ color: '#d32f2f' }}>Platform Fee (10%)</h3>
-            <p style={{ fontSize: '12px' }}>Marketplace & escrow service</p>
+            <h3 style={{ color: '#d32f2f' }}>Platform Fee (7%)</h3>
+            <p style={{ fontSize: '12px' }}>Marketplace & escrow service (incl. TradeSafe fee)</p>
           </IonLabel>
           <IonLabel slot="end">
             <h3 style={{ color: '#d32f2f' }}>-R{platformFee.toFixed(2)}</h3>
-          </IonLabel>
-        </IonItem>
-        
-        <IonItem lines="none">
-          <IonLabel>
-            <h3 style={{ color: '#d32f2f' }}>Payment Processing (2.5%)</h3>
-            <p style={{ fontSize: '12px' }}>Ozow transaction fee</p>
-          </IonLabel>
-          <IonLabel slot="end">
-            <h3 style={{ color: '#d32f2f' }}>-R{paymentProcessingFee.toFixed(2)}</h3>
           </IonLabel>
         </IonItem>
         

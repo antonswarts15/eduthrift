@@ -28,6 +28,8 @@ import { useCartStore } from '../../stores/cartStore';
 import { useListingsStore } from '../../stores/listingsStore';
 import { validateImageFile } from '../../utils/imageEnhancer';
 
+import clubClothing from '../assets/clubClothing.png';
+
 
 interface ClubClothingProps {
   userType: 'seller' | 'buyer';

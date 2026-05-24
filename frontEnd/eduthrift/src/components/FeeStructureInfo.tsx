@@ -49,8 +49,8 @@ const FeeStructureInfo: React.FC = () => {
               <IonCardContent>
                 <IonItem lines="none">
                   <IonLabel>
-                    <h3>Platform Fee (10%) — charged to seller</h3>
-                    <p>Deducted from the seller's payout. Covers TradeSafe escrow fees, payment processing, buyer protection, and platform maintenance. Buyers pay no platform fee.</p>
+                    <h3>Platform Fee (7%) — charged to seller</h3>
+                    <p>Deducted from the seller's payout. This covers TradeSafe escrow fees (~1.5–2.5%) plus platform costs (buyer protection, dispute resolution, and platform maintenance). Buyers pay no platform fee.</p>
                   </IonLabel>
                 </IonItem>
 
