@@ -9,6 +9,7 @@ import za.co.thrift.eduthrift.entity.Order;
 import za.co.thrift.eduthrift.entity.User;
 import za.co.thrift.eduthrift.repository.OrderRepository;
 import za.co.thrift.eduthrift.repository.UserRepository;
+import za.co.thrift.eduthrift.service.EmailService;
 import za.co.thrift.eduthrift.service.FCMNotificationService;
 import za.co.thrift.eduthrift.service.OrderExpiryService;
 import za.co.thrift.eduthrift.service.TCGShippingService;
@@ -28,19 +29,22 @@ public class TradeSafeController {
     private final UserRepository userRepository;
     private final FCMNotificationService fcmNotificationService;
     private final OrderExpiryService orderExpiryService;
+    private final EmailService emailService;
 
     public TradeSafeController(TradeSafeService tradeSafeService,
                                 TCGShippingService tcgShippingService,
                                 OrderRepository orderRepository,
                                 UserRepository userRepository,
                                 FCMNotificationService fcmNotificationService,
-                                OrderExpiryService orderExpiryService) {
+                                OrderExpiryService orderExpiryService,
+                                EmailService emailService) {
         this.tradeSafeService = tradeSafeService;
         this.tcgShippingService = tcgShippingService;
         this.orderRepository = orderRepository;
         this.userRepository = userRepository;
         this.fcmNotificationService = fcmNotificationService;
         this.orderExpiryService = orderExpiryService;
+        this.emailService = emailService;
     }
 
     /**
@@ -118,20 +122,22 @@ public class TradeSafeController {
                         } catch (Exception ignored) {}
                     }
 
-                    // Notify seller with Pudo drop-off instructions
+                    // Notify seller with Pudo drop-off instructions including the waybill
                     String sellerMsg = "Funds for order " + order.getOrderNumber()
                             + " are secured in escrow. Please drop off the item at your nearest Pudo locker.";
                     if (trackingRef != null) {
-                        sellerMsg += " Waybill/tracking: " + trackingRef
-                                + ". The buyer's locker is: " + (order.getPickupPoint() != null ? order.getPickupPoint() : "see order details") + ".";
+                        sellerMsg += " Waybill: " + trackingRef + ". Buyer's locker: "
+                                + (order.getPickupPoint() != null ? order.getPickupPoint() : "see order details") + ".";
                     } else {
                         sellerMsg += " Open your orders in the app for the waybill and drop-off instructions.";
                     }
                     fcmNotificationService.send(
                             order.getSeller().getFcmToken(),
-                            "Action Required: Ship Your Item",
+                            "Action Required: Drop Off Item",
                             sellerMsg
                     );
+                    // Send seller email with waybill now that shipment is created
+                    emailService.sendSellerShipNowEmail(order);
                 }
                 case "DELIVERY_ACCEPTED" -> {
                     order.setOrderStatus(Order.OrderStatus.DELIVERED);

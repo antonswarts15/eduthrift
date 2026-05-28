@@ -328,11 +328,11 @@ public class EmailService {
 
     // ── Payment confirmed / escrow held ───────────────────────────────────────
 
+    // Sends only the buyer email — seller email is sent separately via sendSellerShipNowEmail()
+    // once the Pudo waybill is available (after TCG shipment creation in TradeSafeController).
     public void sendPaymentConfirmedEmails(Order order) {
         try {
             BigDecimal itemTotal = order.getItemPrice();
-
-            // Buyer: payment received and held
             String buyerHtml = """
                     <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px">
                       <div style="background:#004aad;padding:20px;border-radius:8px 8px 0 0;text-align:center">
@@ -342,21 +342,16 @@ public class EmailService {
                       <div style="background:#f9f9f9;padding:24px;border:1px solid #eee">
                         <p style="font-size:16px">Hi <strong>%s</strong>,</p>
                         <p>Your payment for order <strong>%s</strong> has been confirmed and is securely held in escrow.
-                           The seller has been notified to ship your item.</p>
-
+                           The seller has been notified to drop off the item at a Pudo locker.</p>
                         <div style="background:#e8f5e8;border-radius:8px;padding:14px;margin:16px 0">
                           <p style="margin:0;font-size:13px;color:#2d5a2d">
                             <strong>📦 Item:</strong> %s<br>
                             <strong>🔒 Escrow amount:</strong> %s<br>
-                            <strong>📍 Delivery locker:</strong> %s<br><br>
-                            Your money is safe and will only be released to the seller once you confirm you have received your item.
+                            <strong>📍 Your collection locker:</strong> %s<br><br>
+                            Your money is safe. Pudo will notify you by email when the item arrives at your locker.
+                            Funds are released to the seller automatically once Pudo confirms you have collected.
                           </p>
                         </div>
-
-                        <p style="font-size:13px;color:#666">
-                          You will receive a tracking number once the seller ships your item.
-                        </p>
-
                         <div style="text-align:center;margin:24px 0">
                           <a href="%s/orders" style="background:#004aad;color:white;padding:12px 28px;border-radius:6px;text-decoration:none;font-weight:bold">
                             Track My Order
@@ -375,40 +370,55 @@ public class EmailService {
                     footer()
             );
             send(order.getBuyer().getEmail(), "Payment Confirmed — " + order.getOrderNumber(), buyerHtml);
+        } catch (Exception e) {
+            log.warn("Failed to send payment confirmed buyer email for order {}: {}", order.getOrderNumber(), e.getMessage());
+        }
+    }
 
-            // Seller: payment confirmed, ship now
+    /**
+     * Sent to the seller once the Pudo/TCG waybill is ready (after shipment creation).
+     * Includes the actual waybill number and step-by-step drop-off instructions.
+     */
+    public void sendSellerShipNowEmail(Order order) {
+        try {
+            BigDecimal itemTotal = order.getItemPrice();
+            String tracking = order.getTrackingNumber() != null ? order.getTrackingNumber() : "See app — My Orders";
             String sellerHtml = """
                     <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px">
                       <div style="background:#27ae60;padding:20px;border-radius:8px 8px 0 0;text-align:center">
-                        <h1 style="color:white;margin:0;font-size:24px">Payment Received — Ship Now!</h1>
+                        <h1 style="color:white;margin:0;font-size:24px">Drop Off Now — Waybill Ready!</h1>
                         <p style="color:rgba(255,255,255,0.85);margin:8px 0 0">Eduthrift Secure Marketplace</p>
                       </div>
                       <div style="background:#f9f9f9;padding:24px;border:1px solid #eee">
                         <p style="font-size:16px">Hi <strong>%s</strong>,</p>
-                        <p>The buyer's payment for order <strong>%s</strong> has been confirmed and is held in escrow.
-                           <strong>You can now ship the item.</strong></p>
-
-                        <div style="background:#e8f5e8;border-radius:8px;padding:14px;margin:16px 0">
-                          <p style="margin:0;font-size:13px;color:#2d5a2d">
-                            <strong>📦 Item to ship:</strong> %s<br>
-                            <strong>💰 Your payout:</strong> %s (released after buyer confirms delivery)<br>
-                            <strong>📍 Deliver to locker:</strong> %s
-                          </p>
+                        <p>The buyer's payment for order <strong>%s</strong> is confirmed and held in escrow.
+                           A Pudo shipment has been created. <strong>Please drop the item off at your nearest Pudo locker.</strong></p>
+                        <div style="background:#e8f5e8;border-radius:8px;padding:16px;margin:16px 0;border:2px solid #27ae60">
+                          <p style="margin:0 0 10px;font-size:13px;font-weight:bold;color:#2d5a2d">📦 Shipping Details</p>
+                          <table style="width:100%%;border-collapse:collapse;font-size:14px">
+                            <tr><td style="padding:5px 0;color:#555;width:140px">Item</td>
+                                <td style="padding:5px 0"><strong>%s</strong></td></tr>
+                            <tr><td style="padding:5px 0;color:#555">Buyer's locker</td>
+                                <td style="padding:5px 0"><strong>%s</strong></td></tr>
+                            <tr><td style="padding:5px 0;color:#555">Waybill number</td>
+                                <td style="padding:5px 0;font-size:20px;font-weight:bold;color:#004aad;letter-spacing:2px">%s</td></tr>
+                            <tr><td style="padding:5px 0;color:#555">Your payout</td>
+                                <td style="padding:5px 0;color:#27ae60"><strong>%s</strong> — released automatically once Pudo confirms collection</td></tr>
+                          </table>
                         </div>
-
                         <div style="background:#fff3cd;border-radius:8px;padding:14px;margin:16px 0">
-                          <p style="margin:0;font-size:13px;color:#856404">
-                            <strong>📋 Shipping steps:</strong><br><br>
-                            1. Drop the item off at your nearest Pudo locker.<br>
-                            2. Open the Eduthrift app → My Orders to find your waybill.<br>
-                            3. The buyer will be notified to collect and confirm receipt.<br>
-                            4. Once confirmed, funds are automatically released to you.
+                          <p style="margin:0;font-size:13px;color:#856404;line-height:1.8">
+                            <strong>📋 Drop-off steps:</strong><br>
+                            1. Go to <strong>any Pudo locker</strong> near you.<br>
+                            2. Select <em>Drop Off</em> and enter waybill <strong>%s</strong>.<br>
+                            3. Place the item in the locker and close it.<br>
+                            4. Pudo notifies the buyer to collect — <strong>no further action needed from you.</strong><br>
+                            5. Once the buyer collects, Pudo confirms delivery and your payout is released automatically.
                           </p>
                         </div>
-
                         <div style="text-align:center;margin:24px 0">
                           <a href="%s/orders" style="background:#27ae60;color:white;padding:12px 28px;border-radius:6px;text-decoration:none;font-weight:bold">
-                            View Order &amp; Waybill
+                            View Order in App
                           </a>
                         </div>
                       </div>
@@ -418,15 +428,16 @@ public class EmailService {
                     order.getSeller().getFirstName(),
                     order.getOrderNumber(),
                     order.getItem().getItemName(),
-                    ZAR.format(itemTotal),
                     order.getPickupPoint() != null ? order.getPickupPoint() : "See order details",
+                    tracking,
+                    ZAR.format(itemTotal),
+                    tracking,
                     appBaseUrl,
                     footer()
             );
-            send(order.getSeller().getEmail(), "Payment Confirmed — Ship Now: " + order.getOrderNumber(), sellerHtml);
-
+            send(order.getSeller().getEmail(), "Drop Off Now — Waybill Ready: " + order.getOrderNumber(), sellerHtml);
         } catch (Exception e) {
-            log.warn("Failed to send payment confirmed emails for order {}: {}", order.getOrderNumber(), e.getMessage());
+            log.warn("Failed to send seller ship-now email for order {}: {}", order.getOrderNumber(), e.getMessage());
         }
     }
 
@@ -455,9 +466,10 @@ public class EmailService {
 
                         <div style="background:#fff3cd;border-radius:8px;padding:14px;margin:16px 0">
                           <p style="margin:0;font-size:13px;color:#856404">
-                            <strong>What to do when it arrives:</strong><br>
-                            Collect your item from the Pudo locker, then open the Eduthrift app and confirm delivery.
-                            This releases payment to the seller and completes your order.
+                            <strong>What happens next:</strong><br>
+                            Collect your item from the Pudo locker using your tracking number.
+                            Once you open the locker, Pudo automatically confirms delivery and releases payment to the seller.
+                            No action needed from you in the app.
                           </p>
                         </div>
 
@@ -507,11 +519,12 @@ public class EmailService {
                         </div>
 
                         <div style="background:#fff3cd;border-radius:8px;padding:14px;margin:16px 0">
-                          <p style="margin:0;font-size:13px;color:#856404">
-                            <strong>Important:</strong> After collecting your item, open the Eduthrift app and
-                            confirm delivery to release payment to the seller and complete the transaction.
-                            If you do not confirm within <strong>72 hours</strong>, the system will
-                            automatically release the funds.
+                          <p style="margin:0;font-size:13px;color:#6c3483">
+                            <strong>Important:</strong> Use your tracking number to open the Pudo locker and collect your item.
+                            Pudo will automatically confirm delivery once the locker is opened —
+                            <strong>no action needed from you in the app.</strong>
+                            If you have not collected within <strong>72 hours</strong>, the system will
+                            automatically release the funds to the seller.
                           </p>
                         </div>
 

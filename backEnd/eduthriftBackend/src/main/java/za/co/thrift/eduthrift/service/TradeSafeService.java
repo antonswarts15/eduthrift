@@ -67,7 +67,7 @@ public class TradeSafeService {
         body.add("grant_type", "client_credentials");
         body.add("client_id", clientId);
         body.add("client_secret", clientSecret);
-        body.add("scope", "");
+        body.add("scope", "profile");
 
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(body, headers);
 
@@ -85,6 +85,19 @@ public class TradeSafeService {
         log.info("TradeSafe OAuth token obtained, expires in {}s", expiresIn);
 
         return cachedToken;
+    }
+
+    /**
+     * Fetches the apiProfile to retrieve Eduthrift's organisation token.
+     * Call GET /admin/tradesafe/profile to get the token, then set TRADESAFE_AGENT_TOKEN in .env.
+     */
+    @SuppressWarnings("unchecked")
+    public List<Map<String, Object>> getApiProfile() {
+        String query = "{ apiProfile { organizations { name token } } }";
+        Map<String, Object> result = executeGraphQL(query, null);
+        Map<String, Object> data = (Map<String, Object>) result.get("data");
+        Map<String, Object> profile = (Map<String, Object>) data.get("apiProfile");
+        return (List<Map<String, Object>>) profile.get("organizations");
     }
 
     public Map<String, Object> executeGraphQLPublic(String query, Map<String, Object> variables) {
@@ -227,15 +240,19 @@ public class TradeSafeService {
                 + " Please list items at R50 or more.");
         }
 
-        boolean hasAgentToken = agentToken != null && !agentToken.isBlank();
+        // Agent token is mandatory — every transaction must include the 7% agent split.
+        // Set TRADESAFE_AGENT_TOKEN in .env to Eduthrift's organisation token from the TradeSafe portal.
+        if (agentToken == null || agentToken.isBlank()) {
+            throw new IllegalStateException(
+                "TRADESAFE_AGENT_TOKEN is not configured. "
+                + "Set it in .env to Eduthrift's organisation token from the TradeSafe portal.");
+        }
 
-        // Step 1: Create the transaction.
         // feeAllocation: BUYER means TradeSafe's processing fee is added on top for the buyer.
-        // When Eduthrift is registered as AGENT, TradeSafe automatically pays out 7% of the
-        // allocation value to Eduthrift's account on completion (deducted from the seller).
+        // The AGENT party receives 7% of the allocation value from the seller's payout.
         // This 7% is the gross platform fee — it includes TradeSafe's own ~1.5–2.5% fee,
         // so Eduthrift nets approximately 4.5–5.5% per transaction.
-        String transactionMutation = hasAgentToken ? """
+        String transactionMutation = """
                 mutation transactionCreate(
                     $title: String!,
                     $description: String!,
@@ -289,52 +306,6 @@ public class TradeSafeService {
                         }
                     }
                 }
-                """ : """
-                mutation transactionCreate(
-                    $title: String!,
-                    $description: String!,
-                    $industry: Industry!,
-                    $value: Float,
-                    $buyerToken: String,
-                    $sellerToken: String
-                ) {
-                    transactionCreate(input: {
-                        title: $title
-                        description: $description
-                        industry: $industry
-                        currency: ZAR
-                        feeAllocation: BUYER
-                        allocations: {
-                            create: [
-                                {
-                                    title: $title
-                                    description: $description
-                                    value: $value
-                                    daysToDeliver: 7
-                                    daysToInspect: 3
-                                }
-                            ]
-                        }
-                        parties: {
-                            create: [
-                                {
-                                    token: $buyerToken
-                                    role: BUYER
-                                }
-                                {
-                                    token: $sellerToken
-                                    role: SELLER
-                                }
-                            ]
-                        }
-                    }) {
-                        id
-                        createdAt
-                        allocations {
-                            id
-                        }
-                    }
-                }
                 """;
 
         Map<String, Object> variables = new HashMap<>();
@@ -344,9 +315,7 @@ public class TradeSafeService {
         variables.put("value", value);
         variables.put("buyerToken", buyerToken);
         variables.put("sellerToken", sellerToken);
-        if (hasAgentToken) {
-            variables.put("agentToken", agentToken);
-        }
+        variables.put("agentToken", agentToken);
 
         Map<String, Object> result = executeGraphQL(transactionMutation, variables);
         Map<String, Object> data = (Map<String, Object>) result.get("data");

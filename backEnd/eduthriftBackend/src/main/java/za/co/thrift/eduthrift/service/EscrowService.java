@@ -54,6 +54,14 @@ public class EscrowService {
     }
 
     /**
+     * Notifies the buyer by email that their item has arrived at the Pudo locker and is ready to collect.
+     * Called by PudoWebhookController on AT_LOCKER / READY_FOR_COLLECTION events.
+     */
+    public void sendItemReadyForCollectionEmail(Order order) {
+        emailService.sendOrderArrivedEmail(order);
+    }
+
+    /**
      * Place funds in escrow after payment is confirmed.
      *
      * Called by the webhook controller after a PAYMENT_CONFIRMED event is processed.

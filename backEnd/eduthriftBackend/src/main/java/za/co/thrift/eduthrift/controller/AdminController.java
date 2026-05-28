@@ -1,5 +1,7 @@
 package za.co.thrift.eduthrift.controller;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
@@ -13,6 +15,7 @@ import za.co.thrift.eduthrift.repository.PaymentTransactionRepository;
 import za.co.thrift.eduthrift.repository.UserRepository;
 import za.co.thrift.eduthrift.service.EmailService;
 import za.co.thrift.eduthrift.service.EscrowService;
+import za.co.thrift.eduthrift.service.TradeSafeService;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -28,6 +31,8 @@ import java.util.Objects;
 @RequestMapping("/admin")
 public class AdminController {
 
+    private static final Logger log = LoggerFactory.getLogger(AdminController.class);
+
     private final UserRepository userRepository;
     private final OrderRepository orderRepository;
     private final LedgerEntryRepository ledgerEntryRepository;
@@ -36,13 +41,16 @@ public class AdminController {
     private final EscrowService escrowService;
     private final EmailService emailService;
 
+    private final TradeSafeService tradeSafeService;
+
     public AdminController(UserRepository userRepository,
                            OrderRepository orderRepository,
                            LedgerEntryRepository ledgerEntryRepository,
                            PaymentTransactionRepository paymentTransactionRepository,
                            PasswordEncoder passwordEncoder,
                            EscrowService escrowService,
-                           EmailService emailService) {
+                           EmailService emailService,
+                           TradeSafeService tradeSafeService) {
         this.userRepository = userRepository;
         this.orderRepository = orderRepository;
         this.ledgerEntryRepository = ledgerEntryRepository;
@@ -50,6 +58,17 @@ public class AdminController {
         this.passwordEncoder = passwordEncoder;
         this.escrowService = escrowService;
         this.emailService = emailService;
+        this.tradeSafeService = tradeSafeService;
+    }
+
+    @GetMapping("/tradesafe/profile")
+    public ResponseEntity<?> getTradeSafeProfile() {
+        try {
+            return ResponseEntity.ok(Map.of("organizations", tradeSafeService.getApiProfile()));
+        } catch (Exception e) {
+            log.error("Failed to fetch TradeSafe apiProfile: {}", e.getMessage());
+            return ResponseEntity.status(500).body(Map.of("error", "Failed to fetch TradeSafe profile"));
+        }
     }
 
     @GetMapping("/dashboard/stats")

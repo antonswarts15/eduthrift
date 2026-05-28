@@ -108,12 +108,13 @@ public class PudoWebhookController {
                 ));
             }
             case "AT_LOCKER", "READY_FOR_COLLECTION" -> {
-                // Item arrived at locker — reset the 72h buyer confirmation window from now,
-                // so the timer reflects when the buyer can actually collect, not when they paid.
+                // Item arrived at locker — update status, reset the 72h window from now,
+                // and email the buyer so they know to collect.
                 order.setOrderStatus(Order.OrderStatus.DELIVERED);
                 order.setPayoutScheduledAt(LocalDateTime.now().plusHours(72));
                 orderRepository.save(order);
-                yield ResponseEntity.ok(Map.of("received", true, "action", "timer_reset_awaiting_collection"));
+                escrowService.sendItemReadyForCollectionEmail(order);
+                yield ResponseEntity.ok(Map.of("received", true, "action", "buyer_notified_ready_for_collection"));
             }
             case "IN_TRANSIT", "PARCEL_RECEIVED" -> {
                 // Item en route — update status, leave timer unchanged

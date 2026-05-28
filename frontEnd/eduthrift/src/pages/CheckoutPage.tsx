@@ -430,10 +430,7 @@ const CheckoutPage: React.FC = () => {
 
               <div style={{ marginTop: '14px', padding: '10px 12px', backgroundColor: '#e8f5e8', borderRadius: '8px' }}>
                 <p style={{ margin: '0 0 4px', fontSize: '12px', color: '#2d5a2d', lineHeight: '1.5' }}>
-                  <strong>✅ Zero seller fees:</strong> Seller receives the full R{totalItemAmount.toFixed(2)}.
-                </p>
-                <p style={{ margin: '0 0 4px', fontSize: '12px', color: '#2d5a2d', lineHeight: '1.5' }}>
-                  <strong>🔒 Secure escrow:</strong> Funds are held by TradeSafe until you confirm delivery.
+                  <strong>🔒 Secure escrow:</strong> Funds are held by TradeSafe until you confirm delivery. A 7% platform fee is deducted from the seller's payout.
                 </p>
                 <p style={{ margin: '0', fontSize: '12px', color: '#2d5a2d', lineHeight: '1.5' }}>
                   <strong>📦 Pudo Shipping (R{shippingCost.toFixed(2)}):</strong> Locker-to-locker, anywhere in South Africa.

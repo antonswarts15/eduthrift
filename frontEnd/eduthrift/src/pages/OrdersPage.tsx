@@ -4,7 +4,7 @@ import {
   IonBadge, IonGrid, IonRow, IonCol, IonButton, IonIcon, IonModal,
   IonHeader, IonToolbar, IonTitle, IonSpinner, IonAlert
 } from '@ionic/react';
-import { trainOutline as trackingOutline, closeOutline, closeCircleOutline, warningOutline } from 'ionicons/icons';
+import { trainOutline as trackingOutline, closeOutline, closeCircleOutline, warningOutline, checkmarkCircleOutline } from 'ionicons/icons';
 import { useOrdersStore } from '../stores/ordersStore';
 import { useCartStore } from '../stores/cartStore';
 import api from '../services/api';
@@ -68,6 +68,15 @@ const OrdersPage: React.FC = () => {
       case 'cancelled': return 'Cancelled';
       case 'refunded': return 'Refunded';
       default: return status;
+    }
+  };
+
+  const confirmDelivery = async (orderNumber: string) => {
+    try {
+      await api.post(`/orders/${orderNumber}/confirm-delivery`);
+      await fetchOrders();
+    } catch {
+      // silently ignore — order status will refresh on next fetch
     }
   };
 
@@ -160,6 +169,21 @@ const OrdersPage: React.FC = () => {
                   >
                     <IonIcon icon={closeCircleOutline} slot="start" />
                     Cancel
+                  </IonButton>
+                )}
+                {order.isBuyer
+                  && order.status === 'shipped'
+                  && !order.deliveryConfirmed
+                  && (!order.disputeStatus || order.disputeStatus === 'NONE') && (
+                  <IonButton
+                    size="small"
+                    fill="outline"
+                    color="success"
+                    onClick={() => confirmDelivery(order.id)}
+                    style={{ marginTop: '4px' }}
+                  >
+                    <IonIcon icon={checkmarkCircleOutline} slot="start" />
+                    Collected Item
                   </IonButton>
                 )}
                 {order.isBuyer

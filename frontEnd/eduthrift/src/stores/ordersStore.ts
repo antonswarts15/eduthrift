@@ -7,7 +7,7 @@ export interface Order {
   id: string;
   items: CartItem[];
   totalAmount: number;
-  status: 'processing' | 'paid' | 'shipped' | 'delivered' | 'cancelled' | 'pending_payment' | 'awaiting_eft';
+  status: 'processing' | 'paid' | 'shipped' | 'delivered' | 'cancelled' | 'pending_payment' | 'awaiting_eft' | 'payment_confirmed' | 'completed' | 'refunded';
   paymentMethod: string;
   paymentStatus: 'pending' | 'completed' | 'failed';
   orderDate: string;

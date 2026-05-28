@@ -10,7 +10,7 @@ import {
   IonLoading,
   IonBadge
 } from '@ionic/react';
-import { checkmarkCircleOutline, locationOutline, timeOutline } from 'ionicons/icons';
+import { checkmarkCircleOutline, locationOutline } from 'ionicons/icons';
 import api from '../services/api';
 
 const SellerShippingPage: React.FC = () => {
@@ -103,19 +103,24 @@ const SellerShippingPage: React.FC = () => {
             </div>
 
             {order.pickupPoint && (
-              <IonCard style={{ margin: '0', backgroundColor: '#f8f9fa' }}>
+              <IonCard style={{ margin: '0 0 12px', backgroundColor: '#f0f7ff', border: '1px solid #004aad' }}>
                 <IonCardContent>
                   <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
-                    <IonIcon icon={locationOutline} style={{ marginRight: '8px', color: '#007bff' }} />
-                    <strong>Deliver to:</strong>
+                    <IonIcon icon={locationOutline} style={{ marginRight: '8px', color: '#004aad' }} />
+                    <strong style={{ color: '#004aad' }}>Buyer's Pudo Locker</strong>
                   </div>
-                  <p style={{ margin: '0 0 8px 24px' }}>{order.pickupPoint}</p>
+                  <p style={{ margin: '0 0 8px 0', fontSize: '14px' }}>{order.pickupPoint}</p>
                   {order.trackingNumber && (
-                    <div style={{ display: 'flex', alignItems: 'center' }}>
-                      <IonIcon icon={timeOutline} style={{ marginRight: '8px', color: '#28a745' }} />
-                      <strong>Tracking:</strong>&nbsp;{order.trackingNumber}
+                    <div style={{ backgroundColor: '#fff', borderRadius: '6px', padding: '10px', border: '1px solid #cce0ff' }}>
+                      <p style={{ margin: '0 0 4px', fontSize: '12px', color: '#666' }}>WAYBILL / TRACKING NUMBER</p>
+                      <p style={{ margin: '0', fontSize: '18px', fontWeight: 'bold', color: '#004aad', letterSpacing: '1px' }}>
+                        {order.trackingNumber}
+                      </p>
                     </div>
                   )}
+                  <p style={{ margin: '12px 0 0', fontSize: '13px', color: '#555', lineHeight: '1.5' }}>
+                    📦 Drop the item at <strong>any Pudo locker</strong> using the waybill above. The buyer will be notified to collect.
+                  </p>
                 </IonCardContent>
               </IonCard>
             )}
