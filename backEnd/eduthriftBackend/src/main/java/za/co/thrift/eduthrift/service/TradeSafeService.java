@@ -62,6 +62,10 @@ public class TradeSafeService {
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        if (cfClientId != null && !cfClientId.isEmpty()) {
+            headers.set("CF-Access-Client-Id", cfClientId);
+            headers.set("CF-Access-Client-Secret", cfClientSecret);
+        }
 
         MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
         body.add("grant_type", "client_credentials");
