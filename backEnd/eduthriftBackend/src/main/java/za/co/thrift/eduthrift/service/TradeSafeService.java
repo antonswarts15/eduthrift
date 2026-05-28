@@ -92,17 +92,11 @@ public class TradeSafeService {
      * Call GET /admin/tradesafe/profile to get the token, then set TRADESAFE_AGENT_TOKEN in .env.
      */
     @SuppressWarnings("unchecked")
-    public List<Map<String, Object>> getApiProfile() {
-        String query = "{ apiProfile { organizations { name token } } }";
+    public Map<String, Object> getApiProfile() {
+        String query = "{ apiProfile { name token organizations { name token } } }";
         Map<String, Object> result = executeGraphQL(query, null);
         Map<String, Object> data = (Map<String, Object>) result.get("data");
-        Map<String, Object> profile = (Map<String, Object>) data.get("apiProfile");
-        Object orgs = profile.get("organizations");
-        if (orgs == null) {
-            log.warn("TradeSafe apiProfile response: {}", result);
-            throw new RuntimeException("No organizations found in apiProfile response");
-        }
-        return (List<Map<String, Object>>) orgs;
+        return (Map<String, Object>) data.get("apiProfile");
     }
 
     public Map<String, Object> executeGraphQLPublic(String query, Map<String, Object> variables) {

@@ -64,7 +64,7 @@ public class AdminController {
     @GetMapping("/tradesafe/profile")
     public ResponseEntity<?> getTradeSafeProfile() {
         try {
-            return ResponseEntity.ok(Map.of("organizations", tradeSafeService.getApiProfile()));
+            return ResponseEntity.ok(tradeSafeService.getApiProfile());
         } catch (Exception e) {
             log.error("Failed to fetch TradeSafe apiProfile: {}", e.getMessage());
             return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
