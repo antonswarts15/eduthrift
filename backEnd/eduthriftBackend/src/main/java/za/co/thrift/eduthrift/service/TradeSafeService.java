@@ -67,7 +67,7 @@ public class TradeSafeService {
         body.add("grant_type", "client_credentials");
         body.add("client_id", clientId);
         body.add("client_secret", clientSecret);
-        body.add("scope", "profile");
+        body.add("scope", "");
 
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(body, headers);
 
@@ -97,7 +97,12 @@ public class TradeSafeService {
         Map<String, Object> result = executeGraphQL(query, null);
         Map<String, Object> data = (Map<String, Object>) result.get("data");
         Map<String, Object> profile = (Map<String, Object>) data.get("apiProfile");
-        return (List<Map<String, Object>>) profile.get("organizations");
+        Object orgs = profile.get("organizations");
+        if (orgs == null) {
+            log.warn("TradeSafe apiProfile response: {}", result);
+            throw new RuntimeException("No organizations found in apiProfile response");
+        }
+        return (List<Map<String, Object>>) orgs;
     }
 
     public Map<String, Object> executeGraphQLPublic(String query, Map<String, Object> variables) {
