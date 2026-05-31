@@ -24,6 +24,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 @RestController
@@ -100,8 +101,8 @@ public class AuthController {
             if (request.getEmail() == null || !request.getEmail().contains("@")) {
                 return ResponseEntity.badRequest().body(new ErrorResponse("Valid email is required"));
             }
-            if (request.getPassword() == null || request.getPassword().length() < 8) {
-                return ResponseEntity.badRequest().body(new ErrorResponse("Password must be at least 8 characters"));
+            if (request.getPassword() == null || request.getPassword().length() < 10) {
+                return ResponseEntity.badRequest().body(new ErrorResponse("Password must be at least 10 characters"));
             }
             // Check if email already exists
             if (userRepository.findByEmail(request.getEmail()).isPresent()) {
@@ -398,24 +399,49 @@ public class AuthController {
         }
     }
 
+    private static final Set<String> ALLOWED_DOC_SUBDIRS = Set.of(
+            "id-documents", "proof-of-residence", "bank-confirmations"
+    );
+    private static final Set<String> ALLOWED_DOC_EXTENSIONS = Set.of(
+            ".jpg", ".jpeg", ".png", ".webp", ".pdf"
+    );
+
     private String saveFile(MultipartFile file, String subdirectory) throws IOException {
-        // Create upload directory if it doesn't exist
-        Path uploadPath = Paths.get(uploadDir, subdirectory);
+        // Whitelist subdirectory to prevent path traversal
+        if (!ALLOWED_DOC_SUBDIRS.contains(subdirectory)) {
+            throw new IOException("Invalid upload subdirectory");
+        }
+
+        // Validate file extension
+        String originalFilename = file.getOriginalFilename() != null ? file.getOriginalFilename().toLowerCase() : "";
+        String extension = originalFilename.contains(".")
+                ? originalFilename.substring(originalFilename.lastIndexOf("."))
+                : "";
+        if (!ALLOWED_DOC_EXTENSIONS.contains(extension)) {
+            throw new IOException("File type not allowed. Accepted types: JPG, PNG, PDF");
+        }
+
+        // Validate content type header (defence-in-depth; client can spoof this but it catches mistakes)
+        String contentType = file.getContentType() != null ? file.getContentType().toLowerCase() : "";
+        if (!contentType.startsWith("image/") && !contentType.equals("application/pdf")) {
+            throw new IOException("Invalid file content type");
+        }
+
+        // Build and normalise upload path — verify it stays inside uploadDir
+        Path baseDir = Paths.get(uploadDir).toAbsolutePath().normalize();
+        Path uploadPath = baseDir.resolve(subdirectory).normalize();
+        if (!uploadPath.startsWith(baseDir)) {
+            throw new IOException("Invalid upload path");
+        }
         Files.createDirectories(uploadPath);
 
-        // Generate unique filename
-        String originalFilename = file.getOriginalFilename();
-        String extension = "";
-        if (originalFilename != null && originalFilename.contains(".")) {
-            extension = originalFilename.substring(originalFilename.lastIndexOf("."));
-        }
         String uniqueFilename = UUID.randomUUID().toString() + extension;
-
-        // Save file
-        Path filePath = uploadPath.resolve(uniqueFilename);
+        Path filePath = uploadPath.resolve(uniqueFilename).normalize();
+        if (!filePath.startsWith(uploadPath)) {
+            throw new IOException("Invalid file path");
+        }
         Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 
-        // Return the URL path that will be used to serve the file
         return "/uploads/" + subdirectory + "/" + uniqueFilename;
     }
 

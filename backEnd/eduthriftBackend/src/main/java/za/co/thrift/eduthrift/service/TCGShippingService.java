@@ -28,9 +28,6 @@ public class TCGShippingService {
         return h;
     }
 
-    /**
-     * Returns lockers nearest to the given coordinates.
-     */
     @SuppressWarnings("unchecked")
     public List<Map<String, Object>> getPickupPoints(double lat, double lng) {
         String url = baseUrl + "/pickup-points?lat=" + lat + "&lng=" + lng
@@ -38,16 +35,12 @@ public class TCGShippingService {
         ResponseEntity<Map> response = restTemplate.exchange(
                 url, HttpMethod.GET, new HttpEntity<>(headers()), Map.class);
         if (response.getBody() == null) return List.of();
-        // ShipLogic returns pickup_points; fall back to results for safety
         Object results = response.getBody().get("pickup_points");
         if (results == null) results = response.getBody().get("results");
         if (results instanceof List<?> list) return (List<Map<String, Object>>) list;
         return List.of();
     }
 
-    /**
-     * Gets shipping rates from seller's address to the buyer's chosen delivery locker.
-     */
     @SuppressWarnings("unchecked")
     public List<Map<String, Object>> getRates(User seller, String deliveryPickupPointId) {
         Map<String, Object> body = new HashMap<>();
@@ -59,7 +52,7 @@ public class TCGShippingService {
         body.put("delivery_min_date", LocalDate.now().plusDays(2).toString());
 
         ResponseEntity<Map> response = restTemplate.exchange(
-                baseUrl + "/v2/rates",
+                baseUrl + "/rates",
                 HttpMethod.POST,
                 new HttpEntity<>(body, headers()),
                 Map.class);
@@ -69,11 +62,6 @@ public class TCGShippingService {
         return List.of();
     }
 
-    /**
-     * Creates a TCG shipment for a confirmed (paid) order.
-     * Returns the full TCG response including the tracking reference.
-     * Should only be called after payment is confirmed.
-     */
     @SuppressWarnings("unchecked")
     public Map<String, Object> createShipment(Order order, User seller, User buyer) {
         Map<String, Object> body = new HashMap<>();
@@ -110,22 +98,6 @@ public class TCGShippingService {
         return response.getBody() != null ? response.getBody() : Map.of();
     }
 
-    private Map<String, Object> buildAddress(User user) {
-        Map<String, Object> address = new HashMap<>();
-        address.put("type", "residential");
-        address.put("street_address", user.getStreetAddress() != null ? user.getStreetAddress() : "");
-        address.put("local_area", user.getSuburb() != null ? user.getSuburb() : "");
-        address.put("city", user.getTown() != null ? user.getTown() : "");
-        address.put("zone", user.getProvince() != null ? user.getProvince() : "");
-        address.put("country", "ZA");
-        address.put("code", user.getPostalCode() != null ? user.getPostalCode() : "");
-        return address;
-    }
-
-    /**
-     * Gets shipping rates for courier (door-to-door) delivery of large items.
-     * Used when the item is too large for a locker.
-     */
     @SuppressWarnings("unchecked")
     public List<Map<String, Object>> getCourierRates(User seller, User buyer) {
         Map<String, Object> body = new HashMap<>();
@@ -136,7 +108,7 @@ public class TCGShippingService {
         body.put("delivery_min_date", LocalDate.now().plusDays(2).toString());
 
         ResponseEntity<Map> response = restTemplate.exchange(
-                baseUrl + "/v2/rates",
+                baseUrl + "/rates",
                 HttpMethod.POST,
                 new HttpEntity<>(body, headers()),
                 Map.class);
@@ -144,6 +116,18 @@ public class TCGShippingService {
         Object rates = response.getBody().get("rates");
         if (rates instanceof List<?> list) return (List<Map<String, Object>>) list;
         return List.of();
+    }
+
+    private Map<String, Object> buildAddress(User user) {
+        Map<String, Object> address = new HashMap<>();
+        address.put("type", "residential");
+        address.put("street_address", user.getStreetAddress() != null ? user.getStreetAddress() : "");
+        address.put("local_area", user.getSuburb() != null ? user.getSuburb() : "");
+        address.put("city", user.getTown() != null ? user.getTown() : "");
+        address.put("zone", user.getProvince() != null ? user.getProvince() : "");
+        address.put("country", "ZA");
+        address.put("code", user.getPostalCode() != null ? user.getPostalCode() : "");
+        return address;
     }
 
     private Map<String, Object> defaultParcel() {

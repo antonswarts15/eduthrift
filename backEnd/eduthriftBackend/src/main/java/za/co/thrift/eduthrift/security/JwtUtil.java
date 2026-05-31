@@ -3,6 +3,7 @@ package za.co.thrift.eduthrift.security;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import javax.crypto.SecretKey;
@@ -15,11 +16,24 @@ import java.util.function.Function;
 @Component
 public class JwtUtil {
 
-    @Value("${jwt.secret:eduthrift-secret-key-that-is-at-least-256-bits-long-for-hs256}")
+    @Value("${jwt.secret:}")
     private String secret;
 
     @Value("${jwt.expiration:86400000}")
     private long expiration;
+
+    @PostConstruct
+    public void validateSecret() {
+        if (secret == null || secret.isBlank()) {
+            throw new IllegalStateException("JWT_SECRET environment variable must be set");
+        }
+        if (secret.length() < 32) {
+            throw new IllegalStateException("JWT_SECRET must be at least 32 characters");
+        }
+        if (secret.startsWith("eduthrift-")) {
+            throw new IllegalStateException("JWT_SECRET must be changed from the default value — set a cryptographically random string");
+        }
+    }
 
     private SecretKey getSigningKey() {
         byte[] keyBytes = secret.getBytes(StandardCharsets.UTF_8);

@@ -93,8 +93,8 @@ public class ShipLogicWebhookController {
 
         Order order = orderOpt.get();
 
-        return switch (status.toUpperCase()) {
-            case "DELIVERED", "DELIVERY_CONFIRMED", "PARCEL_DELIVERED" -> {
+        return switch (status.toLowerCase()) {
+            case "delivered", "delivery-confirmed" -> {
                 try {
                     escrowService.confirmDelivery(order.getOrderNumber());
                 } catch (Exception e) {
@@ -110,8 +110,13 @@ public class ShipLogicWebhookController {
                     "orderNumber", order.getOrderNumber()
                 ));
             }
-            case "IN_TRANSIT", "OUT_FOR_DELIVERY", "COLLECTED_FROM_SENDER" -> {
+            case "in-transit", "out-for-delivery", "collected", "collection-assigned" -> {
                 order.setOrderStatus(Order.OrderStatus.SHIPPED);
+                orderRepository.save(order);
+                yield ResponseEntity.ok(Map.of("received", true, "action", "status_updated", "status", status));
+            }
+            case "ready-for-pickup" -> {
+                order.setOrderStatus(Order.OrderStatus.DELIVERED);
                 orderRepository.save(order);
                 yield ResponseEntity.ok(Map.of("received", true, "action", "status_updated", "status", status));
             }

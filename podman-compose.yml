@@ -50,7 +50,7 @@ services:
 
       # PUDO
       PUDO_API_KEY: ${PUDO_API_KEY}
-      PUDO_API_URL: ${PUDO_API_URL:-https://api.pudo.co.za}
+      PUDO_API_URL: ${PUDO_API_URL:-https://api-pudo.co.za}
       PUDO_WEBHOOK_SECRET: ${PUDO_WEBHOOK_SECRET}
 
       # Courier Guy (formerly ShipLogic)

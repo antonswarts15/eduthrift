@@ -113,10 +113,17 @@ public class OrderController {
             itemRepository.save(item);
         }
 
-        fcmNotificationService.send(
-                seller.getFcmToken(),
+        fcmNotificationService.sendAndPersist(
+                seller,
                 "New Bundle Order!",
-                "You have a new bundle order of " + items.size() + " item(s) totalling R" + itemTotal.toPlainString() + " (" + saved.getOrderNumber() + ")"
+                "You have a new bundle order of " + items.size() + " item(s) totalling R" + itemTotal.toPlainString() + " (" + saved.getOrderNumber() + ")",
+                saved.getOrderNumber()
+        );
+        fcmNotificationService.sendAndPersist(
+                buyer,
+                "Order Placed Successfully",
+                "Your order " + saved.getOrderNumber() + " has been placed. Complete payment to confirm.",
+                saved.getOrderNumber()
         );
 
         emailService.sendBuyerOrderConfirmation(saved);
@@ -181,31 +188,35 @@ public class OrderController {
                 // Notify the relevant party based on the new status
                 switch (newStatus) {
                     case SHIPPED -> {
-                        fcmNotificationService.send(
-                                order.getBuyer().getFcmToken(),
+                        fcmNotificationService.sendAndPersist(
+                                order.getBuyer(),
                                 "Your Order is On Its Way",
-                                "Order " + orderNumber + " has been shipped. Check your orders for tracking details."
+                                "Order " + orderNumber + " has been shipped. Check your orders for tracking details.",
+                                orderNumber
                         );
                         emailService.sendOrderShippedEmail(order);
                     }
                     case DELIVERED -> {
-                        fcmNotificationService.send(
-                                order.getBuyer().getFcmToken(),
+                        fcmNotificationService.sendAndPersist(
+                                order.getBuyer(),
                                 "Order Delivered",
-                                "Order " + orderNumber + " has been delivered. Please confirm receipt in the app."
+                                "Order " + orderNumber + " has been delivered. Please confirm receipt in the app.",
+                                orderNumber
                         );
                         emailService.sendOrderArrivedEmail(order);
                     }
                     case CANCELLED -> {
-                        fcmNotificationService.send(
-                                order.getBuyer().getFcmToken(),
+                        fcmNotificationService.sendAndPersist(
+                                order.getBuyer(),
                                 "Order Cancelled",
-                                "Order " + orderNumber + " has been cancelled."
+                                "Order " + orderNumber + " has been cancelled.",
+                                orderNumber
                         );
-                        fcmNotificationService.send(
-                                order.getSeller().getFcmToken(),
+                        fcmNotificationService.sendAndPersist(
+                                order.getSeller(),
                                 "Order Cancelled",
-                                "Order " + orderNumber + " has been cancelled."
+                                "Order " + orderNumber + " has been cancelled.",
+                                orderNumber
                         );
                         emailService.sendOrderCancellationEmail(order, "Order was cancelled");
                     }

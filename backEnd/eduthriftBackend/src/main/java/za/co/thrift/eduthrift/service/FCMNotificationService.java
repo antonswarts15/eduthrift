@@ -9,6 +9,7 @@ import com.google.firebase.messaging.Notification;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import za.co.thrift.eduthrift.entity.User;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -22,10 +23,15 @@ public class FCMNotificationService {
 
     private FirebaseMessaging messaging;
 
+    private final NotificationService notificationService;
+
+    public FCMNotificationService(NotificationService notificationService) {
+        this.notificationService = notificationService;
+    }
+
     @PostConstruct
     public void init() {
         if (serviceAccountJson == null || serviceAccountJson.isBlank()) {
-            // FCM not configured — push notifications silently disabled
             return;
         }
         try {
@@ -42,6 +48,19 @@ public class FCMNotificationService {
         }
     }
 
+    /**
+     * Persist a notification to the DB and send a push to the user's device.
+     * Use this for all order/payment events so they appear in the notification inbox.
+     */
+    public void sendAndPersist(User user, String title, String body, String relatedOrderNumber) {
+        notificationService.save(user, title, body, relatedOrderNumber);
+        send(user.getFcmToken(), title, body);
+    }
+
+    /**
+     * Fire-and-forget push only (no DB persistence). Used for callers that do not
+     * have a User entity available or manage persistence themselves.
+     */
     public void send(String fcmToken, String title, String body) {
         if (messaging == null || fcmToken == null || fcmToken.isBlank()) return;
         try {

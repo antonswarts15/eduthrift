@@ -68,12 +68,12 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const [isSearching, setIsSearching] = useState(false);
   const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { getCartItemCount } = useCartStore();
-  const { notifications, removeNotification } = useNotificationStore();
+  const { notifications, unreadCount, fetchNotifications, markAllAsRead, deleteNotification } = useNotificationStore();
   const { userProfile, fetchUserProfile } = useUserStore();
   const { logout } = useAuthStore();
   const history = useHistory();
   const location = useLocation();
-  
+
   // Ensure user profile is loaded when layout mounts (only for logged-in users)
   useEffect(() => {
     if (!userProfile && isLoggedIn()) {
@@ -81,8 +81,21 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     }
   }, [userProfile, fetchUserProfile]);
 
-  const deleteNotification = (id: number) => {
-    removeNotification(id);
+  // Fetch notifications on mount and when a foreground FCM notification arrives
+  useEffect(() => {
+    if (isLoggedIn()) {
+      fetchNotifications();
+    }
+    const onFcm = () => { if (isLoggedIn()) fetchNotifications(); };
+    window.addEventListener('fcm-notification', onFcm);
+    return () => window.removeEventListener('fcm-notification', onFcm);
+  }, []);
+
+  const handleOpenNotifications = () => {
+    setShowNotifications(true);
+    if (isLoggedIn()) {
+      fetchNotifications().then(() => markAllAsRead());
+    }
   };
   
   const handleSearch = (term: string) => {
@@ -283,9 +296,9 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   Login / Register
 </IonButton>
               )}
-              <IonButton id="notifications-trigger" onClick={() => setShowNotifications(true)}>
+              <IonButton id="notifications-trigger" onClick={handleOpenNotifications}>
                 <IonIcon icon={notificationsOutline} />
-                {notifications.length > 0 && <IonBadge>{notifications.length}</IonBadge>}
+                {unreadCount > 0 && <IonBadge color="danger">{unreadCount}</IonBadge>}
               </IonButton>
             </IonButtons>
           </IonToolbar>
@@ -368,7 +381,15 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
             <div style={{ padding: '16px' }}>
               <h3 style={{ margin: '0 0 16px 0' }}>Notifications</h3>
               {notifications.map(notification => (
-                <IonCard key={notification.id} style={{ margin: '8px 0', position: 'relative' }}>
+                <IonCard
+                  key={notification.id}
+                  style={{
+                    margin: '8px 0',
+                    position: 'relative',
+                    opacity: notification.read ? 0.7 : 1,
+                    borderLeft: notification.read ? 'none' : '3px solid #004aad',
+                  }}
+                >
                   <IonCardContent style={{ padding: '16px', paddingRight: '60px' }}>
                     <IonButton
                       fill="clear"
@@ -379,8 +400,12 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                       <IonIcon icon={closeOutline} style={{ fontSize: '18px', color: '#666' }} />
                     </IonButton>
                     <h4 style={{ margin: '0 0 6px 0', fontSize: '14px' }}>{notification.title}</h4>
-                    <p style={{ margin: '0 0 6px 0', fontSize: '12px', color: '#666', lineHeight: '1.4' }}>{notification.message}</p>
-                    <small style={{ color: '#999', fontSize: '10px' }}>{notification.time}</small>
+                    <p style={{ margin: '0 0 6px 0', fontSize: '12px', color: '#666', lineHeight: '1.4' }}>{notification.body}</p>
+                    <small style={{ color: '#999', fontSize: '10px' }}>
+                      {new Date(notification.createdAt).toLocaleDateString('en-ZA', {
+                        day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'
+                      })}
+                    </small>
                   </IonCardContent>
                 </IonCard>
               ))}
