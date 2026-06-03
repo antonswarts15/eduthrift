@@ -18,17 +18,174 @@ import {
   IonToast,
   IonBadge
 } from '@ionic/react';
-import { cameraOutline, imageOutline, shirtOutline, bagOutline, schoolOutline, peopleOutline, checkmarkCircleOutline, closeCircleOutline } from 'ionicons/icons';
+import {
+  cameraOutline, imageOutline, shirtOutline, bagOutline, schoolOutline, checkmarkCircleOutline, closeCircleOutline,
+  peopleOutline, tennisballOutline, waterOutline, fitnessOutline, manOutline, bicycleOutline, extensionPuzzleOutline,
+  footballOutline, basketballOutline, golfOutline
+} from 'ionicons/icons';
 import SchoolSelector from '../SchoolSelector';
 import { useCartStore } from '../../stores/cartStore';
 import { useListingsStore, Listing } from '../../stores/listingsStore';
 import { validateImageFile } from '../../utils/imageEnhancer';
+import schoolClothing from '../../assets/schoolClothing.png';
+import rugby from '../../assets/rugby.svg';
+import netball from '../../assets/netball.svg';
+import hockey from '../../assets/hockey.svg';
+import cricket from '../../assets/cricket.svg';
+import baseball from '../../assets/baseball.svg';
+import softball from '../../assets/softball.svg';
+import ringtennis from '../../assets/ringtennis.svg';
+import squash from '../../assets/squash.svg';
+import tabletennis from '../../assets/tabletennis.svg';
+import badminton from '../../assets/badminton.svg';
+import padel from '../../assets/padel.svg';
+import swimming from '../../assets/swimming.svg';
+import diving from '../../assets/diving.svg';
+import rowing from '../../assets/rowing.svg';
+import polo from '../../assets/polo.svg';
+import athletics from '../../assets/athletics.svg';
+import crosscountry from '../../assets/crosscountry.svg';
+import gymnastics from '../../assets/gymnastics.svg';
+import archery from '../../assets/archery.svg';
+import target from '../../assets/target.svg';
+import boxing from '../../assets/boxing.svg';
+import rollerSkating from '../../assets/rollerSkating.svg';
+import iceSkating from '../../assets/iceSkating.svg';
+import iceHockey from '../../assets/iceHockey.svg';
+import mountainBike from '../../assets/mountainBike.svg';
+import roadBike from '../../assets/roadBike.svg';
+import dance from '../../assets/dance.svg';
+import ballet from '../../assets/ballet.svg';
+import climbing from '../../assets/climbing.svg';
+import horseRiding from '../../assets/horseRiding.svg';
+import chess from '../../assets/chess.svg';
+import robot from '../../assets/robot.svg';
+import jukskei from '../../assets/jukskei.svg';
+import bowling from '../../assets/bowling.svg';
 
+
+const sportCategories = {
+  'Team Sports': {
+    sports: [
+      { name: 'Rugby', icon: rugby }, { name: 'Football', icon: footballOutline },
+      { name: 'Netball', icon: netball }, { name: 'Hockey', icon: hockey },
+      { name: 'Basketball', icon: basketballOutline }, { name: 'Cricket', icon: cricket },
+      { name: 'Volleyball', icon: basketballOutline }, { name: 'Korfbal', icon: basketballOutline },
+      { name: 'Baseball', icon: baseball }, { name: 'Softball', icon: softball },
+      { name: 'Ringball', icon: ringtennis },
+    ],
+    icon: peopleOutline, color: '#E74C3C'
+  },
+  'Racket Sports': {
+    sports: [
+      { name: 'Tennis', icon: tennisballOutline }, { name: 'Squash', icon: squash },
+      { name: 'Tabletennis', icon: tabletennis }, { name: 'Badminton', icon: badminton },
+      { name: 'Padel', icon: padel }, { name: 'Ring tennis', icon: ringtennis },
+    ],
+    icon: tennisballOutline, color: '#004aad'
+  },
+  'Water Sports': {
+    sports: [
+      { name: 'Swimming', icon: swimming }, { name: 'Diving', icon: diving },
+      { name: 'Rowing', icon: rowing }, { name: 'Waterpolo', icon: polo },
+    ],
+    icon: waterOutline, color: '#1ABC9C'
+  },
+  'Individual Sports': {
+    sports: [
+      { name: 'Athletics', icon: athletics }, { name: 'Crosscountry', icon: crosscountry },
+      { name: 'Golf', icon: golfOutline }, { name: 'Gymnastics', icon: gymnastics },
+      { name: 'Triathlon', icon: swimming }, { name: 'Archery', icon: archery },
+      { name: 'Target shooting', icon: target },
+    ],
+    icon: fitnessOutline, color: '#27AE60'
+  },
+  'Contact Sports': {
+    sports: [
+      { name: 'Boxing', icon: boxing }, { name: 'Kickboxing', icon: manOutline },
+      { name: 'Wrestling', icon: manOutline }, { name: 'Karate', icon: manOutline },
+      { name: 'Judo', icon: manOutline }, { name: 'Taekwondo', icon: manOutline },
+      { name: 'Jiu-Jitsu', icon: manOutline }, { name: 'MMA', icon: manOutline },
+    ],
+    icon: manOutline, color: '#C0392B'
+  },
+  'Cycling & Skating': {
+    sports: [
+      { name: 'Mountainbike', icon: mountainBike }, { name: 'Roadbike', icon: roadBike },
+      { name: 'Rollerskating', icon: rollerSkating }, { name: 'Ice skating', icon: iceSkating },
+      { name: 'Ice hockey', icon: iceHockey },
+    ],
+    icon: bicycleOutline, color: '#8E44AD'
+  },
+  'Other Sports': {
+    sports: [
+      { name: 'Dancing', icon: dance }, { name: 'Ballet', icon: ballet },
+      { name: 'Rock climbing', icon: climbing }, { name: 'Horse riding', icon: horseRiding },
+      { name: 'Chess', icon: chess }, { name: 'Robotics', icon: robot },
+      { name: 'Jukskei', icon: jukskei }, { name: 'Bowling', icon: bowling },
+    ],
+    icon: extensionPuzzleOutline, color: '#F39C12'
+  }
+};
+
+const sportClothingItems: Record<string, string[]> = {
+  Rugby: ['Jersey', 'Shorts', 'Socks', 'Training top', 'Training shorts', 'Warm-up jacket'],
+  Football: ['Jersey', 'Shorts', 'Socks', 'Goalkeeper jersey', 'Training top', 'Training shorts'],
+  Netball: ['Dress', 'Skirt', 'Shorts', 'Top', 'Socks', 'Training top', 'Training shorts'],
+  Hockey: ['Jersey', 'Skirt', 'Shorts', 'Socks', 'Training top', 'Training shorts', 'Warm-up jacket'],
+  Basketball: ['Jersey', 'Shorts', 'Socks', 'Training top', 'Warm-up jacket'],
+  Cricket: ['Whites jersey', 'Whites trousers', 'Shorts', 'Cap', 'Socks', 'Training top'],
+  Volleyball: ['Jersey', 'Shorts', 'Socks', 'Training top', 'Training shorts'],
+  Korfbal: ['Jersey', 'Shorts', 'Socks', 'Training top'],
+  Baseball: ['Jersey', 'Pants', 'Socks', 'Cap', 'Training top'],
+  Softball: ['Jersey', 'Pants', 'Shorts', 'Socks', 'Cap', 'Training top'],
+  Ringball: ['Jersey', 'Shorts', 'Socks', 'Training top'],
+  Tennis: ['Polo shirt', 'Shorts', 'Skirt', 'Socks', 'Training top', 'Warm-up jacket'],
+  Squash: ['Top', 'Shorts', 'Skirt', 'Socks', 'Training top'],
+  Tabletennis: ['Shirt', 'Shorts', 'Skirt', 'Socks', 'Training top'],
+  Badminton: ['Top', 'Shorts', 'Skirt', 'Socks', 'Training top'],
+  Padel: ['Top', 'Shorts', 'Skirt', 'Socks', 'Training top'],
+  'Ring tennis': ['Top', 'Shorts', 'Skirt', 'Socks', 'Training top'],
+  Swimming: ['Swimsuit', 'Swimming costume', 'Swim cap', 'Rash guard'],
+  Diving: ['Diving suit', 'Rash guard', 'Swim cap'],
+  Rowing: ['Lycra', 'Shorts', 'Top', 'Training top', 'Training shorts'],
+  Waterpolo: ['Costume', 'Cap', 'Rash guard'],
+  Athletics: ['Singlet', 'Shorts', 'Tights', 'Training top', 'Warm-up jacket'],
+  Crosscountry: ['Singlet', 'Shorts', 'Tights', 'Training top'],
+  Golf: ['Polo shirt', 'Shorts', 'Pants', 'Cap', 'Socks'],
+  Gymnastics: ['Leotard', 'Shorts', 'Training top'],
+  Triathlon: ['Tri suit', 'Tri shorts', 'Tri top', 'Cycling jersey'],
+  Archery: ['Shirt', 'Pants', 'Training top'],
+  'Target shooting': ['Shooting jacket', 'Shooting trousers', 'Training top'],
+  Boxing: ['Vest', 'Shorts', 'Training top', 'Training shorts'],
+  Kickboxing: ['Shorts', 'Training top', 'Training shorts'],
+  Wrestling: ['Singlet', 'Training top', 'Training shorts'],
+  Karate: ['Gi top', 'Gi pants', 'Training top', 'Training shorts'],
+  Judo: ['Gi top', 'Gi pants', 'Training top', 'Training shorts'],
+  Taekwondo: ['Dobok top', 'Dobok pants', 'Training top', 'Training shorts'],
+  'Jiu-Jitsu': ['Gi top', 'Gi pants', 'Rash guard', 'Shorts'],
+  MMA: ['Shorts', 'Rash guard', 'Training top', 'Training shorts'],
+  Mountainbike: ['Cycling jersey', 'Cycling shorts', 'MTB shorts', 'Wind jacket'],
+  Roadbike: ['Cycling jersey', 'Cycling shorts', 'Wind jacket', 'Arm warmers'],
+  Rollerskating: ['Leggings', 'Top', 'Training top', 'Training shorts'],
+  'Ice skating': ['Dress', 'Leggings', 'Top', 'Training top'],
+  'Ice hockey': ['Jersey', 'Pants', 'Socks', 'Training top'],
+  Dancing: ['Top', 'Shorts', 'Skirt', 'Leggings', 'Dress'],
+  Ballet: ['Leotard', 'Tights', 'Skirt', 'Training top'],
+  'Rock climbing': ['Pants', 'Top', 'Training top', 'Training shorts'],
+  'Horse riding': ['Breeches', 'Jacket', 'Shirt', 'Gloves', 'Helmet cover'],
+  Chess: ['Club shirt', 'Club jacket'],
+  Robotics: ['Club shirt', 'Club jacket'],
+  Jukskei: ['Jersey', 'Shorts', 'Training top'],
+  Bowling: ['Shirt', 'Pants', 'Training top'],
+};
+
+const defaultClothingItems = ['Jersey', 'Shorts', 'Socks', 'Training top', 'Training shorts', 'Warm-up jacket'];
 
 interface SchoolUniformProps {
   userType: 'seller' | 'buyer';
   onItemSelect?: (item: any) => void;
-  categoryFilter?: 'clothing' | 'footwear' | 'equipment-protective-accessories' | 'all';
+  categoryFilter?: 'clothing' | 'sports' | 'footwear' | 'equipment-protective-accessories' | 'all';
   schoolName?: string;
 }
 
@@ -43,6 +200,8 @@ const SchoolUniformComponent: React.FC<SchoolUniformProps> = ({ userType, onItem
   const [size, setSize] = useState('');
   const [showItemView, setShowItemView] = useState(false);
   const [selectedAvailableItem, setSelectedAvailableItem] = useState<any>(null);
+  const [selectedSport, setSelectedSport] = useState('');
+  const [showSportItems, setShowSportItems] = useState(false);
   const [sizeFilter, setSizeFilter] = useState('');
   const [conditionFilter, setConditionFilter] = useState<number | undefined>();
   const [priceRange, setPriceRange] = useState({ min: '', max: '' });
@@ -301,7 +460,39 @@ const SchoolUniformComponent: React.FC<SchoolUniformProps> = ({ userType, onItem
     );
   };
 
+  const rainbowColors = ['#FF2090', '#FFA020', '#A020C0', '#5CC840', '#00AACC'];
 
+  const renderSportIcon = (icon: any) => {
+    if (typeof icon === 'string' && (icon.includes('.svg') || icon.includes('.png'))) {
+      return <IonIcon src={icon} style={{ fontSize: '40px', color: 'white', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))' }} />;
+    }
+    return <IonIcon icon={icon} style={{ fontSize: '40px', color: 'white', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))' }} />;
+  };
+
+  const renderSportGrid = (sports: Array<{ name: string; icon: any }>) => (
+    <IonGrid>
+      <IonRow>
+        {sports.map((sport, index) => (
+          <IonCol size="4" key={index}>
+            <div onClick={() => { if (schoolName) { setSelectedSport(sport.name); setShowSportItems(true); } }}
+              style={{ cursor: schoolName ? 'pointer' : 'not-allowed', textAlign: 'center', opacity: schoolName ? 1 : 0.5, padding: '4px 2px' }}>
+              <div style={{
+                width: '70px', height: '70px', borderRadius: '50%',
+                backgroundColor: rainbowColors[index % rainbowColors.length],
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                margin: '0 auto 6px', boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
+              }}>
+                {renderSportIcon(sport.icon)}
+              </div>
+              <div style={{ fontWeight: 'bold', color: '#333', fontSize: '11px', lineHeight: '1.2', textAlign: 'center', padding: '0 2px' }}>
+                {sport.name}
+              </div>
+            </div>
+          </IonCol>
+        ))}
+      </IonRow>
+    </IonGrid>
+  );
 
   const handleSubmit = async () => {
     console.log('SchoolUniform: handleSubmit called, userType:', userType);
@@ -332,6 +523,7 @@ const SchoolUniformComponent: React.FC<SchoolUniformProps> = ({ userType, onItem
         frontPhoto: frontPhoto || '',
         backPhoto: backPhoto || '',
         category: 'School & sport uniform',
+        sport: selectedSport || undefined,
         dateCreated: new Date().toLocaleDateString(),
         quantity: 1
       };
@@ -374,6 +566,116 @@ const SchoolUniformComponent: React.FC<SchoolUniformProps> = ({ userType, onItem
       setSize('');
     }
   };
+
+  // --- Sport clothing items grid (sports uniform path) ---
+  if (categoryFilter === 'sports' && showSportItems && !showItemDetails) {
+    const clothingItems = sportClothingItems[selectedSport] || defaultClothingItems;
+    const availableCountForItem = (itemName: string) =>
+      getFilteredItems().filter(i => i.item === itemName && i.sport === selectedSport).reduce((sum, i) => sum + i.quantity, 0);
+
+    return (
+      <div style={{ padding: '16px' }}>
+        <IonButton fill="clear" onClick={() => { setShowSportItems(false); setSelectedSport(''); }}>← Back</IonButton>
+        {schoolName && (
+          <div style={{ marginBottom: '16px', textAlign: 'center', backgroundColor: 'rgba(0, 74, 173, 0.1)', border: '2px solid #004aad', borderRadius: '12px', padding: '12px' }}>
+            <h3 style={{ margin: '0', color: '#004aad', fontSize: '16px', fontWeight: 'bold' }}>{schoolName}</h3>
+            <p style={{ margin: '2px 0 0 0', color: '#666', fontSize: '12px' }}>Selected School</p>
+          </div>
+        )}
+        <div style={{ textAlign: 'center', margin: '0 0 20px 0' }}>
+          <span style={{ fontSize: '20px', fontWeight: 'bold', color: '#666' }}>{selectedSport} Kit</span>
+        </div>
+        <IonGrid>
+          <IonRow>
+            {clothingItems.map((item, index) => {
+              const count = availableCountForItem(item);
+              return (
+                <IonCol size="6" key={index}>
+                  <IonCard button onClick={() => { setSelectedItem(item); setShowItemDetails(true); }} style={{ backgroundColor: 'transparent', border: '1px solid #444' }}>
+                    <IonCardContent style={{ textAlign: 'center', padding: '12px' }}>
+                      <IonIcon icon={imageOutline} size="large" style={{ marginBottom: '8px', opacity: 0.5 }} />
+                      <div style={{ fontSize: '13px', fontWeight: 'bold' }}>{item}</div>
+                      {userType === 'buyer' && count > 0 && (
+                        <div style={{ fontSize: '11px', color: '#004aad', marginTop: '4px' }}>{count} available</div>
+                      )}
+                    </IonCardContent>
+                  </IonCard>
+                </IonCol>
+              );
+            })}
+          </IonRow>
+        </IonGrid>
+        <IonToast isOpen={showToast} onDidDismiss={() => setShowToast(false)} message={toastMessage} duration={2000} position="bottom"
+          color={toastMessage.includes('successfully') ? 'success' : 'danger'} />
+      </div>
+    );
+  }
+
+  // --- Sports uniform main view (sport categories accordion) ---
+  if (categoryFilter === 'sports' && !showItemDetails) {
+    return (
+      <div>
+        <div style={{
+          marginBottom: '16px', textAlign: 'center',
+          backgroundColor: '#004aad',
+          borderRadius: '12px', padding: '16px'
+        }}>
+          <div style={{
+            width: '48px', height: '48px', margin: '0 auto 8px',
+            backgroundColor: 'white',
+            WebkitMaskImage: `url(${schoolClothing})`,
+            maskImage: `url(${schoolClothing})`,
+            WebkitMaskSize: 'contain', maskSize: 'contain',
+            WebkitMaskRepeat: 'no-repeat', maskRepeat: 'no-repeat',
+            WebkitMaskPosition: 'center', maskPosition: 'center'
+          } as React.CSSProperties} />
+          <h2 style={{ margin: '0', color: 'white', fontSize: '18px', fontWeight: 'bold' }}>Sports Uniform</h2>
+          <p style={{ margin: '4px 0 0 0', color: 'rgba(255,255,255,0.85)', fontSize: '14px' }}>School sports kits & uniforms</p>
+        </div>
+
+        {propSchoolName && (
+          <div style={{ marginBottom: '16px', textAlign: 'center', backgroundColor: 'rgba(0, 74, 173, 0.1)', border: '2px solid #004aad', borderRadius: '12px', padding: '12px' }}>
+            <IonIcon icon={schoolOutline} style={{ fontSize: '24px', color: '#004aad', marginBottom: '4px' }} />
+            <h3 style={{ margin: '0', color: '#004aad', fontSize: '16px', fontWeight: 'bold' }}>{propSchoolName}</h3>
+            <p style={{ margin: '2px 0 0 0', color: '#666', fontSize: '12px' }}>Selected School</p>
+          </div>
+        )}
+
+        {!propSchoolName && (
+          <div style={{ marginBottom: '20px' }}>
+            <SchoolSelector value={schoolName} onSchoolChange={setSchoolName} placeholder="Select or enter school name" />
+          </div>
+        )}
+
+        {!schoolName && (
+          <div style={{ padding: '12px', textAlign: 'center', color: '#666', fontSize: '14px', backgroundColor: '#f8f9fa', borderRadius: '8px', marginBottom: '16px' }}>
+            Select a school above to browse or list sports clothing
+          </div>
+        )}
+
+        <IonAccordionGroup>
+          {Object.entries(sportCategories).map(([categoryName, categoryData]) => (
+            <IonAccordion key={categoryName} value={categoryName}>
+              <IonItem slot="header" style={{ '--background': 'transparent', opacity: schoolName ? 1 : 0.5 }}>
+                <IonIcon icon={categoryData.icon} style={{ fontSize: '24px', color: categoryData.color, marginRight: '12px' }} />
+                <IonLabel>
+                  <h3 style={{ margin: '0', fontWeight: 'bold', color: categoryData.color, fontSize: '16px' }}>
+                    {categoryName} ({categoryData.sports.length})
+                  </h3>
+                </IonLabel>
+              </IonItem>
+              <div slot="content" style={{ padding: '8px' }}>
+                {renderSportGrid(categoryData.sports)}
+              </div>
+            </IonAccordion>
+          ))}
+        </IonAccordionGroup>
+
+        <IonToast isOpen={showToast} onDidDismiss={() => setShowToast(false)} message={toastMessage} duration={2000} position="bottom"
+          color={toastMessage.includes('successfully') ? 'success' : 'danger'} />
+      </div>
+    );
+  }
 
   if (showItemView && selectedAvailableItem) {
     return (
@@ -687,14 +989,25 @@ const SchoolUniformComponent: React.FC<SchoolUniformProps> = ({ userType, onItem
     <div>
       <div style={{
         marginBottom: '16px', textAlign: 'center',
-        backgroundColor: 'rgba(0, 74, 173, 0.1)', border: '2px solid #004aad',
+        backgroundColor: '#FF2090',
         borderRadius: '12px', padding: '16px'
       }}>
-        <IonIcon icon={schoolOutline} style={{ fontSize: '32px', color: '#004aad', marginBottom: '8px' }} />
-        <h2 style={{ margin: '0', color: '#004aad', fontSize: '18px', fontWeight: 'bold' }}>
+        <div style={{
+          width: '48px', height: '48px', margin: '0 auto 8px',
+          backgroundColor: 'white',
+          WebkitMaskImage: `url(${schoolClothing})`,
+          maskImage: `url(${schoolClothing})`,
+          WebkitMaskSize: 'contain',
+          maskSize: 'contain',
+          WebkitMaskRepeat: 'no-repeat',
+          maskRepeat: 'no-repeat',
+          WebkitMaskPosition: 'center',
+          maskPosition: 'center'
+        } as React.CSSProperties} />
+        <h2 style={{ margin: '0', color: 'white', fontSize: '18px', fontWeight: 'bold' }}>
           School & Sport Uniform
         </h2>
-        <p style={{ margin: '4px 0 0 0', color: '#666', fontSize: '14px' }}>
+        <p style={{ margin: '4px 0 0 0', color: 'rgba(255,255,255,0.85)', fontSize: '14px' }}>
           School uniforms, sports kits & accessories
         </p>
       </div>

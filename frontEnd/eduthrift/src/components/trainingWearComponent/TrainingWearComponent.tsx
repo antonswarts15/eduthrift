@@ -18,7 +18,8 @@ import {
   IonToast,
   IonBadge
 } from '@ionic/react';
-import { imageOutline, cartOutline, checkmarkCircleOutline, closeCircleOutline, fitnessOutline, shirtOutline, bagOutline } from 'ionicons/icons';
+import { imageOutline, cartOutline, checkmarkCircleOutline, closeCircleOutline, shirtOutline, bagOutline } from 'ionicons/icons';
+import trainingWear from '../../assets/trainingWear.png';
 import { useCartStore } from '../../stores/cartStore';
 import { useListingsStore } from '../../stores/listingsStore';
 import { useToast } from '../../hooks/useToast';
@@ -495,14 +496,25 @@ const TrainingWearComponent: React.FC<TrainingWearProps> = ({ userType, onItemSe
     <div>
       <div style={{
         marginBottom: '16px', textAlign: 'center',
-        backgroundColor: 'rgba(39, 174, 96, 0.1)', border: '2px solid #27AE60',
+        backgroundColor: '#27AE60',
         borderRadius: '12px', padding: '16px'
       }}>
-        <IonIcon icon={fitnessOutline} style={{ fontSize: '32px', color: '#27AE60', marginBottom: '8px' }} />
-        <h2 style={{ margin: '0', color: '#27AE60', fontSize: '18px', fontWeight: 'bold' }}>
+        <div style={{
+          width: '48px', height: '48px', margin: '0 auto 8px',
+          backgroundColor: 'white',
+          WebkitMaskImage: `url(${trainingWear})`,
+          maskImage: `url(${trainingWear})`,
+          WebkitMaskSize: 'contain',
+          maskSize: 'contain',
+          WebkitMaskRepeat: 'no-repeat',
+          maskRepeat: 'no-repeat',
+          WebkitMaskPosition: 'center',
+          maskPosition: 'center'
+        } as React.CSSProperties} />
+        <h2 style={{ margin: '0', color: 'white', fontSize: '18px', fontWeight: 'bold' }}>
           Training Wear
         </h2>
-        <p style={{ margin: '4px 0 0 0', color: '#666', fontSize: '14px' }}>
+        <p style={{ margin: '4px 0 0 0', color: 'rgba(255,255,255,0.85)', fontSize: '14px' }}>
           Training & Athletic Wear
         </p>
       </div>

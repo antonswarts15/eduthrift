@@ -40,10 +40,8 @@ import SellerVerification from './SellerVerification';
 import * as SportEquipmentComponents from './sportingEquipmentComponent';
 import SchoolUniformComponent from './schoolUniformComponent/SchoolUniformComponent';
 import ClubClothingComponent from './clubClothingComponent/ClubClothingComponent';
-import Stationery from './stationeryComponent/Stationery';
-import StationerySeller from './stationeryComponent/StationerySeller';
-import MusicalEquipment from './musicalEquipmentComponent/MusicalEquipment';
-import MusicalEquipmentSeller from './musicalEquipmentComponent/MusicalEquipmentSeller';
+import StationeryComponent from './stationeryComponent/StationeryComponent';
+import MusicalEquipmentComponent from './musicalEquipmentComponent/MusicalEquipmentComponent';
 import SchoolGradesComponent from './schoolGradesComponent/SchoolGradesComponent';
 import BeltsBagsShoesComponent from './beltsBagsShoesComponent/BeltsBagsShoesComponent';
 import TrainingWearComponent from './trainingWearComponent/TrainingWearComponent';
@@ -55,7 +53,6 @@ import {
   fitnessOutline,
   basketballOutline,
   libraryOutline,
-  pencilOutline,
   roseOutline,
   schoolOutline,
   ribbonOutline,
@@ -74,7 +71,6 @@ import {
   boatOutline,
   waterOutline,
   snowOutline,
-  musicalNotesOutline,
   gameControllerOutline,
   atOutline,
   constructOutline,
@@ -730,7 +726,7 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
   const handleUniformTypeClick = (type: string) => {
     setSelectedSubcategory(type);
     if (type === 'Sports Uniform') {
-      setCurrentLevel('sport');
+      setCurrentLevel('sportsItems');
     } else if (type === 'School Uniform') {
       setCurrentLevel('schoolItems');
     } else {
@@ -828,6 +824,9 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
       setSelectedCategory('');
       setSchoolName('');
     } else if (currentLevel === 'schoolItems') {
+      setCurrentLevel('uniform');
+      setSelectedSubcategory('');
+    } else if (currentLevel === 'sportsItems') {
       setCurrentLevel('uniform');
       setSelectedSubcategory('');
     } else if (currentLevel === 'sport') {
@@ -980,123 +979,70 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
   };
 
   const renderGrid = (items: any[], onItemClick: (item: string) => void, hasIcons = false, getCount?: (name: string) => number) => {
-    const isDarkTheme = false; // Force light theme
-    
-    const rainbowColors = [
-      '#FF2090', // Hot Pink
-      '#FFA020', // Orange
-      '#A020C0', // Purple
-      '#5CC840', // Green
-      '#00AACC', // Teal
-    ];
-    
+    const rainbowColors = ['#FF2090', '#FFA020', '#A020C0', '#5CC840', '#00AACC'];
+
     return (
       <IonGrid>
         <IonRow>
           {items.map((item, index) => (
-            <IonCol size="6" key={index}>
+            <IonCol size="4" key={index}>
               <div
                 onClick={() => onItemClick(hasIcons ? item.name : item)}
-                style={{ cursor: 'pointer', textAlign: 'center' }}
+                style={{ cursor: 'pointer', textAlign: 'center', padding: '4px 2px' }}
               >
-                {/* Icon box */}
-                <div style={{ position: 'relative' }}>
-                <IonCard
-                  button
-                  style={{
-                    transition: 'all 0.2s ease',
-                    height: '110px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    backgroundColor: item.boxColor || rainbowColors[index % rainbowColors.length],
-                    '--background': item.boxColor || rainbowColors[index % rainbowColors.length],
-                    margin: '0 0 6px 0'
-                  } as React.CSSProperties}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'translateY(-2px)';
-                    e.currentTarget.style.boxShadow = '0 6px 16px rgba(0,0,0,0.25)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = 'translateY(0)';
-                    e.currentTarget.style.boxShadow = '';
-                  }}
-                >
-                  <IonCardContent style={{
-                    padding: '8px',
-                    position: 'relative',
-                    width: '100%',
-                    height: '100%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }}>
+                <div style={{ position: 'relative', width: '76px', margin: '0 auto 6px' }}>
+                  <div
+                    style={{
+                      width: '76px',
+                      height: '76px',
+                      borderRadius: '50%',
+                      backgroundColor: item.boxColor || rainbowColors[index % rainbowColors.length],
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+                      transition: 'all 0.2s ease'
+                    }}
+                    onMouseEnter={(e) => {
+                      (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-2px)';
+                      (e.currentTarget as HTMLDivElement).style.boxShadow = '0 6px 16px rgba(0,0,0,0.25)';
+                    }}
+                    onMouseLeave={(e) => {
+                      (e.currentTarget as HTMLDivElement).style.transform = 'translateY(0)';
+                      (e.currentTarget as HTMLDivElement).style.boxShadow = '0 2px 8px rgba(0,0,0,0.2)';
+                    }}
+                  >
                     {hasIcons && (
                       typeof item.icon === 'string' && item.icon.includes('.svg') ? (
-                        <IonIcon
-                          src={item.icon}
-                          style={{
-                            fontSize: item.iconSize || '80px',
-                            color: 'white',
-                            filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))'
-                          }}
-                        />
+                        <IonIcon src={item.icon} style={{ fontSize: '46px', color: 'white', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))' }} />
                       ) : typeof item.icon === 'string' && item.icon.includes('.png') ? (
-                        <img
-                          src={item.icon}
-                          alt=""
-                          style={{
-                            width: item.iconSize || '70px',
-                            height: item.iconSize || '70px',
-                            objectFit: 'contain',
-                            filter: 'brightness(0) invert(1) drop-shadow(0 2px 4px rgba(0,0,0,0.2))'
-                          }}
-                        />
+                        <img src={item.icon} alt="" style={{ width: '44px', height: '44px', objectFit: 'contain', filter: 'brightness(0) invert(1) drop-shadow(0 2px 4px rgba(0,0,0,0.2))' }} />
                       ) : (
-                        <IonIcon
-                          icon={item.icon}
-                          style={{
-                            fontSize: item.iconSize || '80px',
-                            color: 'white',
-                            filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))'
-                          }}
-                        />
+                        <IonIcon icon={item.icon} style={{ fontSize: '46px', color: 'white', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))' }} />
                       )
                     )}
-                  </IonCardContent>
-                </IonCard>
-                {getCount && (() => {
-                  const count = getCount(hasIcons ? item.name : item);
-                  return count > 0 ? (
-                    <span style={{
-                      position: 'absolute', top: '-5px', right: '-5px',
-                      backgroundColor: '#E74C3C',
-                      color: 'white',
-                      fontSize: '10px', fontWeight: '700',
-                      minWidth: '18px', height: '18px',
-                      borderRadius: '9px',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      padding: '0 4px',
-                      boxShadow: '0 1px 4px rgba(0,0,0,0.3)',
-                      zIndex: 10,
-                      pointerEvents: 'none'
-                    }}>
-                      {count > 99 ? '99+' : count}
-                    </span>
-                  ) : null;
-                })()}
+                  </div>
+                  {getCount && (() => {
+                    const count = getCount(hasIcons ? item.name : item);
+                    return count > 0 ? (
+                      <span style={{
+                        position: 'absolute', top: '-4px', right: '-4px',
+                        backgroundColor: '#E74C3C', color: 'white',
+                        fontSize: '10px', fontWeight: '700',
+                        minWidth: '18px', height: '18px', borderRadius: '9px',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        padding: '0 4px', boxShadow: '0 1px 4px rgba(0,0,0,0.3)',
+                        zIndex: 10, pointerEvents: 'none'
+                      }}>
+                        {count > 99 ? '99+' : count}
+                      </span>
+                    ) : null;
+                  })()}
                 </div>
-
-                {/* Label below the box */}
                 <div style={{
-                  fontWeight: 'bold',
-                  color: '#333',
-                  fontSize: '13px',
-                  lineHeight: '1.2',
-                  textAlign: 'center',
-                  wordWrap: 'break-word',
-                  hyphens: 'auto',
-                  padding: '0 4px'
+                  fontWeight: 'bold', color: '#333', fontSize: '11px',
+                  lineHeight: '1.2', textAlign: 'center',
+                  wordWrap: 'break-word', hyphens: 'auto', padding: '0 2px'
                 }}>
                   {hasIcons ? item.name : item}
                 </div>
@@ -1133,6 +1079,7 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
             {currentLevel === 'uniform' && !showPreview && !showSuccessConfirmation && 'Select Uniform Type'}
             {currentLevel === 'sport' && !showPreview && !showSuccessConfirmation && 'Select Sport Type'}
             {currentLevel === 'schoolItems' && !showPreview && !showSuccessConfirmation && 'Select School Item'}
+            {currentLevel === 'sportsItems' && !showPreview && !showSuccessConfirmation && 'Sports Uniform'}
           </h2>
         </div>
       )}
@@ -1866,25 +1813,11 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
         </div>
       ) : showStationery ? (
         <div style={{ padding: '16px' }}>
-          {userType === 'seller' ? (
-            <StationerySeller />
-          ) : (
-            <Stationery
-              userType={userType}
-              categoryFilter='all'
-            />
-          )}
+          <StationeryComponent userType={userType} categoryFilter='all' />
         </div>
       ) : showMusicalEquipment ? (
         <div style={{ padding: '16px' }}>
-          {userType === 'seller' ? (
-            <MusicalEquipmentSeller />
-          ) : (
-            <MusicalEquipment
-              userType={userType}
-              categoryFilter='all'
-            />
-          )}
+          <MusicalEquipmentComponent userType={userType} categoryFilter='all' />
         </div>
       ) : showSchoolSelection ? (
         <div style={{ padding: '16px' }}>
@@ -2142,6 +2075,13 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
             <SchoolUniformComponent
               userType={userType}
               categoryFilter='clothing'
+              schoolName={schoolName}
+            />
+          )}
+          {currentLevel === 'sportsItems' && (
+            <SchoolUniformComponent
+              userType={userType}
+              categoryFilter='sports'
               schoolName={schoolName}
             />
           )}

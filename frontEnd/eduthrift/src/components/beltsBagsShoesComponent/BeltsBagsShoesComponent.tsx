@@ -19,6 +19,7 @@ import {
   IonBadge
 } from '@ionic/react';
 import { imageOutline, cartOutline, checkmarkCircleOutline, closeCircleOutline, bagOutline, shirtOutline, footstepsOutline } from 'ionicons/icons';
+import bagshoe from '../../assets/bagshoe.png';
 import { useCartStore } from '../../stores/cartStore';
 import { useListingsStore } from '../../stores/listingsStore';
 import { useToast } from '../../hooks/useToast';
@@ -480,14 +481,25 @@ const BeltsBagsShoesComponent: React.FC<BeltsBagsShoesProps> = ({ userType, onIt
     <div>
       <div style={{
         marginBottom: '16px', textAlign: 'center',
-        backgroundColor: 'rgba(142, 68, 173, 0.1)', border: '2px solid #8E44AD',
+        backgroundColor: '#8E44AD',
         borderRadius: '12px', padding: '16px'
       }}>
-        <IonIcon icon={bagOutline} style={{ fontSize: '32px', color: '#8E44AD', marginBottom: '8px' }} />
-        <h2 style={{ margin: '0', color: '#8E44AD', fontSize: '18px', fontWeight: 'bold' }}>
+        <div style={{
+          width: '48px', height: '48px', margin: '0 auto 8px',
+          backgroundColor: 'white',
+          WebkitMaskImage: `url(${bagshoe})`,
+          maskImage: `url(${bagshoe})`,
+          WebkitMaskSize: 'contain',
+          maskSize: 'contain',
+          WebkitMaskRepeat: 'no-repeat',
+          maskRepeat: 'no-repeat',
+          WebkitMaskPosition: 'center',
+          maskPosition: 'center'
+        } as React.CSSProperties} />
+        <h2 style={{ margin: '0', color: 'white', fontSize: '18px', fontWeight: 'bold' }}>
           Belts, Bags & Shoes
         </h2>
-        <p style={{ margin: '4px 0 0 0', color: '#666', fontSize: '14px' }}>
+        <p style={{ margin: '4px 0 0 0', color: 'rgba(255,255,255,0.85)', fontSize: '14px' }}>
           School & sports footwear, bags and accessories
         </p>
       </div>

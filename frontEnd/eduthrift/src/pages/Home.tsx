@@ -205,7 +205,7 @@ const Home: React.FC = () => {
                     >
                       <div style={{
                         position: 'relative',
-                        width: '52px', height: '52px', borderRadius: '14px',
+                        width: '52px', height: '52px', borderRadius: '50%',
                         backgroundColor: cat.color,
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         margin: '0 auto 6px'

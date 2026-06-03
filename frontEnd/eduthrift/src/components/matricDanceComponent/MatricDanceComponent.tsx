@@ -24,6 +24,8 @@ import { useListingsStore } from '../../stores/listingsStore';
 import { useToast } from '../../hooks/useToast';
 import { validateImageFile } from '../../utils/imageEnhancer';
 
+import matricPng from '../../assets/dress.png';
+
 interface MatricDanceProps {
   userType: 'seller' | 'buyer';
   onItemSelect?: (item: any) => void;
@@ -234,6 +236,7 @@ const MatricDanceComponent: React.FC<MatricDanceProps> = ({ userType, onItemSele
     };
 
     if (userType === 'seller') {
+      
       setIsSubmitting(true);
       try {
         await addListing(itemData);
@@ -246,6 +249,28 @@ const MatricDanceComponent: React.FC<MatricDanceProps> = ({ userType, onItemSele
       }
     }
   };
+  
+
+  const banner = (
+    <div style={{ marginBottom: '16px', textAlign: 'center', backgroundColor: '#8E44AD', borderRadius: '12px', padding: '16px' }}>
+      <div style={{
+        width: '70px', height: '70px', margin: '0 auto 1px',
+        backgroundColor: 'white',
+        WebkitMaskImage: `url(${matricPng})`,
+        maskImage: `url(${matricPng})`,
+        WebkitMaskSize: 'contain',
+        maskSize: 'contain',
+        WebkitMaskRepeat: 'no-repeat',
+        maskRepeat: 'no-repeat',
+        WebkitMaskPosition: 'center',
+        maskPosition: 'center'
+      } as React.CSSProperties} />
+      <h2 style={{ margin: '0', color: 'white', fontSize: '18px', fontWeight: 'bold' }}>Matric Dance</h2>
+      <p style={{ color: 'white', fontSize: '14px' }}>
+        {userType === 'seller' ? 'Select the item to list' : 'Matric dance clothing & accessories'}
+      </p>
+    </div>
+  );
 
   // Item details view (buyer: available listings, seller: form)
   if (showItemDetails) {
@@ -481,19 +506,7 @@ const MatricDanceComponent: React.FC<MatricDanceProps> = ({ userType, onItemSele
   // Main view with accordions
   return (
     <div>
-      <div style={{
-        marginBottom: '16px', textAlign: 'center',
-        backgroundColor: 'rgba(142, 68, 173, 0.1)', border: '2px solid #8E44AD',
-        borderRadius: '12px', padding: '16px'
-      }}>
-        <IonIcon icon={sparklesOutline} style={{ fontSize: '32px', color: '#8E44AD', marginBottom: '8px' }} />
-        <h2 style={{ margin: '0', color: '#8E44AD', fontSize: '18px', fontWeight: 'bold' }}>
-          Matric Dance
-        </h2>
-        <p style={{ margin: '4px 0 0 0', color: '#666', fontSize: '14px' }}>
-          Matric Dance Clothing & Accessories
-        </p>
-      </div>
+      {banner}
 
       <IonAccordionGroup>
         {Object.entries(matricDanceCategories).map(([category, categoryData]) => (

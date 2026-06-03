@@ -20,6 +20,7 @@ import {
 } from '@ionic/react';
 import {
   libraryOutline,
+
   schoolOutline,
   languageOutline,
   calculatorOutline,
@@ -48,6 +49,7 @@ import { useNotificationStore } from '../../stores/notificationStore';
 import { useWishlistStore } from '../../stores/wishlistStore';
 import { useHistory } from 'react-router-dom';
 import { validateImageFile } from '../../utils/imageEnhancer';
+import textbooks from '../../assets/textbooks.png';
 
 
 interface SchoolGradesComponentProps {
@@ -1041,11 +1043,22 @@ const SchoolGradesComponent: React.FC<SchoolGradesComponentProps> = ({
     <div style={{ padding: '16px' }}>
       <div style={{
         marginBottom: '16px', textAlign: 'center',
-        backgroundColor: 'rgba(22, 160, 133, 0.1)', border: '2px solid #16A085',
+        backgroundColor: '#16A085',
         borderRadius: '12px', padding: '16px'
       }}>
-        <IonIcon icon={libraryOutline} style={{ fontSize: '32px', color: '#16A085', marginBottom: '8px' }} />
-        <h2 style={{ margin: '0', color: '#16A085', fontSize: '18px', fontWeight: 'bold' }}>
+        <div style={{
+          width: '48px', height: '48px', margin: '0 auto 8px',
+          backgroundColor: 'white',
+          WebkitMaskImage: `url(${textbooks})`,
+          maskImage: `url(${textbooks})`,
+          WebkitMaskSize: 'contain',
+          maskSize: 'contain',
+          WebkitMaskRepeat: 'no-repeat',
+          maskRepeat: 'no-repeat',
+          WebkitMaskPosition: 'center',
+          maskPosition: 'center'
+        } as React.CSSProperties} />
+        <h2 style={{ margin: '0', color: 'white', fontSize: '18px', fontWeight: 'bold' }}>
           School Textbooks
         </h2>
         <p style={{ margin: '4px 0 0 0', color: '#666', fontSize: '14px' }}>
