@@ -121,7 +121,7 @@ const Home: React.FC = () => {
  {/* Buy / Sell action cards */}
         <IonGrid>
           <IonRow>
-            <IonCol size="12" sizeMd="6">
+            <IonCol size="12" sizeSm="6">
               <IonCard button onClick={() => history.push('/buyer')} style={{ height: '120px', position: 'relative', overflow: 'hidden' }}>
                 <img src={sellerIcon} alt="Buy" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '125%', objectFit: 'fill', zIndex: 1 }} />
                 <IonCardContent style={{ height: '100%', zIndex: 2, color: 'white', textAlign: 'left' }}>
@@ -131,6 +131,8 @@ const Home: React.FC = () => {
                   </div>
                 </IonCardContent>
               </IonCard>
+            </IonCol>
+            <IonCol size="12" sizeSm="6">
               <IonCard button onClick={() => history.push('/seller')} style={{ height: '120px', position: 'relative', overflow: 'hidden' }}>
                 <img src={buyerIcon} alt="Sell" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '125%', objectFit: 'fill', zIndex: 1 }} />
                 <IonCardContent style={{ height: '100%', zIndex: 2, color: 'white', textAlign: 'left' }}>

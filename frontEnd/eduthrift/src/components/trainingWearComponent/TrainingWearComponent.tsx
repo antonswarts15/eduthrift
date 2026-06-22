@@ -46,6 +46,11 @@ const trainingWearCategories: Record<string, { items: string[]; icon: string; co
     items: ['Rain jacket', 'Beanie', 'Gloves', 'Headband', 'Sweatband', 'Training socks', 'Drimac'],
     icon: bagOutline,
     color: '#27AE60'
+  },
+  'Training Shoes': {
+    items: ['Running shoes', 'Cross-training shoes', 'Gym shoes', 'Trail running shoes', 'Turf shoes', 'Indoor training shoes', 'Cleats / studded boots', 'Wrestling shoes', 'Cycling shoes', 'Swimming flippers'],
+    icon: bagOutline,
+    color: '#8E44AD'
   }
 };
 

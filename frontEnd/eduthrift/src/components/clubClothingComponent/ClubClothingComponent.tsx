@@ -164,59 +164,146 @@ const sportCategories = {
   }
 };
 
-const sportClothingItems: Record<string, string[]> = {
-  Rugby: ['Jersey', 'Shorts', 'Socks', 'Training top', 'Training shorts', 'Warm-up jacket'],
-  Football: ['Jersey', 'Shorts', 'Socks', 'Goalkeeper jersey', 'Training top', 'Training shorts'],
-  Netball: ['Dress', 'Skirt', 'Shorts', 'Top', 'Socks', 'Training top', 'Training shorts'],
-  Hockey: ['Jersey', 'Skirt', 'Shorts', 'Socks', 'Training top', 'Training shorts', 'Warm-up jacket'],
-  Basketball: ['Jersey', 'Shorts', 'Socks', 'Training top', 'Warm-up jacket'],
-  Cricket: ['Whites jersey', 'Whites trousers', 'Shorts', 'Cap', 'Socks', 'Training top'],
-  Volleyball: ['Jersey', 'Shorts', 'Socks', 'Training top', 'Training shorts'],
-  Korfbal: ['Jersey', 'Shorts', 'Socks', 'Training top', 'Training shorts'],
-  Baseball: ['Jersey', 'Pants', 'Socks', 'Cap', 'Training top'],
-  Softball: ['Jersey', 'Pants', 'Shorts', 'Socks', 'Cap', 'Training top'],
-  Ringball: ['Jersey', 'Shorts', 'Socks', 'Training top'],
-  Tennis: ['Polo shirt', 'Shorts', 'Skirt', 'Socks', 'Training top', 'Warm-up jacket'],
-  Squash: ['Top', 'Shorts', 'Skirt', 'Socks', 'Training top'],
-  Tabletennis: ['Shirt', 'Shorts', 'Skirt', 'Socks', 'Training top'],
-  Badminton: ['Top', 'Shorts', 'Skirt', 'Socks', 'Training top'],
-  Padel: ['Top', 'Shorts', 'Skirt', 'Socks', 'Training top'],
-  'Ring tennis': ['Top', 'Shorts', 'Skirt', 'Socks', 'Training top'],
-  Swimming: ['Swimsuit', 'Swimming costume', 'Swim cap', 'Rash guard'],
-  Diving: ['Diving suit', 'Rash guard', 'Swim cap'],
-  Rowing: ['Lycra', 'Shorts', 'Top', 'Training top', 'Training shorts'],
-  Waterpolo: ['Costume', 'Cap', 'Rash guard'],
-  Athletics: ['Singlet', 'Shorts', 'Tights', 'Training top', 'Warm-up jacket'],
-  Crosscountry: ['Singlet', 'Shorts', 'Tights', 'Training top'],
-  Golf: ['Polo shirt', 'Shorts', 'Pants', 'Cap', 'Socks'],
-  Gymnastics: ['Leotard', 'Shorts', 'Training top'],
-  Triathlon: ['Tri suit', 'Tri shorts', 'Tri top', 'Cycling jersey'],
-  Archery: ['Shirt', 'Pants', 'Training top'],
-  'Target shooting': ['Shooting jacket', 'Shooting trousers', 'Training top'],
-  Boxing: ['Vest', 'Shorts', 'Training top', 'Training shorts'],
-  Kickboxing: ['Shorts', 'Training top', 'Training shorts'],
-  Wrestling: ['Singlet', 'Training top', 'Training shorts'],
-  Karate: ['Gi top', 'Gi pants', 'Training top', 'Training shorts'],
-  Judo: ['Gi top', 'Gi pants', 'Training top', 'Training shorts'],
-  Taekwondo: ['Dobok top', 'Dobok pants', 'Training top', 'Training shorts'],
-  'Jiu-Jitsu': ['Gi top', 'Gi pants', 'Rash guard', 'Shorts'],
-  MMA: ['Shorts', 'Rash guard', 'Training top', 'Training shorts'],
-  Mountainbike: ['Cycling jersey', 'Cycling shorts', 'MTB shorts', 'Wind jacket'],
-  Roadbike: ['Cycling jersey', 'Cycling shorts', 'Wind jacket', 'Arm warmers'],
-  Rollerskating: ['Leggings', 'Top', 'Training top', 'Training shorts'],
-  'Ice skating': ['Dress', 'Leggings', 'Top', 'Training top'],
-  'Ice hockey': ['Jersey', 'Pants', 'Socks', 'Training top'],
-  Dancing: ['Top', 'Shorts', 'Skirt', 'Leggings', 'Dress'],
-  Ballet: ['Leotard', 'Tights', 'Skirt', 'Training top'],
-  'Rock climbing': ['Pants', 'Top', 'Training top', 'Training shorts'],
-  'Horse riding': ['Breeches', 'Jacket', 'Shirt', 'Gloves', 'Helmet cover'],
-  Chess: ['Club shirt', 'Club jacket'],
-  Robotics: ['Club shirt', 'Club jacket'],
-  Jukskei: ['Jersey', 'Shorts', 'Training top'],
-  Bowling: ['Shirt', 'Pants', 'Training top'],
+type GenderedItems = { Boys?: string[]; Girls?: string[]; Unisex?: string[] };
+type ClothingItems = GenderedItems | string[];
+const sportClothingItems: Record<string, ClothingItems> = {
+  Rugby: { Unisex: ['Jersey', 'Shorts', 'Socks', 'Training top', 'Training shorts', 'Warm-up jacket', 'Training shoes'] },
+  Football: { Unisex: ['Jersey', 'Shorts', 'Socks', 'Goalkeeper jersey', 'Training top', 'Training shorts', 'Training shoes'] },
+  Netball: { Girls: ['Dress', 'Skirt', 'Shorts', 'Top', 'Socks', 'Training top', 'Training shorts', 'Training shoes'] },
+  Hockey: {
+    Boys: ['Jersey', 'Shorts', 'Socks', 'Training top', 'Training shorts', 'Warm-up jacket', 'Training shoes'],
+    Girls: ['Jersey', 'Skirt', 'Shorts', 'Socks', 'Training top', 'Training shorts', 'Warm-up jacket', 'Training shoes'],
+  },
+  Basketball: { Unisex: ['Jersey', 'Shorts', 'Socks', 'Training top', 'Warm-up jacket', 'Training shoes'] },
+  Cricket: {
+    Boys: ['Whites jersey', 'Whites trousers', 'Shorts', 'Cap', 'Socks', 'Training top', 'Training shoes'],
+    Girls: ['Whites jersey', 'Whites trousers', 'Skirt', 'Cap', 'Socks', 'Training top', 'Training shoes'],
+  },
+  Volleyball: { Unisex: ['Jersey', 'Shorts', 'Socks', 'Training top', 'Training shorts', 'Training shoes'] },
+  Korfbal: {
+    Boys: ['Jersey', 'Shorts', 'Socks', 'Training top', 'Training shoes'],
+    Girls: ['Jersey', 'Skirt', 'Shorts', 'Socks', 'Training top', 'Training shoes'],
+  },
+  Baseball: { Unisex: ['Jersey', 'Pants', 'Socks', 'Cap', 'Training top', 'Training shoes'] },
+  Softball: {
+    Boys: ['Jersey', 'Pants', 'Socks', 'Cap', 'Training top', 'Training shoes'],
+    Girls: ['Jersey', 'Pants', 'Shorts', 'Socks', 'Cap', 'Training top', 'Training shoes'],
+  },
+  Ringball: { Girls: ['Jersey', 'Shorts', 'Socks', 'Training top', 'Training shoes'] },
+  Tennis: {
+    Boys: ['Polo shirt', 'Shorts', 'Socks', 'Training top', 'Warm-up jacket', 'Training shoes'],
+    Girls: ['Polo shirt', 'Skirt', 'Shorts', 'Socks', 'Training top', 'Warm-up jacket', 'Training shoes'],
+  },
+  Squash: {
+    Boys: ['Top', 'Shorts', 'Socks', 'Training top', 'Training shoes'],
+    Girls: ['Top', 'Skirt', 'Shorts', 'Socks', 'Training top', 'Training shoes'],
+  },
+  Tabletennis: {
+    Boys: ['Shirt', 'Shorts', 'Socks', 'Training top', 'Training shoes'],
+    Girls: ['Shirt', 'Skirt', 'Shorts', 'Socks', 'Training top', 'Training shoes'],
+  },
+  Badminton: {
+    Boys: ['Top', 'Shorts', 'Socks', 'Training top', 'Training shoes'],
+    Girls: ['Top', 'Skirt', 'Shorts', 'Socks', 'Training top', 'Training shoes'],
+  },
+  Padel: {
+    Boys: ['Top', 'Shorts', 'Socks', 'Training top', 'Training shoes'],
+    Girls: ['Top', 'Skirt', 'Shorts', 'Socks', 'Training top', 'Training shoes'],
+  },
+  'Ring tennis': {
+    Boys: ['Top', 'Shorts', 'Socks', 'Training top', 'Training shoes'],
+    Girls: ['Top', 'Skirt', 'Shorts', 'Socks', 'Training top', 'Training shoes'],
+  },
+  Swimming: {
+    Boys: ['Jammers', 'Swim briefs', 'Swim cap', 'Rash guard', 'Training shoes'],
+    Girls: ['Swimsuit', 'Swimming costume', 'Swim cap', 'Rash guard', 'Training shoes'],
+  },
+  Diving: {
+    Boys: ['Diving shorts', 'Rash guard', 'Swim cap', 'Training shoes'],
+    Girls: ['Diving suit', 'Rash guard', 'Swim cap', 'Training shoes'],
+  },
+  Rowing: { Unisex: ['Lycra', 'Shorts', 'Top', 'Training top', 'Training shorts', 'Training shoes'] },
+  Waterpolo: {
+    Boys: ['Swimming briefs', 'Cap', 'Rash guard', 'Training shoes'],
+    Girls: ['Costume', 'Cap', 'Rash guard', 'Training shoes'],
+  },
+  Athletics: {
+    Boys: ['Singlet', 'Shorts', 'Training top', 'Warm-up jacket', 'Training shoes'],
+    Girls: ['Singlet', 'Shorts', 'Tights', 'Training top', 'Warm-up jacket', 'Training shoes'],
+  },
+  Crosscountry: {
+    Boys: ['Singlet', 'Shorts', 'Training top', 'Training shoes'],
+    Girls: ['Singlet', 'Shorts', 'Tights', 'Training top', 'Training shoes'],
+  },
+  Golf: {
+    Boys: ['Polo shirt', 'Shorts', 'Pants', 'Cap', 'Socks', 'Training shoes'],
+    Girls: ['Polo shirt', 'Skirt', 'Shorts', 'Pants', 'Cap', 'Socks', 'Training shoes'],
+  },
+  Gymnastics: {
+    Boys: ['Vest', 'Shorts', 'Training top', 'Training shoes'],
+    Girls: ['Leotard', 'Shorts', 'Training top', 'Training shoes'],
+  },
+  Triathlon: { Unisex: ['Tri suit', 'Tri shorts', 'Tri top', 'Cycling jersey', 'Training shoes'] },
+  Archery: { Unisex: ['Shirt', 'Pants', 'Training top', 'Training shoes'] },
+  'Target shooting': { Unisex: ['Shooting jacket', 'Shooting trousers', 'Training top', 'Training shoes'] },
+  Boxing: { Unisex: ['Vest', 'Shorts', 'Training top', 'Training shorts', 'Training shoes'] },
+  Kickboxing: { Unisex: ['Shorts', 'Training top', 'Training shorts', 'Training shoes'] },
+  Wrestling: { Unisex: ['Singlet', 'Training top', 'Training shorts', 'Training shoes'] },
+  Karate: { Unisex: ['Gi top', 'Gi pants', 'Training top', 'Training shorts', 'Training shoes'] },
+  Judo: { Unisex: ['Gi top', 'Gi pants', 'Training top', 'Training shorts', 'Training shoes'] },
+  Taekwondo: { Unisex: ['Dobok top', 'Dobok pants', 'Training top', 'Training shorts', 'Training shoes'] },
+  'Jiu-Jitsu': { Unisex: ['Gi top', 'Gi pants', 'Rash guard', 'Shorts', 'Training shoes'] },
+  MMA: { Unisex: ['Shorts', 'Rash guard', 'Training top', 'Training shorts', 'Training shoes'] },
+  Mountainbike: { Unisex: ['Cycling jersey', 'Cycling shorts', 'MTB shorts', 'Wind jacket', 'Training shoes'] },
+  Roadbike: { Unisex: ['Cycling jersey', 'Cycling shorts', 'Wind jacket', 'Arm warmers', 'Training shoes'] },
+  Rollerskating: {
+    Boys: ['Shorts', 'Top', 'Training top', 'Training shoes'],
+    Girls: ['Leggings', 'Skirt', 'Top', 'Training top', 'Training shoes'],
+  },
+  'Ice skating': {
+    Boys: ['Pants', 'Top', 'Training top', 'Training shoes'],
+    Girls: ['Dress', 'Leggings', 'Top', 'Training top', 'Training shoes'],
+  },
+  'Ice hockey': { Unisex: ['Jersey', 'Pants', 'Socks', 'Training top', 'Training shoes'] },
+  Dancing: {
+    Boys: ['Shirt', 'Pants', 'Training top', 'Training shoes'],
+    Girls: ['Top', 'Skirt', 'Leggings', 'Dress', 'Training shoes'],
+  },
+  Ballet: {
+    Boys: ['Vest', 'Tights', 'Training top', 'Training shoes'],
+    Girls: ['Leotard', 'Tights', 'Skirt', 'Training top', 'Training shoes'],
+  },
+  'Rock climbing': { Unisex: ['Pants', 'Top', 'Training top', 'Training shorts', 'Training shoes'] },
+  'Horse riding': { Unisex: ['Breeches', 'Jacket', 'Shirt', 'Gloves', 'Helmet cover', 'Training shoes'] },
+  Chess: { Unisex: ['Club shirt', 'Club jacket', 'Training shoes'] },
+  Robotics: { Unisex: ['Club shirt', 'Club jacket', 'Training shoes'] },
+  Jukskei: { Unisex: ['Jersey', 'Shorts', 'Training top', 'Training shoes'] },
+  Bowling: { Unisex: ['Shirt', 'Pants', 'Training top', 'Training shoes'] },
 };
 
-const defaultClothingItems = ['Jersey', 'Shorts', 'Socks', 'Training top', 'Training shorts', 'Warm-up jacket'];
+const defaultClothingItems: ClothingItems = {
+  Boys: ['Jersey', 'Shorts', 'Socks', 'Training top', 'Training shorts', 'Warm-up jacket'],
+  Girls: ['Jersey', 'Shorts', 'Socks', 'Training top', 'Training shorts', 'Warm-up jacket'],
+};
+
+const getItemsForGender = (sport: string, gender: 'Boys' | 'Girls' | 'Unisex'): string[] => {
+  const entry = sportClothingItems[sport] || defaultClothingItems;
+  if (Array.isArray(entry)) return entry;
+  if (gender === 'Unisex' && entry.Unisex) return entry.Unisex;
+  if (gender === 'Boys') return entry.Boys || entry.Unisex || entry.Girls || [];
+  if (gender === 'Girls') return entry.Girls || entry.Unisex || entry.Boys || [];
+  return entry.Unisex || entry.Boys || entry.Girls || [];
+};
+
+const getAvailableGenders = (sport: string): Array<'Boys' | 'Girls' | 'Unisex'> => {
+  const entry = sportClothingItems[sport] || defaultClothingItems;
+  if (Array.isArray(entry)) return ['Boys', 'Girls', 'Unisex'];
+  const genders: Array<'Boys' | 'Girls' | 'Unisex'> = [];
+  if (entry.Boys) genders.push('Boys');
+  if (entry.Girls) genders.push('Girls');
+  if (entry.Unisex) genders.push('Unisex');
+  return genders;
+};
 
 const ClubClothingComponent: React.FC<ClubClothingProps> = ({ userType, onItemSelect, categoryFilter = 'all', clubName: propClubName }) => {
   const [selectedItem, setSelectedItem] = useState('');
@@ -231,6 +318,7 @@ const ClubClothingComponent: React.FC<ClubClothingProps> = ({ userType, onItemSe
   const [selectedAvailableItem, setSelectedAvailableItem] = useState<any>(null);
   const [selectedSport, setSelectedSport] = useState('');
   const [showSportItems, setShowSportItems] = useState(false);
+  const [selectedSportGender, setSelectedSportGender] = useState<'Boys' | 'Girls' | 'Unisex' | ''>('');
   const [sizeFilter, setSizeFilter] = useState('');
   const [conditionFilter, setConditionFilter] = useState<number | undefined>();
   const [priceRange, setPriceRange] = useState({ min: '', max: '' });
@@ -400,7 +488,7 @@ const ClubClothingComponent: React.FC<ClubClothingProps> = ({ userType, onItemSe
       <IonRow>
         {sports.map((sport, index) => (
           <IonCol size="4" key={index}>
-            <div onClick={() => { if (clubName) { setSelectedSport(sport.name); setShowSportItems(true); } }}
+            <div onClick={() => { if (clubName) { setSelectedSport(sport.name); setSelectedSportGender(''); setShowSportItems(true); } }}
               style={{ cursor: clubName ? 'pointer' : 'not-allowed', textAlign: 'center', opacity: clubName ? 1 : 0.5, padding: '4px 2px' }}>
               <div style={{
                 width: '70px', height: '70px', borderRadius: '50%',
@@ -587,37 +675,74 @@ const ClubClothingComponent: React.FC<ClubClothingProps> = ({ userType, onItemSe
 
   // --- Sport clothing items grid ---
   if (showSportItems) {
-    const clothingItems = sportClothingItems[selectedSport] || defaultClothingItems;
+    const availableGenders = getAvailableGenders(selectedSport);
+    const isUnisexOnly = availableGenders.length === 1 && availableGenders[0] === 'Unisex';
     const availableCountForItem = (itemName: string) =>
       getFilteredItems().filter(i => i.item === itemName && i.sport === selectedSport).reduce((sum, i) => sum + i.quantity, 0);
 
+    const renderItemsGrid = (items: string[], genderKey: 'Boys' | 'Girls' | 'Unisex') => (
+      <IonGrid>
+        <IonRow>
+          {items.map((item, index) => {
+            const count = availableCountForItem(item);
+            return (
+              <IonCol size="4" key={index}>
+                <div
+                  onClick={() => { setSelectedSportGender(genderKey); setSelectedItem(item); setShowItemDetails(true); }}
+                  style={{ cursor: 'pointer', textAlign: 'center', padding: '4px 2px' }}
+                >
+                  <div style={{
+                    width: '70px', height: '70px', borderRadius: '50%',
+                    backgroundColor: rainbowColors[index % rainbowColors.length],
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    margin: '0 auto 6px', boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
+                  }}>
+                    <IonIcon icon={imageOutline} style={{ fontSize: '30px', color: 'white' }} />
+                  </div>
+                  <div style={{ fontWeight: 'bold', color: '#333', fontSize: '11px', lineHeight: '1.2', textAlign: 'center', padding: '0 2px' }}>
+                    {item}
+                  </div>
+                  {userType === 'buyer' && count > 0 && (
+                    <div style={{ fontSize: '10px', color: '#E74C3C', marginTop: '2px' }}>{count} avail</div>
+                  )}
+                </div>
+              </IonCol>
+            );
+          })}
+        </IonRow>
+      </IonGrid>
+    );
+
     return (
       <div style={{ padding: '16px' }}>
-        <IonButton fill="clear" onClick={() => { setShowSportItems(false); setSelectedSport(''); }}>← Back</IonButton>
+        <IonButton fill="clear" onClick={() => { setShowSportItems(false); setSelectedSport(''); setSelectedSportGender(''); }}>← Back</IonButton>
         {clubHeader}
-        <div style={{ textAlign: 'center', margin: '0 0 20px 0' }}>
+        <div style={{ textAlign: 'center', margin: '0 0 16px 0' }}>
           <span style={{ fontSize: '20px', fontWeight: 'bold', color: '#666' }}>{selectedSport} Clothing</span>
         </div>
-        <IonGrid>
-          <IonRow>
-            {clothingItems.map((item, index) => {
-              const count = availableCountForItem(item);
+        {isUnisexOnly ? (
+          renderItemsGrid(getItemsForGender(selectedSport, 'Unisex'), 'Unisex')
+        ) : (
+          <IonAccordionGroup>
+            {availableGenders.map((gender) => {
+              const genderColor = gender === 'Boys' ? '#004aad' : gender === 'Girls' ? '#E74C3C' : '#27AE60';
               return (
-                <IonCol size="6" key={index}>
-                  <IonCard button onClick={() => { setSelectedItem(item); setShowItemDetails(true); }} style={{ backgroundColor: 'transparent', border: '1px solid #444' }}>
-                    <IonCardContent style={{ textAlign: 'center', padding: '12px' }}>
-                      <IonIcon icon={imageOutline} size="large" style={{ marginBottom: '8px', opacity: 0.5 }} />
-                      <div style={{ fontSize: '13px', fontWeight: 'bold' }}>{item}</div>
-                      {userType === 'buyer' && count > 0 && (
-                        <div style={{ fontSize: '11px', color: '#E74C3C', marginTop: '4px' }}>{count} available</div>
-                      )}
-                    </IonCardContent>
-                  </IonCard>
-                </IonCol>
+                <IonAccordion key={gender} value={gender}>
+                  <IonItem slot="header" style={{ '--background': 'transparent' }}>
+                    <IonLabel>
+                      <h3 style={{ margin: '0', fontWeight: 'bold', color: genderColor, fontSize: '16px' }}>
+                        {gender === 'Boys' ? '👦 ' : gender === 'Girls' ? '👧 ' : '🤝 '}{gender}
+                      </h3>
+                    </IonLabel>
+                  </IonItem>
+                  <div slot="content" style={{ padding: '8px' }}>
+                    {renderItemsGrid(getItemsForGender(selectedSport, gender), gender)}
+                  </div>
+                </IonAccordion>
               );
             })}
-          </IonRow>
-        </IonGrid>
+          </IonAccordionGroup>
+        )}
         {toast}
       </div>
     );

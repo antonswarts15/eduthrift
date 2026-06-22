@@ -1,3 +1,4 @@
+import { Capacitor } from '@capacitor/core';
 import { Geolocation } from '@capacitor/geolocation';
 
 export interface Location {
@@ -27,20 +28,32 @@ export interface Club {
 class LocationService {
   // Get user's current location
   async getCurrentLocation(): Promise<Location> {
-    try {
-      const position = await Geolocation.getCurrentPosition({
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 300000
-      });
-      
-      return {
-        lat: position.coords.latitude,
-        lng: position.coords.longitude
-      };
-    } catch (error: any) {
-      throw new Error(`Location error: ${error.message}`);
+    // On native (iOS/Android) use Capacitor; on web use the browser API directly
+    // to avoid Permissions-Policy violations that affect Capacitor's web shim
+    if (Capacitor.isNativePlatform()) {
+      try {
+        const position = await Geolocation.getCurrentPosition({
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 300000
+        });
+        return { lat: position.coords.latitude, lng: position.coords.longitude };
+      } catch (error: any) {
+        throw new Error(`Location error: ${error.message}`);
+      }
     }
+
+    return new Promise((resolve, reject) => {
+      if (!navigator.geolocation) {
+        reject(new Error('Geolocation is not supported by this browser'));
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(
+        (position) => resolve({ lat: position.coords.latitude, lng: position.coords.longitude }),
+        (error) => reject(new Error(`Location error: ${error.message}`)),
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 300000 }
+      );
+    });
   }
 
   // Calculate distance between two points (Haversine formula)

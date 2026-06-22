@@ -212,6 +212,7 @@ const GenericSportEquipmentComponent: React.FC<GenericSportEquipmentProps> = ({
   const handleBackFromDetails = () => {
     setShowItemDetails(false);
     setSelectedItem('');
+    setSelectedGender('');
     setSize('');
     setTeam('');
     setCondition(undefined);
@@ -580,14 +581,6 @@ const GenericSportEquipmentComponent: React.FC<GenericSportEquipmentProps> = ({
   return (
     <div>
       {categoryFilter === 'all' && <h2>{sportName} Equipment</h2>}
-      {categoryFilter === 'clothing' && (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-          <h2 style={{ margin: 0 }}>{sportName} Clothing - {selectedGender}</h2>
-          <IonButton fill="outline" size="small" onClick={() => setSelectedGender('')}>
-            Change Gender
-          </IonButton>
-        </div>
-      )}
       
       {propSchoolName && (
         <div style={{ 
@@ -710,62 +703,18 @@ const GenericSportEquipmentComponent: React.FC<GenericSportEquipmentProps> = ({
         </div>
       )}
 
-      {categoryFilter === 'clothing' && (getFilteredCategories()['Boys Clothing'] || getFilteredCategories()['Girls Clothing']) ? (
-        <div>
-          {(() => {
-            const genderKey = selectedGender === 'Boy' ? 'Boys Clothing' : 'Girls Clothing';
-            const clothingItems = getFilteredCategories()[genderKey]?.items || [];
-            return (
-              <IonGrid>
-                <IonRow>
-                  {clothingItems.map((item: string, index: number) => (
-                    <IonCol size="6" key={index}>
-                      <IonCard button onClick={() => handleItemClick(item)} style={{ backgroundColor: 'transparent', border: '1px solid #444' }}>
-                        <IonCardContent style={{ textAlign: 'center', padding: '12px' }}>
-                          <IonIcon icon={imageOutline} size="large" style={{ marginBottom: '8px', opacity: 0.5 }} />
-                          <div style={{ fontSize: '13px', fontWeight: 'bold' }}>{item}</div>
-                          {userType === 'buyer' && getItemCount(item) > 0 && (
-                            <div style={{ fontSize: '11px', color: '#004aad', marginTop: '4px' }}>
-                              {getItemCount(item)} available
-                            </div>
-                          )}
-                        </IonCardContent>
-                      </IonCard>
-                    </IonCol>
-                  ))}
-                </IonRow>
-              </IonGrid>
-            );
-          })()}
-        </div>
-      ) : (
-        <IonAccordionGroup>
-          {Object.entries(getFilteredCategories()).map(([category, categoryData]: [string, any]) => {
-            // Skip gender-specific categories if we're in clothing mode and have selected a gender
-            if (selectedGender && 
-                (category === 'Boys Clothing' || category === 'Girls Clothing')) {
-              return null;
-            }
-            
+      <IonAccordionGroup>
+        {categoryFilter === 'clothing' && (getFilteredCategories()['Boys Clothing'] || getFilteredCategories()['Girls Clothing']) ? (
+          Object.entries(getFilteredCategories()).map(([category, categoryData]: [string, any]) => {
+            const isBoys = category === 'Boys Clothing';
+            const genderColor = isBoys ? '#004aad' : '#E74C3C';
+            const genderLabel = isBoys ? '👦 Boys' : '👧 Girls';
             return (
               <IonAccordion key={category} value={category}>
                 <IonItem slot="header" style={{ '--background': 'transparent' }}>
-                  <IonIcon 
-                    icon={categoryData.icon} 
-                    style={{ 
-                      fontSize: '24px', 
-                      color: categoryData.color, 
-                      marginRight: '12px'
-                    }} 
-                  />
                   <IonLabel>
-                    <h3 style={{ 
-                      margin: '0', 
-                      fontWeight: 'bold', 
-                      color: categoryData.color,
-                      fontSize: '16px'
-                    }}>
-                      {category}
+                    <h3 style={{ margin: '0', fontWeight: 'bold', color: genderColor, fontSize: '16px' }}>
+                      {genderLabel}
                     </h3>
                   </IonLabel>
                 </IonItem>
@@ -774,7 +723,7 @@ const GenericSportEquipmentComponent: React.FC<GenericSportEquipmentProps> = ({
                     <IonRow>
                       {categoryData.items.map((item: string, index: number) => (
                         <IonCol size="6" key={index}>
-                          <IonCard button onClick={() => handleItemClick(item)} style={{ backgroundColor: 'transparent', border: '1px solid #444' }}>
+                          <IonCard button onClick={() => { setSelectedGender(isBoys ? 'Boys' : 'Girls'); handleItemClick(item); }} style={{ backgroundColor: 'transparent', border: '1px solid #444' }}>
                             <IonCardContent style={{ textAlign: 'center', padding: '12px' }}>
                               <IonIcon icon={imageOutline} size="large" style={{ marginBottom: '8px', opacity: 0.5 }} />
                               <div style={{ fontSize: '13px', fontWeight: 'bold' }}>{item}</div>
@@ -792,9 +741,43 @@ const GenericSportEquipmentComponent: React.FC<GenericSportEquipmentProps> = ({
                 </div>
               </IonAccordion>
             );
-          })}
-        </IonAccordionGroup>
-      )}
+          })
+        ) : (
+          Object.entries(getFilteredCategories()).map(([category, categoryData]: [string, any]) => (
+            <IonAccordion key={category} value={category}>
+              <IonItem slot="header" style={{ '--background': 'transparent' }}>
+                <IonIcon icon={categoryData.icon} style={{ fontSize: '24px', color: categoryData.color, marginRight: '12px' }} />
+                <IonLabel>
+                  <h3 style={{ margin: '0', fontWeight: 'bold', color: categoryData.color, fontSize: '16px' }}>
+                    {category}
+                  </h3>
+                </IonLabel>
+              </IonItem>
+              <div slot="content" style={{ padding: '8px' }}>
+                <IonGrid>
+                  <IonRow>
+                    {categoryData.items.map((item: string, index: number) => (
+                      <IonCol size="6" key={index}>
+                        <IonCard button onClick={() => handleItemClick(item)} style={{ backgroundColor: 'transparent', border: '1px solid #444' }}>
+                          <IonCardContent style={{ textAlign: 'center', padding: '12px' }}>
+                            <IonIcon icon={imageOutline} size="large" style={{ marginBottom: '8px', opacity: 0.5 }} />
+                            <div style={{ fontSize: '13px', fontWeight: 'bold' }}>{item}</div>
+                            {userType === 'buyer' && getItemCount(item) > 0 && (
+                              <div style={{ fontSize: '11px', color: '#004aad', marginTop: '4px' }}>
+                                {getItemCount(item)} available
+                              </div>
+                            )}
+                          </IonCardContent>
+                        </IonCard>
+                      </IonCol>
+                    ))}
+                  </IonRow>
+                </IonGrid>
+              </div>
+            </IonAccordion>
+          ))
+        )}
+      </IonAccordionGroup>
       
       <IonToast
         isOpen={showToast}

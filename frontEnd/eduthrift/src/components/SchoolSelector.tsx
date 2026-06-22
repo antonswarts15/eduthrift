@@ -16,7 +16,6 @@ import {
 } from '@ionic/react';
 import { locationOutline, schoolOutline } from 'ionicons/icons';
 import LocationService, { School } from '../services/location';
-import { userApi } from '../services/api';
 
 interface SchoolSelectorProps {
   value: string;
@@ -122,53 +121,16 @@ const SchoolSelector: React.FC<SchoolSelectorProps> = ({ value, onSchoolChange, 
   const loadNearbySchools = async () => {
     try {
       setLoading(true);
-
-      // Try to get location from user profile first
-      try {
-        setLocationStatus('Checking your profile address...');
-        const profile = await userApi.getProfile();
-
-        if (profile && profile.data.town && profile.data.province) {
-          // Geocode the profile address to get coordinates
-          setLocationStatus(`Searching schools near ${profile.data.town}, ${profile.data.province}...`);
-          const geocodeResponse = await fetch(
-            `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(profile.data.town + ', ' + profile.data.province + ', South Africa')}&limit=1`
-          );
-          const geocodeData = await geocodeResponse.json();
-
-          if (geocodeData && geocodeData.length > 0) {
-            const location = {
-              lat: parseFloat(geocodeData[0].lat),
-              lng: parseFloat(geocodeData[0].lon)
-            };
-
-            const schools = await LocationService.searchNearbySchools(location, 10);
-
-            if (schools.length > 0) {
-              setNearbySchools(schools);
-              setLocationStatus(`Found ${schools.length} schools within 10km of your address`);
-              return;
-            }
-          }
-        }
-      } catch (profileError) {
-        console.log('Could not load profile address, using current location');
-      }
-
-      // Fall back to current location
       setLocationStatus('Using your current location...');
       const location = await LocationService.getCurrentLocation();
       setLocationStatus('Searching nearby schools...');
 
       const schools = await LocationService.searchNearbySchools(location, 10);
-      
-      // Also include schools from local database based on detected location
       const address = await LocationService.getAddressFromCoords(location.lat, location.lng);
       const localSchools = getLocalSchoolsFromAddress(address);
-      
-      // Combine and deduplicate schools
+
       const allSchools = [...schools, ...localSchools];
-      const uniqueSchools = allSchools.filter((school, index, self) => 
+      const uniqueSchools = allSchools.filter((school, index, self) =>
         index === self.findIndex(s => s.name.toLowerCase() === school.name.toLowerCase())
       );
 

@@ -123,7 +123,8 @@ import squash from '../assets/squash.svg';
 import swimming from '../assets/swimming.svg';
 import tabletennis from '../assets/tabletennis.svg';
 import target from '../assets/target.svg';
-import netball from '../assets/netball.svg';
+import netball from '../assets/netball.png';
+import korfbal from '../assets/netball.png';
 import bagshoe from '../assets/bagshoe.png';
 import robot from '../assets/robot.svg';
 import rollerSkating from '../assets/rollerSkating.svg';
@@ -609,7 +610,7 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
         { name: "Cricket", icon: cricket },
         { name: "Volleyball", icon: basketballOutline },
         // { name: "Waterpolo", icon: polo },
-        { name: "Korfbal", icon: basketballOutline },
+        { name: "Korfbal", icon: korfbal },
         { name: "Baseball", icon: baseball },
         { name: "Softball", icon: softball },
         { name: "Ringball", icon: ringtennis }
