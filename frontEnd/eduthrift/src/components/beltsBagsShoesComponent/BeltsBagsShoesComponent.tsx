@@ -25,6 +25,8 @@ import { useListingsStore } from '../../stores/listingsStore';
 import { useToast } from '../../hooks/useToast';
 import { validateImageFile } from '../../utils/imageEnhancer';
 
+const rainbowColors = ['#FF2090', '#FFA020', '#A020C0', '#5CC840', '#00AACC'];
+
 interface BeltsBagsShoesProps {
   userType: 'seller' | 'buyer';
   onItemSelect?: (item: any) => void;
@@ -522,18 +524,38 @@ const BeltsBagsShoesComponent: React.FC<BeltsBagsShoesProps> = ({ userType, onIt
               <IonGrid>
                 <IonRow>
                   {categoryData.items.map((item: string, index: number) => (
-                    <IonCol size="6" key={index}>
-                      <IonCard button onClick={() => handleItemClick(item)} style={{ backgroundColor: 'transparent', border: '1px solid #444' }}>
-                        <IonCardContent style={{ textAlign: 'center', padding: '12px' }}>
-                          <IonIcon icon={imageOutline} size="large" style={{ marginBottom: '8px', opacity: 0.5 }} />
-                          <div style={{ fontSize: '13px', fontWeight: 'bold' }}>{item}</div>
+                    <IonCol size="4" key={index}>
+                      <div
+                        onClick={() => handleItemClick(item)}
+                        style={{ cursor: 'pointer', textAlign: 'center', padding: '4px 2px' }}
+                      >
+                        <div style={{ position: 'relative', width: '70px', margin: '0 auto 6px' }}>
+                          <div style={{
+                            width: '70px', height: '70px', borderRadius: '50%',
+                            backgroundColor: rainbowColors[index % rainbowColors.length],
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+                            padding: '4px'
+                          }}>
+                            <span style={{ color: 'white', fontWeight: 'bold', fontSize: '10px', lineHeight: '1.1', textAlign: 'center' }}>
+                              {item}
+                            </span>
+                          </div>
                           {userType === 'buyer' && getItemCount(item) > 0 && (
-                            <div style={{ fontSize: '11px', color: '#004aad', marginTop: '4px' }}>
-                              {getItemCount(item)} available
-                            </div>
+                            <span style={{
+                              position: 'absolute', top: '-4px', right: '-4px',
+                              backgroundColor: '#E74C3C', color: 'white',
+                              fontSize: '10px', fontWeight: '700',
+                              minWidth: '18px', height: '18px', borderRadius: '9px',
+                              display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              padding: '0 4px', boxShadow: '0 1px 4px rgba(0,0,0,0.3)',
+                              zIndex: 10, pointerEvents: 'none'
+                            }}>
+                              {getItemCount(item) > 99 ? '99+' : getItemCount(item)}
+                            </span>
                           )}
-                        </IonCardContent>
-                      </IonCard>
+                        </div>
+                      </div>
                     </IonCol>
                   ))}
                 </IonRow>

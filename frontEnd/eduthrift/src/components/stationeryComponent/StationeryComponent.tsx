@@ -66,6 +66,8 @@ const stationeryCategories = {
   }
 };
 
+const rainbowColors = ['#FF2090', '#FFA020', '#A020C0', '#5CC840', '#00AACC'];
+
 const StationeryComponent: React.FC<StationeryComponentProps> = ({ userType, onItemSelect, categoryFilter = 'all' }) => {
   // Buyer state
   const [viewingItem, setViewingItem] = useState<any>(null);
@@ -429,13 +431,23 @@ const StationeryComponent: React.FC<StationeryComponentProps> = ({ userType, onI
                 <IonGrid>
                   <IonRow>
                     {categoryData.items.map((item, index) => (
-                      <IonCol size="6" key={index}>
-                        <IonCard button onClick={() => { setSelectedItem(item); setShowItemDetails(true); }} style={{ backgroundColor: 'transparent', border: '1px solid #444' }}>
-                          <IonCardContent style={{ textAlign: 'center', padding: '12px' }}>
-                            <IonIcon icon={imageOutline} size="large" style={{ marginBottom: '8px', opacity: 0.5 }} />
-                            <div style={{ fontSize: '13px', fontWeight: 'bold' }}>{item}</div>
-                          </IonCardContent>
-                        </IonCard>
+                      <IonCol size="4" key={index}>
+                        <div
+                          onClick={() => { setSelectedItem(item); setShowItemDetails(true); }}
+                          style={{ cursor: 'pointer', textAlign: 'center', padding: '4px 2px' }}
+                        >
+                          <div style={{
+                            width: '70px', height: '70px', borderRadius: '50%',
+                            backgroundColor: rainbowColors[index % rainbowColors.length],
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            margin: '0 auto 6px', boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+                            padding: '4px'
+                          }}>
+                            <span style={{ color: 'white', fontWeight: 'bold', fontSize: '10px', lineHeight: '1.1', textAlign: 'center' }}>
+                              {item}
+                            </span>
+                          </div>
+                        </div>
                       </IonCol>
                     ))}
                   </IonRow>

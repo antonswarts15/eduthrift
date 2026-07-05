@@ -18,7 +18,7 @@ import {
   IonToast
 } from '@ionic/react';
 import {
-  cameraOutline, imageOutline, checkmarkCircleOutline, closeCircleOutline,
+  cameraOutline, checkmarkCircleOutline, closeCircleOutline,
   peopleOutline, tennisballOutline, waterOutline, fitnessOutline,
   manOutline, bicycleOutline, extensionPuzzleOutline,
   footballOutline, basketballOutline, golfOutline
@@ -691,20 +691,32 @@ const ClubClothingComponent: React.FC<ClubClothingProps> = ({ userType, onItemSe
                   onClick={() => { setSelectedSportGender(genderKey); setSelectedItem(item); setShowItemDetails(true); }}
                   style={{ cursor: 'pointer', textAlign: 'center', padding: '4px 2px' }}
                 >
-                  <div style={{
-                    width: '70px', height: '70px', borderRadius: '50%',
-                    backgroundColor: rainbowColors[index % rainbowColors.length],
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    margin: '0 auto 6px', boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
-                  }}>
-                    <IonIcon icon={imageOutline} style={{ fontSize: '30px', color: 'white' }} />
+                  <div style={{ position: 'relative', width: '70px', margin: '0 auto 6px' }}>
+                    <div style={{
+                      width: '70px', height: '70px', borderRadius: '50%',
+                      backgroundColor: rainbowColors[index % rainbowColors.length],
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+                      padding: '4px'
+                    }}>
+                      <span style={{ color: 'white', fontWeight: 'bold', fontSize: '10px', lineHeight: '1.1', textAlign: 'center' }}>
+                        {item}
+                      </span>
+                    </div>
+                    {userType === 'buyer' && count > 0 && (
+                      <span style={{
+                        position: 'absolute', top: '-4px', right: '-4px',
+                        backgroundColor: '#E74C3C', color: 'white',
+                        fontSize: '10px', fontWeight: '700',
+                        minWidth: '18px', height: '18px', borderRadius: '9px',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        padding: '0 4px', boxShadow: '0 1px 4px rgba(0,0,0,0.3)',
+                        zIndex: 10, pointerEvents: 'none'
+                      }}>
+                        {count > 99 ? '99+' : count}
+                      </span>
+                    )}
                   </div>
-                  <div style={{ fontWeight: 'bold', color: '#333', fontSize: '11px', lineHeight: '1.2', textAlign: 'center', padding: '0 2px' }}>
-                    {item}
-                  </div>
-                  {userType === 'buyer' && count > 0 && (
-                    <div style={{ fontSize: '10px', color: '#E74C3C', marginTop: '2px' }}>{count} avail</div>
-                  )}
                 </div>
               </IonCol>
             );

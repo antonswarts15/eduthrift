@@ -19,9 +19,9 @@ import {
   IonBadge
 } from '@ionic/react';
 import {
-  cameraOutline, imageOutline, shirtOutline, bagOutline, schoolOutline, checkmarkCircleOutline, closeCircleOutline,
+  cameraOutline, shirtOutline, bagOutline, schoolOutline, checkmarkCircleOutline, closeCircleOutline,
   peopleOutline, tennisballOutline, waterOutline, fitnessOutline, manOutline, bicycleOutline, extensionPuzzleOutline,
-  footballOutline, basketballOutline, golfOutline
+  footballOutline, basketballOutline, golfOutline, womanOutline, maleFemaleOutline
 } from 'ionicons/icons';
 import SchoolSelector from '../SchoolSelector';
 import { useCartStore } from '../../stores/cartStore';
@@ -131,123 +131,207 @@ const sportCategories = {
 type GenderedItems = { Boys?: string[]; Girls?: string[]; Unisex?: string[] };
 type ClothingItems = GenderedItems | string[];
 const sportClothingItems: Record<string, ClothingItems> = {
-  Rugby: { Unisex: ['Jersey', 'Shorts', 'Socks', 'Training top', 'Training shorts', 'Warm-up jacket', 'Training shoes'] },
-  Football: { Unisex: ['Jersey', 'Shorts', 'Socks', 'Goalkeeper jersey', 'Training top', 'Training shorts', 'Training shoes'] },
-  Netball: { Girls: ['Dress', 'Skirt', 'Shorts', 'Top', 'Socks', 'Training top', 'Training shorts', 'Training shoes'] },
+  Rugby: {
+    Boys: ['Jersey & Shirt', 'Shorts', 'Socks', 'Tracksuit', 'Other'],
+    Girls: ['Jersey & Shirt', 'Shorts', 'Socks', 'Tracksuit', 'Other'],
+  },
+  Football: {
+    Boys: ['Jersey & Shirt', 'Shorts', 'Socks', 'Goalkeeper jersey', 'Tracksuit', 'Other'],
+    Girls: ['Jersey & Shirt', 'Shorts', 'Socks', 'Goalkeeper jersey', 'Tracksuit', 'Other'],
+  },
+  Netball: {
+    Boys: ['Jersey &Shirt', 'Shorts', 'Socks', 'Tracksuit', 'Other'],
+    Girls: ['Jersey & Shirt','Dress', 'Skirt', 'Shorts', 'Top', 'Socks', 'Tracksuit', 'Other'],
+  },
   Hockey: {
-    Boys: ['Jersey', 'Shorts', 'Socks', 'Training top', 'Training shorts', 'Warm-up jacket', 'Training shoes'],
-    Girls: ['Jersey', 'Skirt', 'Shorts', 'Socks', 'Training top', 'Training shorts', 'Warm-up jacket', 'Training shoes'],
+    Boys: ['Jersey & Shirt', 'Shorts', 'Socks', 'Tracksuit', 'Other'],
+    Girls: ['Jersey & Shirt', 'Skirt', 'Shorts', 'Socks', 'Tracksuit', 'Other'],
   },
-  Basketball: { Unisex: ['Jersey', 'Shorts', 'Socks', 'Training top', 'Warm-up jacket', 'Training shoes'] },
+  Basketball: {
+    Boys: ['Jersey & Shirt', 'Shorts', 'Socks', 'Tracksuit', 'Other'],
+    Girls: ['Jersey & Shirt', 'Shorts', 'Skirt','Socks', 'Tracksuit', 'Other'],
+  },
   Cricket: {
-    Boys: ['Whites jersey', 'Whites trousers', 'Shorts', 'Cap', 'Socks', 'Training top', 'Training shoes'],
-    Girls: ['Whites jersey', 'Whites trousers', 'Skirt', 'Cap', 'Socks', 'Training top', 'Training shoes'],
+    Boys: ['Whites jersey & Shirt', 'Whites trousers', 'Shorts', 'Cap', 'Socks', 'Tracksuit', 'Other'],
+    Girls: ['Whites jersey & Shirt', 'Whites trousers', 'Skirt', 'Cap', 'Socks', 'Tracksuit', 'Other'],
   },
-  Volleyball: { Unisex: ['Jersey', 'Shorts', 'Socks', 'Training top', 'Training shorts', 'Training shoes'] },
+  Volleyball: {
+    Boys: ['Jersey & Shirt', 'Shorts', 'Socks', 'Tracksuit', 'Other'],
+    Girls: ['Jersey & Shirt', 'Shorts', 'Skirt','Socks', 'Tracksuit', 'Other'],
+  },
   Korfbal: {
-    Boys: ['Jersey', 'Shorts', 'Socks', 'Training top', 'Training shoes'],
-    Girls: ['Jersey', 'Skirt', 'Shorts', 'Socks', 'Training top', 'Training shoes'],
+    Boys: ['Jersey & Shirt', 'Shorts', 'Socks', 'Tracksuit', 'Other'],
+    Girls: ['Jersey & Shirt', 'Skirt', 'Shorts', 'Socks', 'Tracksuit', 'Other'],
   },
-  Baseball: { Unisex: ['Jersey', 'Pants', 'Socks', 'Cap', 'Training top', 'Training shoes'] },
+  Baseball: {
+    Boys: ['Jersey & Shirt', 'Pants', 'Socks', 'Cap', 'Tracksuit', 'Other'],
+    Girls: ['Jersey & Shirt', 'Pants', 'Skirt', 'Socks', 'Cap', 'Tracksuit', 'Other'],
+  },
   Softball: {
-    Boys: ['Jersey', 'Pants', 'Socks', 'Cap', 'Training top', 'Training shoes'],
-    Girls: ['Jersey', 'Pants', 'Shorts', 'Socks', 'Cap', 'Training top', 'Training shoes'],
+    Boys: ['Jersey & Shirt', 'Pants', 'Socks', 'Cap', 'Tracksuit', 'Other'],
+    Girls: ['Jersey & Shirt', 'Pants', 'Shorts', 'Skirt','Socks', 'Cap', 'Tracksuit', 'Other'],
   },
-  Ringball: { Girls: ['Jersey', 'Shorts', 'Socks', 'Training top', 'Training shoes'] },
+  Ringball: {
+    Boys: ['Jersey & Shirt', 'Shorts', 'Socks', 'Tracksuit', 'Other'],
+    Girls: ['Jersey & Shirt', 'Shorts', 'Skirt','Socks', 'Tracksuit', 'Other'],
+  },
   Tennis: {
-    Boys: ['Polo shirt', 'Shorts', 'Socks', 'Training top', 'Warm-up jacket', 'Training shoes'],
-    Girls: ['Polo shirt', 'Skirt', 'Shorts', 'Socks', 'Training top', 'Warm-up jacket', 'Training shoes'],
+    Boys: ['Jersey & Shirt', 'Shorts', 'Socks', 'Tracksuit', 'Other'],
+    Girls: ['Jersey & Shirt', 'Skirt', 'Shorts', 'Socks', 'Tracksuit', 'Other'],
   },
   Squash: {
-    Boys: ['Top', 'Shorts', 'Socks', 'Training top', 'Training shoes'],
-    Girls: ['Top', 'Skirt', 'Shorts', 'Socks', 'Training top', 'Training shoes'],
+    Boys: ['Jersey & Shirt', 'Shorts', 'Socks', 'Tracksuit', 'Other'],
+    Girls: ['Jersey & Shirt', 'Skirt', 'Shorts', 'Socks', 'Tracksuit', 'Other'],
   },
   Tabletennis: {
-    Boys: ['Shirt', 'Shorts', 'Socks', 'Training top', 'Training shoes'],
-    Girls: ['Shirt', 'Skirt', 'Shorts', 'Socks', 'Training top', 'Training shoes'],
+    Boys: ['Jersey & Shirt', 'Shorts', 'Socks', 'Tracksuit', 'Other'],
+    Girls: ['Jersey & Shirt', 'Skirt', 'Shorts', 'Socks', 'Tracksuit', 'Other'],
   },
   Badminton: {
-    Boys: ['Top', 'Shorts', 'Socks', 'Training top', 'Training shoes'],
-    Girls: ['Top', 'Skirt', 'Shorts', 'Socks', 'Training top', 'Training shoes'],
+    Boys: ['Jersey & Shirt', 'Shorts', 'Socks', 'Tracksuit', 'Other'],
+    Girls: ['Jersey & Shirt', 'Skirt', 'Shorts', 'Socks', 'Tracksuit', 'Other'],
   },
   Padel: {
-    Boys: ['Top', 'Shorts', 'Socks', 'Training top', 'Training shoes'],
-    Girls: ['Top', 'Skirt', 'Shorts', 'Socks', 'Training top', 'Training shoes'],
+    Boys: ['Jersey & Shirt', 'Shorts', 'Socks', 'Tracksuit', 'Other'],
+    Girls: ['Jersey & Shirt', 'Skirt', 'Shorts', 'Socks', 'Tracksuit', 'Other'],
   },
-  'Ring tennis': {
-    Boys: ['Top', 'Shorts', 'Socks', 'Training top', 'Training shoes'],
-    Girls: ['Top', 'Skirt', 'Shorts', 'Socks', 'Training top', 'Training shoes'],
+  Ringtennis: {
+    Boys: ['Jersey & Shirt', 'Shorts', 'Socks', 'Tracksuit', 'Other'],
+    Girls: ['Jersey & Shirt', 'Skirt', 'Shorts', 'Socks', 'Tracksuit', 'Other'],
   },
   Swimming: {
-    Boys: ['Jammers', 'Swim briefs', 'Swim cap', 'Rash guard', 'Training shoes'],
-    Girls: ['Swimsuit', 'Swimming costume', 'Swim cap', 'Rash guard', 'Training shoes'],
+    Boys: ['Jammers', 'Swim briefs', 'Swim cap', 'Rash guard', 'Tracksuit', 'Other'],
+    Girls: ['Swimsuit', 'Swimming costume', 'Swim cap', 'Rash guard', 'Tracksuit', 'Other'],
   },
   Diving: {
-    Boys: ['Diving shorts', 'Rash guard', 'Swim cap', 'Training shoes'],
-    Girls: ['Diving suit', 'Rash guard', 'Swim cap', 'Training shoes'],
+    Boys: ['Diving shorts', 'Rash guard', 'Swim cap', 'Tracksuit', 'Other'],
+    Girls: ['Diving suit', 'Rash guard', 'Swim cap', 'Tracksuit', 'Other'],
   },
-  Rowing: { Unisex: ['Lycra', 'Shorts', 'Top', 'Training top', 'Training shorts', 'Training shoes'] },
+  Rowing: {
+    Boys: ['Lycra','Shirt',  'Shorts', 'Tracksuit', 'Other'],
+    Girls: ['Lycra','Shirt', 'Shorts', 'Tracksuit', 'Other'],
+  },
   Waterpolo: {
-    Boys: ['Swimming briefs', 'Cap', 'Rash guard', 'Training shoes'],
-    Girls: ['Costume', 'Cap', 'Rash guard', 'Training shoes'],
+    Boys: ['Swimming briefs','Shirt',  'Cap', 'Rash guard', 'Tracksuit', 'Other'],
+    Girls: ['Costume', 'Cap','Shirt',  'Rash guard', 'Tracksuit', 'Other'],
   },
   Athletics: {
-    Boys: ['Singlet', 'Shorts', 'Training top', 'Warm-up jacket', 'Training shoes'],
-    Girls: ['Singlet', 'Shorts', 'Tights', 'Training top', 'Warm-up jacket', 'Training shoes'],
+    Boys: ['Singlet','Shirt','Shorts', 'Tracksuit', 'Other'],
+    Girls: ['Singlet', 'Shirt','Shorts', 'Tights', 'Tracksuit', 'Other'],
   },
   Crosscountry: {
-    Boys: ['Singlet', 'Shorts', 'Training top', 'Training shoes'],
-    Girls: ['Singlet', 'Shorts', 'Tights', 'Training top', 'Training shoes'],
+    Boys: ['Singlet','Shirt', 'Shorts', 'Tracksuit', 'Other'],
+    Girls: ['Singlet', 'Shirt', 'Shorts', 'Tights', 'Tracksuit', 'Other'],
   },
   Golf: {
-    Boys: ['Polo shirt', 'Shorts', 'Pants', 'Cap', 'Socks', 'Training shoes'],
-    Girls: ['Polo shirt', 'Skirt', 'Shorts', 'Pants', 'Cap', 'Socks', 'Training shoes'],
+    Boys: ['Shirt', 'Shorts', 'Pants', 'Cap', 'Socks', 'Tracksuit', 'Other'],
+    Girls: ['Shirt', 'Skirt', 'Shorts', 'Pants', 'Cap', 'Socks', 'Tracksuit', 'Other'],
   },
   Gymnastics: {
-    Boys: ['Vest', 'Shorts', 'Training top', 'Training shoes'],
-    Girls: ['Leotard', 'Shorts', 'Training top', 'Training shoes'],
+    Boys: ['Vest', 'Shorts', 'Tracksuit', 'Other'],
+    Girls: ['Leotard', 'Shorts', 'Tracksuit', 'Other'],
   },
-  Triathlon: { Unisex: ['Tri suit', 'Tri shorts', 'Tri top', 'Cycling jersey', 'Training shoes'] },
-  Archery: { Unisex: ['Shirt', 'Pants', 'Training top', 'Training shoes'] },
-  'Target shooting': { Unisex: ['Shooting jacket', 'Shooting trousers', 'Training top', 'Training shoes'] },
-  Boxing: { Unisex: ['Vest', 'Shorts', 'Training top', 'Training shorts', 'Training shoes'] },
-  Kickboxing: { Unisex: ['Shorts', 'Training top', 'Training shorts', 'Training shoes'] },
-  Wrestling: { Unisex: ['Singlet', 'Training top', 'Training shorts', 'Training shoes'] },
-  Karate: { Unisex: ['Gi top', 'Gi pants', 'Training top', 'Training shorts', 'Training shoes'] },
-  Judo: { Unisex: ['Gi top', 'Gi pants', 'Training top', 'Training shorts', 'Training shoes'] },
-  Taekwondo: { Unisex: ['Dobok top', 'Dobok pants', 'Training top', 'Training shorts', 'Training shoes'] },
-  'Jiu-Jitsu': { Unisex: ['Gi top', 'Gi pants', 'Rash guard', 'Shorts', 'Training shoes'] },
-  MMA: { Unisex: ['Shorts', 'Rash guard', 'Training top', 'Training shorts', 'Training shoes'] },
-  Mountainbike: { Unisex: ['Cycling jersey', 'Cycling shorts', 'MTB shorts', 'Wind jacket', 'Training shoes'] },
-  Roadbike: { Unisex: ['Cycling jersey', 'Cycling shorts', 'Wind jacket', 'Arm warmers', 'Training shoes'] },
+  Triathlon: {
+    Boys: ['Tri suit', 'Tri shorts', 'Tri Shirt', 'Cycling jersey', 'Tracksuit', 'Other'],
+    Girls: ['Tri suit', 'Tri shorts', 'Tri Shirt', 'Cycling jersey', 'Tracksuit', 'Other'],
+  },
+  Archery: {
+    Boys: ['Shirt', 'Pants', 'Shorts', 'Tracksuit', 'Other'],
+    Girls: ['Shirt', 'Pants', 'Shorts','Skirt', 'Tracksuit', 'Other'],
+  },
+  'Target shooting': {
+    Boys: ['Shooting jacket', 'Shooting trousers', 'Shirt', 'Shorts', 'Tracksuit', 'Other'],
+    Girls: ['Shooting jacket', 'Shooting trousers', 'Shirt', 'Shorts', 'Skirt', 'Tracksuit', 'Other'],
+  },
+  Boxing: {
+    Boys: ['Vest', 'Shorts', 'Shirt', 'Tracksuit', 'Other'],
+    Girls: ['Vest', 'Shorts', 'Shirt', 'Tracksuit', 'Other'],
+  },
+  Kickboxing: {
+    Boys: ['Shorts', 'Shirt', 'Tracksuit', 'Other'],
+    Girls: ['Shorts', 'Shirt', 'Tracksuit', 'Other'],
+  },
+  Wrestling: {
+    Boys: ['Singlet', 'Shirt', 'Shorts', 'Tracksuit', 'Other'],
+    Girls: ['Singlet', 'Shirt', 'Shorts', 'Tracksuit', 'Other'],
+  },
+  Karate: {
+    Boys: ['Gi top', 'Gi pants', 'Shirt','Shorts', 'Tracksuit', 'Other'],
+    Girls: ['Gi top', 'Gi pants', 'Shirt', 'Shorts', 'Tracksuit', 'Other'],
+  },
+  Judo: {
+    Boys: ['Gi top', 'Gi pants', 'Shirt', 'Shorts', 'Tracksuit', 'Other'],
+    Girls: ['Gi top', 'Gi pants', 'Shirt', 'Shorts', 'Tracksuit', 'Other'],
+  },
+  Taekwondo: {
+    Boys: ['Dobok top', 'Dobok pants', 'Shirt', 'Shorts', 'Tracksuit', 'Other'],
+    Girls: ['Dobok top', 'Dobok pants', 'Shirt', 'Shorts', 'Tracksuit', 'Other'],
+  },
+  'Jiu-Jitsu': {
+    Boys: ['Gi top', 'Gi pants', 'Rash guard', 'Shorts', 'Shirt', 'Tracksuit', 'Other'],
+    Girls: ['Gi top', 'Gi pants', 'Rash guard', 'Shorts','Shirt', 'Tracksuit', 'Other'],
+  },
+  MMA: {
+    Boys: ['Shorts', 'Rash guard', 'Shirt', 'Tracksuit', 'Other'],
+    Girls: ['Shorts', 'Rash guard', 'Shirt', 'Tracksuit', 'Other'],
+  },
+  Mountainbike: {
+    Boys: ['Cycling jersey & Shirt', 'Cycling shorts', 'MTB shorts', 'Wind jacket', 'Tracksuit','Other'],
+    Girls: ['Cycling jersey & Shirt', 'Cycling shorts', 'MTB shorts', 'Wind jacket', 'Tracksuit', 'Other'],
+  },
+  Roadbike: {
+    Boys: ['Cycling jersey & Shirt', 'Cycling shorts', 'Wind jacket', 'Arm warmers', 'Tracksuit', 'Other'],
+    Girls: ['Cycling jersey & Shirt', 'Cycling shorts', 'Wind jacket', 'Arm warmers', 'Tracksuit', 'Other'],
+  },
   Rollerskating: {
-    Boys: ['Shorts', 'Top', 'Training top', 'Training shoes'],
-    Girls: ['Leggings', 'Skirt', 'Top', 'Training top', 'Training shoes'],
+    Boys: ['Shorts', 'Shirt', 'Tracksuit', 'Other'],
+    Girls: ['Leggings', 'Skirt', 'Shorts', 'Shirt', 'Tracksuit', 'Other'],
   },
   'Ice skating': {
-    Boys: ['Pants', 'Top', 'Training top', 'Training shoes'],
-    Girls: ['Dress', 'Leggings', 'Top', 'Training top', 'Training shoes'],
+    Boys: ['Pants', 'Shirt', 'Tracksuit', 'Other'],
+    Girls: ['Dress', 'Skirt', 'Leggings', 'Shirt', 'Tracksuit', 'Other'],
   },
-  'Ice hockey': { Unisex: ['Jersey', 'Pants', 'Socks', 'Training top', 'Training shoes'] },
+  'Ice hockey': {
+    Boys: ['Jersey & Shirt', 'Pants', 'Socks', 'Tracksuit', 'Other'],
+    Girls: ['Jersey & Shirt', 'Skirt','Pants', 'Socks', 'Tracksuit', 'Other'],
+  },
   Dancing: {
-    Boys: ['Shirt', 'Pants', 'Training top', 'Training shoes'],
-    Girls: ['Top', 'Skirt', 'Leggings', 'Dress', 'Training shoes'],
+    Boys: ['Shirt', 'Pants', 'Tracksuit', 'Other'],
+    Girls: ['Top', 'Skirt','Shirt','Leggings', 'Dress', 'Tracksuit', 'Other'],
   },
   Ballet: {
-    Boys: ['Vest', 'Tights', 'Training top', 'Training shoes'],
-    Girls: ['Leotard', 'Tights', 'Skirt', 'Training top', 'Training shoes'],
+    Boys: ['Vest', 'Tights', 'Shirt', 'Pants', 'Tracksuit', 'Other'],
+    Girls: ['Leotard', 'Tights', 'Skirt', 'Tracksuit', 'Other'],
   },
-  'Rock climbing': { Unisex: ['Pants', 'Top', 'Training top', 'Training shorts', 'Training shoes'] },
-  'Horse riding': { Unisex: ['Breeches', 'Jacket', 'Shirt', 'Gloves', 'Helmet cover', 'Training shoes'] },
-  Chess: { Unisex: ['Club shirt', 'Club jacket', 'Training shoes'] },
-  Robotics: { Unisex: ['Club shirt', 'Club jacket', 'Training shoes'] },
-  Jukskei: { Unisex: ['Jersey', 'Shorts', 'Training top', 'Training shoes'] },
-  Bowling: { Unisex: ['Shirt', 'Pants', 'Training top', 'Training shoes'] },
+  'Rock climbing': {
+    Boys: ['Pants', 'Shirt', 'Shorts', 'Tracksuit', 'Other'],
+    Girls: ['Pants', 'Shirt', 'Shorts', 'Tracksuit', 'Other'],
+  },
+  'Horse riding': {
+    Boys: ['Breeches', 'Jacket', 'Shirt', 'Gloves', 'Helmet cover', 'Pants', 'Tracksuit', 'Other'],
+    Girls: ['Breeches', 'Jacket', 'Shirt', 'Gloves', 'Helmet cover', 'Pants', 'Tracksuit', 'Other'],
+  },
+  Chess: {
+    Boys: ['Club shirt', 'Club jacket', 'Tracksuit', 'Other'],
+    Girls: ['Club shirt', 'Club jacket', 'Tracksuit', 'Other'],
+  },
+  Robotics: {
+    Boys: ['Club shirt', 'Club jacket', 'Tracksuit', 'Other'],
+    Girls: ['Club shirt', 'Club jacket', 'Tracksuit', 'Other'],
+  },
+  Jukskei: {
+    Boys: ['Jersey & Shirt', 'Shorts', 'Tracksuit', 'Other'],
+    Girls: ['Jersey & Shirt', 'Shorts', 'Training top', 'Tracksuit', 'Other'],
+  },
+  Bowling: {
+    Boys: ['Jersey & Shirt', 'Pants', 'Training top', 'Tracksuit', 'Other'],
+    Girls: ['Jersey & Shirt', 'Pants', 'Training top', 'Tracksuit', 'Other'],
+  },
 };
 
 const defaultClothingItems: ClothingItems = {
-  Boys: ['Jersey', 'Shorts', 'Socks', 'Training top', 'Training shorts', 'Warm-up jacket'],
-  Girls: ['Jersey', 'Shorts', 'Socks', 'Training top', 'Training shorts', 'Warm-up jacket'],
+  Boys: ['Jersey & Shirt', 'Shorts', 'Socks', 'Tracksuit', 'Other'],
+  Girls: ['Jersey & Shirt', 'Shorts', 'Socks', 'Skirt', 'Tracksuit', 'Other'],
 };
 
 const getItemsForGender = (sport: string, gender: 'Boys' | 'Girls' | 'Unisex'): string[] => {
@@ -377,7 +461,7 @@ const SchoolUniformComponent: React.FC<SchoolUniformProps> = ({ userType, onItem
       color: '#E74C3C'
     },
     'Unisex Items': {
-      items: ['School tracksuit', 'School T-shirt', 'Socks','PE shorts', 'Rain jacket', 'Windbreaker', 'Hat or cap', 'Beanie/scarf/gloves', 'School bag', 'Drimac', 'Duffelbag', 'Sportsbag', 'Lunchbag', 'Totebag', 'Backpack', 'Suitcase'],
+      items: ['School tracksuit', 'PE shirt', 'Socks','PE shorts', 'Rain jacket', 'Windbreaker', 'Hat or cap', 'Scarf & gloves', 'School bag', 'Drimac', 'Duffelbag', 'Sportsbag'],
       icon: bagOutline,
       color: '#27AE60'
     }
@@ -679,20 +763,32 @@ const SchoolUniformComponent: React.FC<SchoolUniformProps> = ({ userType, onItem
                   onClick={() => { setSelectedSportGender(genderKey); setSelectedItem(item); setShowItemDetails(true); }}
                   style={{ cursor: 'pointer', textAlign: 'center', padding: '4px 2px' }}
                 >
-                  <div style={{
-                    width: '70px', height: '70px', borderRadius: '50%',
-                    backgroundColor: rainbowColors[index % rainbowColors.length],
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    margin: '0 auto 6px', boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
-                  }}>
-                    <IonIcon icon={imageOutline} style={{ fontSize: '30px', color: 'white' }} />
+                  <div style={{ position: 'relative', width: '70px', margin: '0 auto 6px' }}>
+                    <div style={{
+                      width: '70px', height: '70px', borderRadius: '50%',
+                      backgroundColor: rainbowColors[index % rainbowColors.length],
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+                      padding: '4px'
+                    }}>
+                      <span style={{ color: 'white', fontWeight: 'bold', fontSize: '10px', lineHeight: '1.1', textAlign: 'center' }}>
+                        {item}
+                      </span>
+                    </div>
+                    {userType === 'buyer' && count > 0 && (
+                      <span style={{
+                        position: 'absolute', top: '-4px', right: '-4px',
+                        backgroundColor: '#E74C3C', color: 'white',
+                        fontSize: '10px', fontWeight: '700',
+                        minWidth: '18px', height: '18px', borderRadius: '9px',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        padding: '0 4px', boxShadow: '0 1px 4px rgba(0,0,0,0.3)',
+                        zIndex: 10, pointerEvents: 'none'
+                      }}>
+                        {count > 99 ? '99+' : count}
+                      </span>
+                    )}
                   </div>
-                  <div style={{ fontWeight: 'bold', color: '#333', fontSize: '11px', lineHeight: '1.2', textAlign: 'center', padding: '0 2px' }}>
-                    {item}
-                  </div>
-                  {userType === 'buyer' && count > 0 && (
-                    <div style={{ fontSize: '10px', color: '#004aad', marginTop: '2px' }}>{count} avail</div>
-                  )}
                 </div>
               </IonCol>
             );
@@ -714,12 +810,17 @@ const SchoolUniformComponent: React.FC<SchoolUniformProps> = ({ userType, onItem
           <IonAccordionGroup>
             {availableGenders.map((gender) => {
               const genderColor = gender === 'Boys' ? '#004aad' : gender === 'Girls' ? '#E74C3C' : '#27AE60';
+              const genderIcon = gender === 'Boys' ? manOutline : gender === 'Girls' ? womanOutline : maleFemaleOutline;
               return (
                 <IonAccordion key={gender} value={gender}>
                   <IonItem slot="header" style={{ '--background': 'transparent' }}>
+                    <IonIcon
+                      icon={genderIcon}
+                      style={{ fontSize: '24px', color: genderColor, marginRight: '12px' }}
+                    />
                     <IonLabel>
                       <h3 style={{ margin: '0', fontWeight: 'bold', color: genderColor, fontSize: '16px' }}>
-                        {gender === 'Boys' ? '👦 ' : gender === 'Girls' ? '👧 ' : '🤝 '}{gender}
+                        {gender}
                       </h3>
                     </IonLabel>
                   </IonItem>
@@ -1221,22 +1322,32 @@ const SchoolUniformComponent: React.FC<SchoolUniformProps> = ({ userType, onItem
                             onClick={() => handleItemClick(item)}
                             style={{ cursor: 'pointer', textAlign: 'center', padding: '4px 2px' }}
                           >
-                            <div style={{
-                              width: '70px', height: '70px', borderRadius: '50%',
-                              backgroundColor: rainbowColors[index % rainbowColors.length],
-                              display: 'flex', alignItems: 'center', justifyContent: 'center',
-                              margin: '0 auto 6px', boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
-                            }}>
-                              <IonIcon icon={imageOutline} style={{ fontSize: '30px', color: 'white' }} />
-                            </div>
-                            <div style={{ fontWeight: 'bold', color: '#333', fontSize: '11px', lineHeight: '1.2', textAlign: 'center', padding: '0 2px' }}>
-                              {item}
-                            </div>
-                            {itemCount > 0 && (
-                              <div style={{ fontSize: '10px', color: '#004aad', marginTop: '2px' }}>
-                                {itemCount} avail
+                            <div style={{ position: 'relative', width: '70px', margin: '0 auto 6px' }}>
+                              <div style={{
+                                width: '70px', height: '70px', borderRadius: '50%',
+                                backgroundColor: rainbowColors[index % rainbowColors.length],
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+                                padding: '4px'
+                              }}>
+                                <span style={{ color: 'white', fontWeight: 'bold', fontSize: '10px', lineHeight: '1.1', textAlign: 'center' }}>
+                                  {item}
+                                </span>
                               </div>
-                            )}
+                              {itemCount > 0 && (
+                                <span style={{
+                                  position: 'absolute', top: '-4px', right: '-4px',
+                                  backgroundColor: '#E74C3C', color: 'white',
+                                  fontSize: '10px', fontWeight: '700',
+                                  minWidth: '18px', height: '18px', borderRadius: '9px',
+                                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                  padding: '0 4px', boxShadow: '0 1px 4px rgba(0,0,0,0.3)',
+                                  zIndex: 10, pointerEvents: 'none'
+                                }}>
+                                  {itemCount > 99 ? '99+' : itemCount}
+                                </span>
+                              )}
+                            </div>
                           </div>
                         </IonCol>
                       );
@@ -1284,12 +1395,12 @@ const SchoolUniformComponent: React.FC<SchoolUniformProps> = ({ userType, onItem
                             width: '70px', height: '70px', borderRadius: '50%',
                             backgroundColor: rainbowColors[index % rainbowColors.length],
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            margin: '0 auto 6px', boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
+                            margin: '0 auto 6px', boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+                            padding: '4px'
                           }}>
-                            <IonIcon icon={imageOutline} style={{ fontSize: '30px', color: 'white' }} />
-                          </div>
-                          <div style={{ fontWeight: 'bold', color: '#333', fontSize: '11px', lineHeight: '1.2', textAlign: 'center', padding: '0 2px' }}>
-                            {item}
+                            <span style={{ color: 'white', fontWeight: 'bold', fontSize: '10px', lineHeight: '1.1', textAlign: 'center' }}>
+                              {item}
+                            </span>
                           </div>
                         </div>
                       </IonCol>
@@ -1337,12 +1448,12 @@ const SchoolUniformComponent: React.FC<SchoolUniformProps> = ({ userType, onItem
                             width: '70px', height: '70px', borderRadius: '50%',
                             backgroundColor: rainbowColors[index % rainbowColors.length],
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            margin: '0 auto 6px', boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
+                            margin: '0 auto 6px', boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+                            padding: '4px'
                           }}>
-                            <IonIcon icon={imageOutline} style={{ fontSize: '30px', color: 'white' }} />
-                          </div>
-                          <div style={{ fontWeight: 'bold', color: '#333', fontSize: '11px', lineHeight: '1.2', textAlign: 'center', padding: '0 2px' }}>
-                            {item}
+                            <span style={{ color: 'white', fontWeight: 'bold', fontSize: '10px', lineHeight: '1.1', textAlign: 'center' }}>
+                              {item}
+                            </span>
                           </div>
                         </div>
                       </IonCol>
