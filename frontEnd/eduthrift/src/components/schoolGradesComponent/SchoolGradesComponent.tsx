@@ -35,13 +35,13 @@ import {
   heartOutline,
   hammerOutline,
   ellipsisHorizontalOutline,
-  happyOutline,
   rocketOutline,
   starOutline,
   trophyOutline,
   diamondOutline,
   checkmarkCircle,
-  listOutline
+  listOutline,
+  bookOutline
 } from 'ionicons/icons';
 import { useCartStore } from '../../stores/cartStore';
 import { useListingsStore, Listing } from '../../stores/listingsStore';
@@ -96,12 +96,13 @@ const SchoolGradesComponent: React.FC<SchoolGradesComponentProps> = ({
   const [backPhoto, setBackPhoto] = useState<string | null>(null);
 
   const grades = [
-    'Grade R', 'Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5', 'Grade 6',
+    'Reading Material', 'Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5', 'Grade 6',
     'Grade 7', 'Grade 8', 'Grade 9', 'Grade 10', 'Grade 11', 'Grade 12'
   ];
 
+  const readingMaterialPhases = ['Pre-School', 'Primary School', 'High School'];
+
   const gradeSubjects = {
-    'Grade R': ['Life Skills', 'Language & Literacy', 'Numeracy', 'Creative Arts'],
     'Grade 1': ['Mathematics', 'English Home Language', 'Afrikaans Home Language', 'Life Skills'],
     'Grade 2': ['Mathematics', 'English Home Language', 'Afrikaans Home Language', 'Life Skills'],
     'Grade 3': ['Mathematics', 'English Home Language', 'Afrikaans Home Language', 'Life Skills'],
@@ -443,7 +444,9 @@ const SchoolGradesComponent: React.FC<SchoolGradesComponentProps> = ({
 
         <div style={{ textAlign: 'center', margin: '0 0 20px 0' }}>
           <span style={{ fontSize: '20px', fontWeight: 'bold', color: '#666' }}>
-            {selectedContext.subject} - {selectedContext.grade}
+            {selectedContext.grade === 'Reading Material'
+              ? `Reading Material - ${selectedContext.subject}`
+              : `${selectedContext.subject} - ${selectedContext.grade}`}
           </span>
           {selectedContext.language && (
             <p style={{ fontSize: '14px', color: '#888', margin: '4px 0 0 0' }}>
@@ -599,8 +602,14 @@ const SchoolGradesComponent: React.FC<SchoolGradesComponentProps> = ({
         <div style={{ backgroundColor: '#f8f9fa', padding: '16px', borderRadius: '8px', margin: '16px 0' }}>
           <div style={{ marginBottom: '8px' }}><strong>Author:</strong> {viewingBook.author}</div>
           <div style={{ marginBottom: '8px' }}><strong>Publisher:</strong> {viewingBook.publisher}</div>
-          <div style={{ marginBottom: '8px' }}><strong>Grade:</strong> {viewingBook.grade}</div>
-          <div style={{ marginBottom: '8px' }}><strong>Subject:</strong> {viewingBook.subject}</div>
+          {viewingBook.grade === 'Reading Material' ? (
+            <div style={{ marginBottom: '8px' }}><strong>Phase:</strong> {viewingBook.subject}</div>
+          ) : (
+            <>
+              <div style={{ marginBottom: '8px' }}><strong>Grade:</strong> {viewingBook.grade}</div>
+              <div style={{ marginBottom: '8px' }}><strong>Subject:</strong> {viewingBook.subject}</div>
+            </>
+          )}
           {viewingBook.language && <div style={{ marginBottom: '8px' }}><strong>Language:</strong> {viewingBook.language}</div>}
           <div style={{ marginBottom: '8px' }}><strong>Condition:</strong> {getConditionText(viewingBook.condition)}</div>
           <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#E74C3C' }}>R{viewingBook.price}</div>
@@ -645,11 +654,107 @@ const SchoolGradesComponent: React.FC<SchoolGradesComponentProps> = ({
     }
   };
 
+  if (selectedGrade === 'Reading Material') {
+    return (
+      <div style={{ padding: '16px' }}>
+        <IonButton fill="clear" onClick={() => setSelectedGrade('')}>← Back</IonButton>
+
+        <div style={{
+          marginBottom: '20px', textAlign: 'center',
+          backgroundColor: 'rgba(255, 107, 107, 0.1)', border: '2px solid #FF6B6B',
+          borderRadius: '12px', padding: '16px'
+        }}>
+          <IonIcon icon={bookOutline} style={{ fontSize: '32px', color: '#FF6B6B', marginBottom: '8px' }} />
+          <h2 style={{ margin: '0', color: '#FF6B6B', fontSize: '18px', fontWeight: 'bold' }}>
+            Reading Material
+          </h2>
+          <p style={{ margin: '4px 0 0 0', color: '#666', fontSize: '14px' }}>
+            Story books, novels & reading books
+          </p>
+        </div>
+
+        <IonAccordionGroup>
+          {readingMaterialPhases.map((phase) => {
+            const books = getFilteredBooks('Reading Material', phase);
+            return (
+              <IonAccordion key={phase} value={phase}>
+                <IonItem slot="header" style={{ '--background': 'transparent' }}>
+                  <IonIcon icon={bookOutline} style={{ fontSize: '20px', color: '#FF6B6B', marginRight: '12px' }} />
+                  <IonLabel>
+                    <h3 style={{ margin: '0', fontWeight: 'bold', color: '#FF6B6B', fontSize: '16px' }}>
+                      {phase}
+                    </h3>
+                  </IonLabel>
+                </IonItem>
+                <div slot="content" style={{ padding: '8px' }}>
+                  <IonGrid>
+                    <IonRow>
+                      {books.map((book) => (
+                        <IonCol size="6" key={book.id}>
+                          <IonCard button onClick={() => setViewingBook(book)} style={{ backgroundColor: 'transparent', border: '1px solid #444' }}>
+                            <IonCardContent style={{ padding: '8px' }}>
+                              <div style={{ display: 'flex', gap: '4px', marginBottom: '8px' }}>
+                                <div style={{ width: '50px', height: '60px', borderRadius: '4px', backgroundImage: `url(${book.frontPhoto})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
+                                <div style={{ width: '50px', height: '60px', borderRadius: '4px', backgroundImage: `url(${book.backPhoto})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
+                              </div>
+                              <div style={{ fontSize: '13px', fontWeight: 'bold', marginBottom: '4px' }}>{book.title}</div>
+                              <div style={{ fontSize: '11px', color: '#666', marginBottom: '2px' }}>{book.author}</div>
+                              <div style={{ fontSize: '11px', color: '#666', marginBottom: '4px' }}>Condition: {getConditionText(book.condition)}</div>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#E74C3C' }}>R{book.price}</div>
+                                {book.quantity > 0 ? (
+                                  <IonBadge color="success" style={{ fontSize: '9px' }}>{book.quantity} available</IonBadge>
+                                ) : (
+                                  <IonBadge color="danger" style={{ fontSize: '9px' }}>Sold Out</IonBadge>
+                                )}
+                              </div>
+                            </IonCardContent>
+                          </IonCard>
+                        </IonCol>
+                      ))}
+                      {userType === 'seller' && (
+                        <IonCol size="6">
+                          <IonCard
+                            button
+                            onClick={() => handleTextbookClick(phase)}
+                            style={{
+                              backgroundColor: 'transparent', border: '2px dashed #666',
+                              margin: '4px 0', minHeight: '140px',
+                              display: 'flex', alignItems: 'center', justifyContent: 'center'
+                            }}
+                          >
+                            <IonCardContent style={{ padding: '12px', textAlign: 'center' }}>
+                              <IonIcon icon={cameraOutline} size="large" style={{ marginBottom: '8px', opacity: 0.5 }} />
+                              <div style={{ fontSize: '12px', fontWeight: 'bold' }}>List New</div>
+                            </IonCardContent>
+                          </IonCard>
+                        </IonCol>
+                      )}
+                    </IonRow>
+                  </IonGrid>
+                </div>
+              </IonAccordion>
+            );
+          })}
+        </IonAccordionGroup>
+        {renderPhotoViewer()}
+        <IonToast
+          isOpen={showToast}
+          onDidDismiss={() => setShowToast(false)}
+          message={toastMessage}
+          duration={2000}
+          position="bottom"
+          color={toastColor}
+        />
+      </div>
+    );
+  }
+
   if (selectedGrade) {
     return (
       <div style={{ padding: '16px' }}>
         <IonButton fill="clear" onClick={() => setSelectedGrade('')}>← Back</IonButton>
-        
+
         {/* Prominent Grade Header */}
         <div style={{ 
           marginBottom: '20px', 
@@ -1003,8 +1108,8 @@ const SchoolGradesComponent: React.FC<SchoolGradesComponentProps> = ({
 
   const getGradeColor = (grade: string) => {
     const gradeColors = {
-      'Grade R': '#FF6B6B',
-      'Grade 1': '#4ECDC4', 
+      'Reading Material': '#FF6B6B',
+      'Grade 1': '#4ECDC4',
       'Grade 2': '#45B7D1',
       'Grade 3': '#96CEB4',
       'Grade 4': '#FFEAA7',
@@ -1022,7 +1127,7 @@ const SchoolGradesComponent: React.FC<SchoolGradesComponentProps> = ({
 
   const getGradeIcon = (grade: string) => {
     const gradeIcons = {
-      'Grade R': happyOutline,
+      'Reading Material': bookOutline,
       'Grade 1': schoolOutline,
       'Grade 2': schoolOutline,
       'Grade 3': schoolOutline,
