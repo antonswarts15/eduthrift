@@ -19,6 +19,7 @@ import {
   IonBadge
 } from '@ionic/react';
 import { shirtOutline, footstepsOutline, bagOutline, schoolOutline, peopleOutline, imageOutline, cartOutline, checkmarkCircleOutline, closeCircleOutline } from 'ionicons/icons';
+import PriceRangeSlider from '../PriceRangeSlider';
 import SchoolSelector from '../SchoolSelector';
 import { useListingsStore } from '../../stores/listingsStore';
 import { useCartStore } from '../../stores/cartStore';
@@ -60,6 +61,8 @@ const GenericSportEquipmentComponent: React.FC<GenericSportEquipmentProps> = ({
   const [photoViewer, setPhotoViewer] = useState<string | null>(null);
   const [addedToCartId, setAddedToCartId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [conditionFilter, setConditionFilter] = useState<number | undefined>();
+  const [priceRange, setPriceRange] = useState({ min: 0, max: 0 });
 
   useEffect(() => {
     fetchListings();
@@ -147,11 +150,15 @@ const GenericSportEquipmentComponent: React.FC<GenericSportEquipmentProps> = ({
   const getAvailableItems = () => {
     if (userType !== 'buyer') return [];
 
-    const filteredListings = listings.filter(listing =>
+    let filteredListings = listings.filter(listing =>
       listing.name === selectedItem &&
       listing.quantity > 0 &&
       (categoryFilter !== 'clothing' || listing.gender === selectedGender || listing.gender === 'Unisex')
     );
+
+    if (conditionFilter) filteredListings = filteredListings.filter(l => l.condition === conditionFilter);
+    if (priceRange.max > 0 && priceRange.max < Math.max(0, ...listings.filter(l => l.name === selectedItem && l.quantity > 0).map(l => l.price))) filteredListings = filteredListings.filter(l => l.price <= priceRange.max);
+    if (priceRange.min > 0) filteredListings = filteredListings.filter(l => l.price >= priceRange.min);
 
     return filteredListings.map(listing => ({
       id: listing.id,
@@ -323,6 +330,34 @@ const GenericSportEquipmentComponent: React.FC<GenericSportEquipmentProps> = ({
         
         {userType === 'buyer' ? (
           <>
+            <div style={{ marginBottom: '16px' }}>
+              <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '10px' }}>
+                {([
+                  { label: 'All', value: undefined },
+                  { label: 'Brand new', value: 1 },
+                  { label: 'Like new', value: 2 },
+                  { label: 'Used - good', value: 3 },
+                  { label: 'Used - worn', value: 4 },
+                ] as { label: string; value: number | undefined }[]).map(c => (
+                  <button key={c.label} onClick={() => setConditionFilter(c.value)} style={{
+                    padding: '5px 12px', borderRadius: '20px', border: 'none',
+                    backgroundColor: conditionFilter === c.value ? '#004aad' : '#f0f0f0',
+                    color: conditionFilter === c.value ? 'white' : '#555',
+                    fontSize: '12px', fontWeight: conditionFilter === c.value ? '600' : '400',
+                    cursor: 'pointer', whiteSpace: 'nowrap'
+                  }}>{c.label}</button>
+                ))}
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <PriceRangeSlider
+                  min={0}
+                  max={Math.max(1, ...listings.filter(l => l.name === selectedItem && l.quantity > 0).map(l => l.price))}
+                  value={priceRange.max === 0 ? { min: 0, max: Math.max(1, ...listings.filter(l => l.name === selectedItem && l.quantity > 0).map(l => l.price)) } : priceRange}
+                  onChange={setPriceRange}
+                  accentColor="#004aad"
+                />
+              </div>
+            </div>
             {getAvailableItems().length > 0 ? (
               <div style={{ margin: '16px 0' }}>
                 <div style={{ marginBottom: '12px', padding: '0 16px' }}>

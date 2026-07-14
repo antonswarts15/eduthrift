@@ -13,13 +13,12 @@ import {
   IonRow,
   IonCol,
   IonIcon,
-  IonAccordion,
-  IonAccordionGroup,
   IonToast,
   IonBadge
 } from '@ionic/react';
-import { imageOutline, cartOutline, checkmarkCircleOutline, closeCircleOutline, bagOutline, shirtOutline, footstepsOutline } from 'ionicons/icons';
+import { imageOutline, cartOutline, checkmarkCircleOutline, closeCircleOutline } from 'ionicons/icons';
 import bagshoe from '../../assets/bagshoe.png';
+import PriceRangeSlider from '../PriceRangeSlider';
 import { useCartStore } from '../../stores/cartStore';
 import { useListingsStore } from '../../stores/listingsStore';
 import { useToast } from '../../hooks/useToast';
@@ -33,23 +32,17 @@ interface BeltsBagsShoesProps {
   categoryFilter?: 'all';
 }
 
-const beltsBagsShoesCategories: Record<string, { items: string[]; icon: string; color: string }> = {
-  'Boys': {
-    items: ['School shoes', 'Sports shoes', 'Training shoes', 'School belt', 'School bag', 'Sports bag', 'Boot bag', 'Duffel bag'],
-    icon: footstepsOutline,
-    color: '#004aad'
-  },
-  'Girls': {
-    items: ['School shoes', 'Sports shoes', 'Training shoes', 'School belt', 'School bag', 'Sports bag', 'Ballet shoes', 'Duffel bag'],
-    icon: footstepsOutline,
-    color: '#E74C3C'
-  },
-  'Unisex': {
-    items: ['Backpack', 'Lunchbag', 'Pencil case', 'Water bottle bag', 'Flip flops', 'Rain boots', 'Kit bag', 'Suitcase', 'Totebag'],
-    icon: bagOutline,
-    color: '#27AE60'
-  }
-};
+const beltsBagsShoesItems: string[] = [
+  'Girls School Shoes', 'Boys School Shoes',
+  'Girls Sports Shoes', 'Boys Sports Shoes',
+  'Ballet shoes', 'Flip flops', 'Rain boots',
+  'Running shoes', 'Cross-training shoes', 'Gym shoes', 'Trail running shoes', 'Turf shoes',
+  'Indoor training shoes', 'Cleats / studded boots', 'Wrestling shoes', 'Cycling shoes', 'Swimming flippers',
+  'School belt', 'School bag', 'Sports bag', 'Boot bag', 'Duffel bag',
+  'Backpack', 'Lunchbag', 'Pencil case', 'Water bottle bag', 'Kit bag', 'Suitcase', 'Totebag'
+];
+
+const SHOE_SIZE_OPTIONS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15'];
 
 const BeltsBagsShoesComponent: React.FC<BeltsBagsShoesProps> = ({ userType, onItemSelect }) => {
   const [selectedItem, setSelectedItem] = useState('');
@@ -63,6 +56,9 @@ const BeltsBagsShoesComponent: React.FC<BeltsBagsShoesProps> = ({ userType, onIt
   const [photoViewer, setPhotoViewer] = useState<string | null>(null);
   const [addedToCartId, setAddedToCartId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [conditionFilter, setConditionFilter] = useState<number | undefined>();
+  const [sizeFilter, setSizeFilter] = useState('');
+  const [priceRange, setPriceRange] = useState({ min: 0, max: 0 });
   const { addListing, listings, decreaseQuantity, fetchListings } = useListingsStore();
   const { addToCart } = useCartStore();
   const { isOpen: showToast, message: toastMessage, color: toastColor, showToast: displayToast, hideToast } = useToast();
@@ -80,10 +76,19 @@ const BeltsBagsShoesComponent: React.FC<BeltsBagsShoesProps> = ({ userType, onIt
     };
   }, [fetchListings]);
 
+  const isShoeItem = (item: string) =>
+    item.toLowerCase().includes('shoe') || item.toLowerCase().includes('boots') || item.toLowerCase().includes('flop');
+
+  // Items already named e.g. "Girls School Shoes" carry their gender in the name,
+  // so the seller shouldn't be asked to pick it again.
+  const getItemGender = (item: string): string | null => {
+    if (item.startsWith('Girls ')) return 'Girl';
+    if (item.startsWith('Boys ')) return 'Boy';
+    return null;
+  };
+
   const getSizeOptions = (item: string) => {
-    if (item.toLowerCase().includes('shoe') || item.toLowerCase().includes('boots') || item.toLowerCase().includes('flop')) {
-      return ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15'];
-    }
+    if (isShoeItem(item)) return SHOE_SIZE_OPTIONS;
     if (item.toLowerCase().includes('belt')) {
       return ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
     }
@@ -100,7 +105,7 @@ const BeltsBagsShoesComponent: React.FC<BeltsBagsShoesProps> = ({ userType, onIt
 
   const getAvailableItems = () => {
     if (userType !== 'buyer') return [];
-    return listings.filter(listing =>
+    let items = listings.filter(listing =>
       listing.name === selectedItem &&
       listing.category === 'Belts, bags & shoes' &&
       listing.quantity > 0
@@ -120,6 +125,11 @@ const BeltsBagsShoesComponent: React.FC<BeltsBagsShoesProps> = ({ userType, onIt
       subcategory: listing.subcategory,
       sport: listing.sport
     }));
+    if (conditionFilter) items = items.filter(i => i.condition === conditionFilter);
+    if (sizeFilter) items = items.filter(i => i.size === sizeFilter);
+    if (priceRange.max > 0 && priceRange.max < Math.max(0, ...listings.filter(l => l.name === selectedItem && l.category === 'Belts, bags & shoes' && l.quantity > 0).map(l => l.price))) items = items.filter(i => i.price <= priceRange.max);
+    if (priceRange.min > 0) items = items.filter(i => i.price >= priceRange.min);
+    return items;
   };
 
   const getConditionText = (condition: number) => {
@@ -166,6 +176,9 @@ const BeltsBagsShoesComponent: React.FC<BeltsBagsShoesProps> = ({ userType, onIt
     setPrice('');
     setFrontPhoto(null);
     setBackPhoto(null);
+    setConditionFilter(undefined);
+    setSizeFilter('');
+    setPriceRange({ min: 0, max: 0 });
   };
 
   const handlePhotoUpload = (type: 'front' | 'back') => {
@@ -199,7 +212,7 @@ const BeltsBagsShoesComponent: React.FC<BeltsBagsShoesProps> = ({ userType, onIt
 
   const validateFields = () => {
     const missingFields = [];
-    if (!selectedGender) missingFields.push('Gender');
+    if (!getItemGender(selectedItem) && !selectedGender) missingFields.push('Gender');
     if (!size) missingFields.push('Size');
     if (!condition) missingFields.push('Condition');
     if (userType === 'seller') {
@@ -222,7 +235,7 @@ const BeltsBagsShoesComponent: React.FC<BeltsBagsShoesProps> = ({ userType, onIt
       name: selectedItem,
       description: `${selectedItem} - Size: ${size}`,
       school: '',
-      gender: selectedGender || 'Unisex',
+      gender: getItemGender(selectedItem) || selectedGender || 'Unisex',
       size,
       condition: condition || 1,
       price: userType === 'seller' ? parseInt(price) : 0,
@@ -259,6 +272,45 @@ const BeltsBagsShoesComponent: React.FC<BeltsBagsShoesProps> = ({ userType, onIt
 
         {userType === 'buyer' ? (
           <>
+            <div style={{ marginBottom: '16px' }}>
+              <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '10px' }}>
+                {([{ label: 'All', value: undefined }, { label: 'Brand new', value: 1 }, { label: 'Like new', value: 2 }, { label: 'Used - good', value: 3 }, { label: 'Used - worn', value: 4 }] as { label: string; value: number | undefined }[]).map(c => (
+                  <button key={c.label} onClick={() => setConditionFilter(c.value)} style={{
+                    padding: '5px 12px', borderRadius: '20px', border: 'none',
+                    backgroundColor: conditionFilter === c.value ? '#8E44AD' : '#f0f0f0',
+                    color: conditionFilter === c.value ? 'white' : '#555',
+                    fontSize: '12px', fontWeight: conditionFilter === c.value ? '600' : '400', cursor: 'pointer'
+                  }}>{c.label}</button>
+                ))}
+              </div>
+              {isShoeItem(selectedItem) && (
+                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '10px' }}>
+                  <button onClick={() => setSizeFilter('')} style={{
+                    padding: '5px 12px', borderRadius: '20px', border: 'none',
+                    backgroundColor: sizeFilter === '' ? '#8E44AD' : '#f0f0f0',
+                    color: sizeFilter === '' ? 'white' : '#555',
+                    fontSize: '12px', fontWeight: sizeFilter === '' ? '600' : '400', cursor: 'pointer'
+                  }}>All sizes</button>
+                  {SHOE_SIZE_OPTIONS.map(s => (
+                    <button key={s} onClick={() => setSizeFilter(s)} style={{
+                      padding: '5px 12px', borderRadius: '20px', border: 'none',
+                      backgroundColor: sizeFilter === s ? '#8E44AD' : '#f0f0f0',
+                      color: sizeFilter === s ? 'white' : '#555',
+                      fontSize: '12px', fontWeight: sizeFilter === s ? '600' : '400', cursor: 'pointer'
+                    }}>{s}</button>
+                  ))}
+                </div>
+              )}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <PriceRangeSlider
+                  min={0}
+                  max={Math.max(1, ...listings.filter(l => l.name === selectedItem && l.category === 'Belts, bags & shoes' && l.quantity > 0).map(l => l.price))}
+                  value={priceRange.max === 0 ? { min: 0, max: Math.max(1, ...listings.filter(l => l.name === selectedItem && l.category === 'Belts, bags & shoes' && l.quantity > 0).map(l => l.price)) } : priceRange}
+                  onChange={setPriceRange}
+                  accentColor="#8E44AD"
+                />
+              </div>
+            </div>
             {getAvailableItems().length > 0 ? (
               <div style={{ margin: '16px 0' }}>
                 <div style={{ marginBottom: '12px' }}>
@@ -349,14 +401,16 @@ const BeltsBagsShoesComponent: React.FC<BeltsBagsShoesProps> = ({ userType, onIt
           </>
         ) : (
           <>
-            <IonItem>
-              <IonLabel position="stacked">Gender *</IonLabel>
-              <IonSelect value={selectedGender} onIonChange={e => setSelectedGender(e.detail.value)} placeholder="Select Gender">
-                <IonSelectOption value="Boy">Boy</IonSelectOption>
-                <IonSelectOption value="Girl">Girl</IonSelectOption>
-                <IonSelectOption value="Unisex">Unisex</IonSelectOption>
-              </IonSelect>
-            </IonItem>
+            {!getItemGender(selectedItem) && (
+              <IonItem>
+                <IonLabel position="stacked">Gender *</IonLabel>
+                <IonSelect value={selectedGender} onIonChange={e => setSelectedGender(e.detail.value)} placeholder="Select Gender">
+                  <IonSelectOption value="Boy">Boy</IonSelectOption>
+                  <IonSelectOption value="Girl">Girl</IonSelectOption>
+                  <IonSelectOption value="Unisex">Unisex</IonSelectOption>
+                </IonSelect>
+              </IonItem>
+            )}
 
             <IonItem>
               <IonLabel position="stacked">Size *</IonLabel>
@@ -506,64 +560,45 @@ const BeltsBagsShoesComponent: React.FC<BeltsBagsShoesProps> = ({ userType, onIt
         </p>
       </div>
 
-      <IonAccordionGroup>
-        {Object.entries(beltsBagsShoesCategories).map(([category, categoryData]) => (
-          <IonAccordion key={category} value={category}>
-            <IonItem slot="header" style={{ '--background': 'transparent' }}>
-              <IonIcon
-                icon={categoryData.icon}
-                style={{ fontSize: '24px', color: categoryData.color, marginRight: '12px' }}
-              />
-              <IonLabel>
-                <h3 style={{ margin: '0', fontWeight: 'bold', color: categoryData.color, fontSize: '16px' }}>
-                  {category}
-                </h3>
-              </IonLabel>
-            </IonItem>
-            <div slot="content" style={{ padding: '8px' }}>
-              <IonGrid>
-                <IonRow>
-                  {categoryData.items.map((item: string, index: number) => (
-                    <IonCol size="4" key={index}>
-                      <div
-                        onClick={() => handleItemClick(item)}
-                        style={{ cursor: 'pointer', textAlign: 'center', padding: '4px 2px' }}
-                      >
-                        <div style={{ position: 'relative', width: '70px', margin: '0 auto 6px' }}>
-                          <div style={{
-                            width: '70px', height: '70px', borderRadius: '50%',
-                            backgroundColor: rainbowColors[index % rainbowColors.length],
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
-                            padding: '4px'
-                          }}>
-                            <span style={{ color: 'white', fontWeight: 'bold', fontSize: '10px', lineHeight: '1.1', textAlign: 'center' }}>
-                              {item}
-                            </span>
-                          </div>
-                          {userType === 'buyer' && getItemCount(item) > 0 && (
-                            <span style={{
-                              position: 'absolute', top: '-4px', right: '-4px',
-                              backgroundColor: '#E74C3C', color: 'white',
-                              fontSize: '10px', fontWeight: '700',
-                              minWidth: '18px', height: '18px', borderRadius: '9px',
-                              display: 'flex', alignItems: 'center', justifyContent: 'center',
-                              padding: '0 4px', boxShadow: '0 1px 4px rgba(0,0,0,0.3)',
-                              zIndex: 10, pointerEvents: 'none'
-                            }}>
-                              {getItemCount(item) > 99 ? '99+' : getItemCount(item)}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </IonCol>
-                  ))}
-                </IonRow>
-              </IonGrid>
-            </div>
-          </IonAccordion>
-        ))}
-      </IonAccordionGroup>
+      <IonGrid>
+        <IonRow>
+          {beltsBagsShoesItems.map((item: string, index: number) => (
+            <IonCol size="4" key={item}>
+              <div
+                onClick={() => handleItemClick(item)}
+                style={{ cursor: 'pointer', textAlign: 'center', padding: '4px 2px' }}
+              >
+                <div style={{ position: 'relative', width: '70px', margin: '0 auto 6px' }}>
+                  <div style={{
+                    width: '70px', height: '70px', borderRadius: '50%',
+                    backgroundColor: rainbowColors[index % rainbowColors.length],
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+                    padding: '4px'
+                  }}>
+                    <span style={{ color: 'white', fontWeight: 'bold', fontSize: '10px', lineHeight: '1.1', textAlign: 'center' }}>
+                      {item}
+                    </span>
+                  </div>
+                  {userType === 'buyer' && getItemCount(item) > 0 && (
+                    <span style={{
+                      position: 'absolute', top: '-4px', right: '-4px',
+                      backgroundColor: '#E74C3C', color: 'white',
+                      fontSize: '10px', fontWeight: '700',
+                      minWidth: '18px', height: '18px', borderRadius: '9px',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      padding: '0 4px', boxShadow: '0 1px 4px rgba(0,0,0,0.3)',
+                      zIndex: 10, pointerEvents: 'none'
+                    }}>
+                      {getItemCount(item) > 99 ? '99+' : getItemCount(item)}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </IonCol>
+          ))}
+        </IonRow>
+      </IonGrid>
 
       <IonToast
         isOpen={showToast}

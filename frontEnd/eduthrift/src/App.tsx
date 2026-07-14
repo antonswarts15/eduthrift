@@ -7,7 +7,6 @@ import {
   setupIonicReact
 } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
-import Welcome from './pages/Welcome';
 import LoginRegisterPage from './pages/LoginRegisterPage';
 import MainLayout from './components/MainLayout';
 import Home from './pages/Home';

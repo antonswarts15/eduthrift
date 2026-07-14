@@ -22,6 +22,7 @@ import {
   pencilOutline, bookOutline, colorPaletteOutline, cutOutline, bagOutline,
   imageOutline, checkmarkCircleOutline, closeCircleOutline, ellipsisHorizontalOutline
 } from 'ionicons/icons';
+import PriceRangeSlider from '../PriceRangeSlider';
 import { useCartStore } from '../../stores/cartStore';
 import { useListingsStore } from '../../stores/listingsStore';
 import { validateImageFile } from '../../utils/imageEnhancer';
@@ -73,7 +74,7 @@ const StationeryComponent: React.FC<StationeryComponentProps> = ({ userType, onI
   const [viewingItem, setViewingItem] = useState<any>(null);
   const [photoViewer, setPhotoViewer] = useState<string | null>(null);
   const [conditionFilter, setConditionFilter] = useState<number | undefined>();
-  const [priceRange, setPriceRange] = useState({ min: '', max: '' });
+  const [priceRange, setPriceRange] = useState({ min: 0, max: 0 });
   const [selectedQuantity, setSelectedQuantity] = useState(1);
   const [addedToCart, setAddedToCart] = useState<{ [key: string]: boolean }>({});
   const { addToCart } = useCartStore();
@@ -118,8 +119,9 @@ const StationeryComponent: React.FC<StationeryComponentProps> = ({ userType, onI
       }));
 
     if (conditionFilter) items = items.filter(item => item.condition === conditionFilter);
-    if (priceRange.min) items = items.filter(item => item.price >= parseInt(priceRange.min));
-    if (priceRange.max) items = items.filter(item => item.price <= parseInt(priceRange.max));
+    const maxPrice = Math.max(0, ...listings.filter(l => l.category === 'Stationery').map(l => l.price));
+    if (priceRange.max > 0 && priceRange.max < maxPrice) items = items.filter(item => item.price <= priceRange.max);
+    if (priceRange.min > 0) items = items.filter(item => item.price >= priceRange.min);
     return items;
   };
 
@@ -488,11 +490,13 @@ const StationeryComponent: React.FC<StationeryComponentProps> = ({ userType, onI
           ))}
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <IonInput label="From (R)" labelPlacement="floating" type="number" value={priceRange.min}
-            onIonChange={e => setPriceRange({ ...priceRange, min: e.detail.value! })} placeholder="0" />
-          <span style={{ color: '#bbb', fontWeight: 'bold', flexShrink: 0 }}>—</span>
-          <IonInput label="To (R)" labelPlacement="floating" type="number" value={priceRange.max}
-            onIonChange={e => setPriceRange({ ...priceRange, max: e.detail.value! })} placeholder="Any" />
+          <PriceRangeSlider
+            min={0}
+            max={Math.max(1, ...listings.filter(l => l.category === 'Stationery').map(l => l.price))}
+            value={priceRange.max === 0 ? { min: 0, max: Math.max(1, ...listings.filter(l => l.category === 'Stationery').map(l => l.price)) } : priceRange}
+            onChange={setPriceRange}
+            accentColor="#27AE60"
+          />
         </div>
       </div>
 

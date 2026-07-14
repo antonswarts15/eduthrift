@@ -19,6 +19,7 @@ import {
   IonBadge
 } from '@ionic/react';
 import { imageOutline, cartOutline, checkmarkCircleOutline, closeCircleOutline, sparklesOutline, shirtOutline, diamondOutline } from 'ionicons/icons';
+import PriceRangeSlider from '../PriceRangeSlider';
 import { useCartStore } from '../../stores/cartStore';
 import { useListingsStore } from '../../stores/listingsStore';
 import { useToast } from '../../hooks/useToast';
@@ -64,6 +65,8 @@ const MatricDanceComponent: React.FC<MatricDanceProps> = ({ userType, onItemSele
   const [photoViewer, setPhotoViewer] = useState<string | null>(null);
   const [addedToCartId, setAddedToCartId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [conditionFilter, setConditionFilter] = useState<number | undefined>();
+  const [priceRange, setPriceRange] = useState({ min: 0, max: 0 });
   const { addListing, listings, decreaseQuantity, fetchListings } = useListingsStore();
   const { addToCart } = useCartStore();
   const { isOpen: showToast, message: toastMessage, color: toastColor, showToast: displayToast, hideToast } = useToast();
@@ -104,7 +107,7 @@ const MatricDanceComponent: React.FC<MatricDanceProps> = ({ userType, onItemSele
 
   const getAvailableItems = () => {
     if (userType !== 'buyer') return [];
-    return listings.filter(listing =>
+    let items = listings.filter(listing =>
       listing.name === selectedItem &&
       listing.category === 'Matric dance clothing' &&
       listing.quantity > 0
@@ -124,6 +127,10 @@ const MatricDanceComponent: React.FC<MatricDanceProps> = ({ userType, onItemSele
       subcategory: listing.subcategory,
       sport: listing.sport
     }));
+    if (conditionFilter) items = items.filter(i => i.condition === conditionFilter);
+    if (priceRange.max > 0 && priceRange.max < Math.max(0, ...listings.filter(l => l.category === 'Matric dance clothing').map(l => l.price))) items = items.filter(i => i.price <= priceRange.max);
+    if (priceRange.min > 0) items = items.filter(i => i.price >= priceRange.min);
+    return items;
   };
 
   const getConditionText = (condition: number) => {
@@ -286,6 +293,27 @@ const MatricDanceComponent: React.FC<MatricDanceProps> = ({ userType, onItemSele
 
         {userType === 'buyer' ? (
           <>
+            <div style={{ marginBottom: '16px' }}>
+              <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '10px' }}>
+                {([{ label: 'All', value: undefined }, { label: 'Brand new', value: 1 }, { label: 'Like new', value: 2 }, { label: 'Used - good', value: 3 }, { label: 'Used - worn', value: 4 }] as { label: string; value: number | undefined }[]).map(c => (
+                  <button key={c.label} onClick={() => setConditionFilter(c.value)} style={{
+                    padding: '5px 12px', borderRadius: '20px', border: 'none',
+                    backgroundColor: conditionFilter === c.value ? '#8E44AD' : '#f0f0f0',
+                    color: conditionFilter === c.value ? 'white' : '#555',
+                    fontSize: '12px', fontWeight: conditionFilter === c.value ? '600' : '400', cursor: 'pointer'
+                  }}>{c.label}</button>
+                ))}
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <PriceRangeSlider
+                  min={0}
+                  max={Math.max(1, ...listings.filter(l => l.name === selectedItem && l.category === 'Matric dance clothing' && l.quantity > 0).map(l => l.price))}
+                  value={priceRange.max === 0 ? { min: 0, max: Math.max(1, ...listings.filter(l => l.name === selectedItem && l.category === 'Matric dance clothing' && l.quantity > 0).map(l => l.price)) } : priceRange}
+                  onChange={setPriceRange}
+                  accentColor="#8E44AD"
+                />
+              </div>
+            </div>
             {getAvailableItems().length > 0 ? (
               <div style={{ margin: '16px 0' }}>
                 <div style={{ marginBottom: '12px' }}>

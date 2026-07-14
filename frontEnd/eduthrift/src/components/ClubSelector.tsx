@@ -35,7 +35,6 @@ const ClubSelector: React.FC<ClubSelectorProps> = ({ value, onClubChange, placeh
   const [availableClubs, setAvailableClubs] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredClubs, setFilteredClubs] = useState<string[]>([]);
-  const [showCustomInput, setShowCustomInput] = useState(false);
   const [customClubName, setCustomClubName] = useState('');
 
   const [nearbyClubs, setNearbyClubs] = useState<Club[]>([]);
@@ -478,43 +477,6 @@ const ClubSelector: React.FC<ClubSelectorProps> = ({ value, onClubChange, placeh
                 <div style={{ padding: '16px', textAlign: 'center', color: '#666' }}>
                   No clubs found matching "{searchTerm}"
                 </div>
-              )}
-              
-              <IonItem style={{ marginTop: '16px' }}>
-                <IonLabel>Club not listed?</IonLabel>
-                <IonButton 
-                  fill="clear" 
-                  size="small" 
-                  onClick={() => setShowCustomInput(!showCustomInput)}
-                >
-                  Add Custom Club
-                </IonButton>
-              </IonItem>
-              
-              {showCustomInput && (
-                <IonItem style={{ marginBottom: '16px' }}>
-                  <IonInput 
-                    label="Custom Club Name" 
-                    labelPlacement="stacked"
-                    placeholder="Enter club name"
-                    value={customClubName}
-                    onIonChange={e => setCustomClubName(e.detail.value!)}
-                  />
-                  <IonButton 
-                    slot="end" 
-                    fill="solid" 
-                    size="small"
-                    onClick={() => {
-                      if (customClubName.trim()) {
-                        handleClubSelect(customClubName.trim());
-                        setCustomClubName('');
-                        setShowCustomInput(false);
-                      }
-                    }}
-                  >
-                    Add
-                  </IonButton>
-                </IonItem>
               )}
             </div>
           )}

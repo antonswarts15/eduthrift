@@ -76,6 +76,8 @@ const SchoolGradesComponent: React.FC<SchoolGradesComponentProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccessConfirmation, setShowSuccessConfirmation] = useState(false);
   const [submittedBook, setSubmittedBook] = useState<any>(null);
+  const [conditionFilter, setConditionFilter] = useState<number | undefined>();
+  const [priceRange, setPriceRange] = useState({ min: '', max: '' });
   const { addToCart } = useCartStore();
   const { addListing, listings, fetchListings } = useListingsStore();
   const { addNotification } = useNotificationStore();
@@ -126,24 +128,25 @@ const SchoolGradesComponent: React.FC<SchoolGradesComponentProps> = ({
   };
 
   const getFilteredBooks = (grade: string, subject: string, language?: string) => {
-    return listings.filter(listing => {
+    let books = listings.filter(listing => {
       if (listing.category !== 'Textbooks') return false;
       if (listing.subcategory !== grade) return false;
-      // We use 'sport' field to store the Subject for textbooks
       if (listing.sport !== subject) return false;
-      // We use 'size' field to store the Language for textbooks (if applicable)
       if (language && listing.size !== language) return false;
       return true;
     }).map(listing => ({
       ...listing,
       title: listing.name,
-      // Extract author/publisher from description if possible, or just use description
-      author: 'Unknown', // Placeholder as we don't store author separately yet
+      author: 'Unknown',
       publisher: 'Unknown',
       grade: listing.subcategory,
       subject: listing.sport,
       language: listing.size
     }));
+    if (conditionFilter) books = books.filter(b => b.condition === conditionFilter);
+    if (priceRange.min) books = books.filter(b => b.price >= parseInt(priceRange.min));
+    if (priceRange.max) books = books.filter(b => b.price <= parseInt(priceRange.max));
+    return books;
   };
 
   const handleAddToCart = (book: any) => {
@@ -790,6 +793,29 @@ const SchoolGradesComponent: React.FC<SchoolGradesComponentProps> = ({
         </div>
         
         <h3 style={{ margin: '16px 0', color: '#666' }}>Subject Categories</h3>
+
+        {userType === 'buyer' && (
+          <div style={{ marginBottom: '16px' }}>
+            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '10px' }}>
+              {([{ label: 'All', value: undefined }, { label: 'Brand new', value: 1 }, { label: 'Like new', value: 2 }, { label: 'Used - good', value: 3 }, { label: 'Used - worn', value: 4 }] as { label: string; value: number | undefined }[]).map(c => (
+                <button key={c.label} onClick={() => setConditionFilter(c.value)} style={{
+                  padding: '5px 12px', borderRadius: '20px', border: 'none',
+                  backgroundColor: conditionFilter === c.value ? '#16A085' : '#f0f0f0',
+                  color: conditionFilter === c.value ? 'white' : '#555',
+                  fontSize: '12px', fontWeight: conditionFilter === c.value ? '600' : '400',
+                  cursor: 'pointer', whiteSpace: 'nowrap'
+                }}>{c.label}</button>
+              ))}
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <IonInput label="From (R)" labelPlacement="floating" type="number" value={priceRange.min}
+                onIonChange={e => setPriceRange({ ...priceRange, min: e.detail.value! })} placeholder="0" />
+              <span style={{ color: '#bbb', fontWeight: 'bold', flexShrink: 0 }}>—</span>
+              <IonInput label="To (R)" labelPlacement="floating" type="number" value={priceRange.max}
+                onIonChange={e => setPriceRange({ ...priceRange, max: e.detail.value! })} placeholder="Any" />
+            </div>
+          </div>
+        )}
         
         {(() => {
           const subjects = gradeSubjects[selectedGrade as keyof typeof gradeSubjects] || [];

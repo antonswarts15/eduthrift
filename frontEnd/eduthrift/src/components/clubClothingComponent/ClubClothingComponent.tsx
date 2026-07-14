@@ -586,8 +586,28 @@ const ClubClothingComponent: React.FC<ClubClothingProps> = ({ userType, onItemSe
         </div>
 
         {userType === 'buyer' ? (
-          availableItems.length > 0 ? (
+          availableItems.length > 0 || conditionFilter || priceRange.min || priceRange.max ? (
             <div style={{ margin: '16px 0' }}>
+              <div style={{ marginBottom: '16px' }}>
+                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '10px' }}>
+                  {([{ label: 'All', value: undefined }, { label: 'Brand new', value: 1 }, { label: 'Like new', value: 2 }, { label: 'Used - good', value: 3 }, { label: 'Used - worn', value: 4 }] as { label: string; value: number | undefined }[]).map(c => (
+                    <button key={c.label} onClick={() => setConditionFilter(c.value)} style={{
+                      padding: '5px 12px', borderRadius: '20px', border: 'none',
+                      backgroundColor: conditionFilter === c.value ? '#E74C3C' : '#f0f0f0',
+                      color: conditionFilter === c.value ? 'white' : '#555',
+                      fontSize: '12px', fontWeight: conditionFilter === c.value ? '600' : '400',
+                      cursor: 'pointer', whiteSpace: 'nowrap'
+                    }}>{c.label}</button>
+                  ))}
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <IonInput label="From (R)" labelPlacement="floating" type="number" value={priceRange.min}
+                    onIonChange={e => setPriceRange({ ...priceRange, min: e.detail.value! })} placeholder="0" />
+                  <span style={{ color: '#bbb', fontWeight: 'bold', flexShrink: 0 }}>—</span>
+                  <IonInput label="To (R)" labelPlacement="floating" type="number" value={priceRange.max}
+                    onIonChange={e => setPriceRange({ ...priceRange, max: e.detail.value! })} placeholder="Any" />
+                </div>
+              </div>
               <h4 style={{ margin: '0 0 12px 0', color: '#666', fontSize: '14px' }}>Available ({availableItems.length})</h4>
               {availableItems.map(item => (
                 <IonCard key={item.id} button onClick={() => { setSelectedAvailableItem(item); setShowItemView(true); }} style={{ margin: '8px 0' }}>

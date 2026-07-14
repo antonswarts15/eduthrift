@@ -15,7 +15,7 @@ import {
   schoolOutline,
   shieldCheckmarkOutline,
   locationOutline,
-  phonePortraitOutline,
+  eyeOffOutline,
   cartOutline,
   cashOutline,
   paperPlane,
@@ -23,7 +23,7 @@ import {
   searchOutline,
   eyeOutline,
   bagAddOutline,
-  cardOutline,
+  heartOutline,
   notificationsOutline,
   cameraOutline,
   libraryOutline,
@@ -360,10 +360,19 @@ const Home: React.FC = () => {
                
                 <IonCol size="12" sizeMd="6">
                   <div style={{ display: 'flex', alignItems: 'center', padding: '8px' }}>
-                    <IonIcon icon={phonePortraitOutline} style={{ fontSize: '24px', color: '#8E44AD', marginRight: '12px' }} />
+                    <IonIcon icon={eyeOffOutline} style={{ fontSize: '24px', color: '#E74C3C', marginRight: '12px' }} />
                     <div style={{ textAlign: 'left' }}>
-                      <h4 style={{ fontSize: '14px', margin: '0', color: '#2C3E50' }}>Mobile Optimized</h4>
-                      <p style={{ fontSize: '12px', color: '#666', margin: '0' }}>Built for phones and tablets</p>
+                      <h4 style={{ fontSize: '14px', margin: '0', color: '#2C3E50' }}>Anonymous Trading</h4>
+                      <p style={{ fontSize: '12px', color: '#666', margin: '0' }}>Buyer & seller identities stay private</p>
+                    </div>
+                  </div>
+                </IonCol>
+                <IonCol size="12" sizeMd="6">
+                  <div style={{ display: 'flex', alignItems: 'center', padding: '8px' }}>
+                    <IonIcon icon={heartOutline} style={{ fontSize: '24px', color: '#8E44AD', marginRight: '12px' }} />
+                    <div style={{ textAlign: 'left' }}>
+                      <h4 style={{ fontSize: '14px', margin: '0', color: '#2C3E50' }}>Wishlist Alerts</h4>
+                      <p style={{ fontSize: '12px', color: '#666', margin: '0' }}>Get notified when wishlisted items are listed</p>
                     </div>
                   </div>
                 </IonCol>

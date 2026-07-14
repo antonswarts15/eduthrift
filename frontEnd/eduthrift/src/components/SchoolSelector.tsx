@@ -36,7 +36,6 @@ const SchoolSelector: React.FC<SchoolSelectorProps> = ({ value, onSchoolChange, 
   const [availableSchools, setAvailableSchools] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredSchools, setFilteredSchools] = useState<string[]>([]);
-  const [showCustomInput, setShowCustomInput] = useState(false);
   const [customSchoolName, setCustomSchoolName] = useState('');
 
   const [nearbySchools, setNearbySchools] = useState<School[]>([]);
@@ -479,43 +478,6 @@ const SchoolSelector: React.FC<SchoolSelectorProps> = ({ value, onSchoolChange, 
                 <div style={{ padding: '16px', textAlign: 'center', color: '#666' }}>
                   No schools found matching "{searchTerm}"
                 </div>
-              )}
-              
-              <IonItem style={{ marginTop: '16px' }}>
-                <IonLabel>School not listed?</IonLabel>
-                <IonButton 
-                  fill="clear" 
-                  size="small" 
-                  onClick={() => setShowCustomInput(!showCustomInput)}
-                >
-                  Add Custom School
-                </IonButton>
-              </IonItem>
-              
-              {showCustomInput && (
-                <IonItem style={{ marginBottom: '16px' }}>
-                  <IonInput 
-                    label="Custom School Name" 
-                    labelPlacement="stacked"
-                    placeholder="Enter school name"
-                    value={customSchoolName}
-                    onIonChange={e => setCustomSchoolName(e.detail.value!)}
-                  />
-                  <IonButton 
-                    slot="end" 
-                    fill="solid" 
-                    size="small"
-                    onClick={() => {
-                      if (customSchoolName.trim()) {
-                        handleSchoolSelect(customSchoolName.trim());
-                        setCustomSchoolName('');
-                        setShowCustomInput(false);
-                      }
-                    }}
-                  >
-                    Add
-                  </IonButton>
-                </IonItem>
               )}
             </div>
           )}
