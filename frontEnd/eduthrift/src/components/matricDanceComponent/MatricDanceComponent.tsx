@@ -261,7 +261,7 @@ const MatricDanceComponent: React.FC<MatricDanceProps> = ({ userType, onItemSele
   
 
   const banner = (
-    <div style={{ marginBottom: '16px', textAlign: 'center', backgroundColor: '#8E44AD', borderRadius: '12px', padding: '16px' }}>
+    <div style={{ marginBottom: '16px', textAlign: 'center', backgroundColor: '#A020C0', borderRadius: '12px', padding: '16px' }}>
       <div style={{
         width: '70px', height: '70px', margin: '0 auto 1px',
         backgroundColor: 'white',

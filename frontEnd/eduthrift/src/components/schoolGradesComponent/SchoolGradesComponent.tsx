@@ -1174,7 +1174,7 @@ const SchoolGradesComponent: React.FC<SchoolGradesComponentProps> = ({
     <div style={{ padding: '16px' }}>
       <div style={{
         marginBottom: '16px', textAlign: 'center',
-        backgroundColor: '#16A085',
+        backgroundColor: '#FF2090',
         borderRadius: '12px', padding: '16px'
       }}>
         <div style={{
@@ -1192,7 +1192,7 @@ const SchoolGradesComponent: React.FC<SchoolGradesComponentProps> = ({
         <h2 style={{ margin: '0', color: 'white', fontSize: '18px', fontWeight: 'bold' }}>
           School Textbooks
         </h2>
-        <p style={{ margin: '4px 0 0 0', color: '#666', fontSize: '14px' }}>
+        <p style={{ margin: '4px 0 0 0', color: 'white', fontSize: '14px' }}>
           Select a grade to browse available textbooks
         </p>
       </div>

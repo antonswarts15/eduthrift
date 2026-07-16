@@ -526,7 +526,7 @@ const TrainingWearComponent: React.FC<TrainingWearProps> = ({ userType, onItemSe
     <div>
       <div style={{
         marginBottom: '16px', textAlign: 'center',
-        backgroundColor: '#27AE60',
+        backgroundColor: '#A020C0',
         borderRadius: '12px', padding: '16px'
       }}>
         <div style={{

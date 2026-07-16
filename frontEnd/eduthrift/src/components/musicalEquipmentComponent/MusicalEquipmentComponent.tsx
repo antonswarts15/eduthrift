@@ -266,7 +266,7 @@ const MusicalEquipmentComponent: React.FC<MusicalEquipmentComponentProps> = ({ u
 
   const banner = (
 
-     <div style={{ marginBottom: '16px', textAlign: 'center', backgroundColor: '#8E44AD', borderRadius: '12px', padding: '16px' }}>
+     <div style={{ marginBottom: '16px', textAlign: 'center', backgroundColor: '#5CC840', borderRadius: '12px', padding: '16px' }}>
       <div style={{
         width: '70px', height: '70px', margin: '0 auto 1px',
         backgroundColor: 'white',

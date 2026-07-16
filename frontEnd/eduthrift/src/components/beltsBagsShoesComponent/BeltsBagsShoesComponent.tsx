@@ -537,7 +537,7 @@ const BeltsBagsShoesComponent: React.FC<BeltsBagsShoesProps> = ({ userType, onIt
     <div>
       <div style={{
         marginBottom: '16px', textAlign: 'center',
-        backgroundColor: '#8E44AD',
+        backgroundColor: '#5CC840',
         borderRadius: '12px', padding: '16px'
       }}>
         <div style={{

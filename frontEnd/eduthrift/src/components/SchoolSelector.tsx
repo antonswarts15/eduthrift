@@ -19,6 +19,7 @@ import LocationService, { School } from '../services/location';
 import { useAuthStore } from '../stores/authStore';
 import { useAuthPromptStore } from '../stores/authPromptStore';
 import { SA_PROVINCES } from '../utils/provinces';
+import schoolIcon from '../assets/school.png';
 
 interface SchoolSelectorProps {
   value: string;
@@ -368,7 +369,7 @@ const SchoolSelector: React.FC<SchoolSelectorProps> = ({ value, onSchoolChange, 
                         backgroundColor: value === school.name ? '#e3f2fd' : 'transparent'
                       }}
                     >
-                      <IonIcon icon={schoolOutline} slot="start" />
+                      <img src={schoolIcon} alt="school" slot="start" style={{ width: '24px', height: '24px', objectFit: 'contain' }} />
                       <IonLabel>
                         <h3>{school.name}</h3>
                         <p>{school.address}</p>
@@ -462,7 +463,7 @@ const SchoolSelector: React.FC<SchoolSelectorProps> = ({ value, onSchoolChange, 
                             backgroundColor: value === school ? '#e3f2fd' : 'transparent'
                           }}
                         >
-                          <IonIcon icon={schoolOutline} slot="start" />
+                      <img src={schoolIcon} alt="school" slot="start" style={{ width: '24px', height: '24px', objectFit: 'contain' }} />
                           <IonLabel>
                             <h3>{school}</h3>
                             <p>{selectedTown}, {selectedProvince}</p>

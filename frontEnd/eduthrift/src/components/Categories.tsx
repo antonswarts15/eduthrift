@@ -99,6 +99,7 @@ import textbooks from '../assets/textbooks.png';
 import sporting from '../assets/sportEquipment.png';
 import clubClothing from '../assets/clubClothing.png';
 import schoolUniform from '../assets/schoolClothing.png';
+import schoolClubIcon from '../assets/schoolClub.png';
 import stationery from '../assets/stationery.png';
 import matric from '../assets/dress.png';
 import training from '../assets/trainingWear.png';
@@ -139,6 +140,7 @@ import roadBike from '../assets/roadBike.svg';
 import mountainBike from '../assets/mountainBike.svg';
 import jukskei from '../assets/jukskei.svg';
 import music from '../assets/music.png';
+import schoolIcon from '../assets/school.png';
 
 const CropModal: React.FC<{ 
   isOpen: boolean, 
@@ -1238,14 +1240,7 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
               borderRadius: '12px', 
               padding: '16px' 
             }}>
-              <IonIcon 
-                icon={schoolOutline} 
-                style={{ 
-                  fontSize: '32px', 
-                  color: '#004aad', 
-                  marginBottom: '8px' 
-                }} 
-              />
+              <img src={schoolIcon} alt="school" style={{ width: '48px', height: '48px', objectFit: 'contain', marginBottom: '8px', filter: 'invert(18%) sepia(99%) saturate(2000%) hue-rotate(200deg) brightness(90%)' }} />
               <h2 style={{ 
                 margin: '0', 
                 color: '#004aad', 
@@ -1849,14 +1844,7 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
                     borderRadius: '12px', 
                     padding: '16px' 
                   }}>
-                    <IonIcon 
-                      icon={schoolOutline} 
-                      style={{ 
-                        fontSize: '32px', 
-                        color: '#004aad', 
-                        marginBottom: '8px' 
-                      }} 
-                    />
+                    <img src={schoolIcon} alt="school" style={{ width: '48px', height: '48px', objectFit: 'contain', marginBottom: '8px', filter: 'invert(18%) sepia(99%) saturate(2000%) hue-rotate(200deg) brightness(90%)' }} />
                     <h2 style={{ 
                       margin: '0', 
                       color: '#004aad', 
@@ -1897,16 +1885,18 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
                             justifyContent: 'center',
                             alignItems: 'center'
                           }}>
-                            <IonIcon 
-                              icon={schoolOutline} 
-                              size="large" 
-                              style={{ 
-                                color: selectedSubcategory === 'School Uniform' ? '#004aad' : '#666',
-                                marginBottom: '8px' 
-                              }} 
+                            <img
+                              src={schoolUniform}
+                              alt="School Uniform"
+                              style={{
+                                width: '32px',
+                                height: '32px',
+                                objectFit: 'contain',
+                                marginBottom: '8px'
+                              }}
                             />
-                            <div style={{ 
-                              fontWeight: 'bold', 
+                            <div style={{
+                              fontWeight: 'bold',
                               color: selectedSubcategory === 'School Uniform' ? '#004aad' : '#333',
                               fontSize: '14px'
                             }}>
@@ -1937,16 +1927,18 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
                             justifyContent: 'center',
                             alignItems: 'center'
                           }}>
-                            <IonIcon 
-                              icon={shirtOutline} 
-                              size="large" 
-                              style={{ 
-                                color: selectedSubcategory === 'Sports Uniform' ? '#E74C3C' : '#666',
-                                marginBottom: '8px' 
-                              }} 
+                            <img
+                              src={schoolClubIcon}
+                              alt="Sports Uniform"
+                              style={{
+                                width: '32px',
+                                height: '32px',
+                                objectFit: 'contain',
+                                marginBottom: '8px'
+                              }}
                             />
-                            <div style={{ 
-                              fontWeight: 'bold', 
+                            <div style={{
+                              fontWeight: 'bold',
                               color: selectedSubcategory === 'Sports Uniform' ? '#E74C3C' : '#333',
                               fontSize: '14px'
                             }}>
@@ -2030,14 +2022,25 @@ const Categories: React.FC<CategoriesProps> = ({ onCategorySelect, userType = 's
             <div>
             <div style={{
               marginBottom: '16px', textAlign: 'center',
-              backgroundColor: 'rgba(230, 126, 34, 0.1)', border: '2px solid #E67E22',
+              backgroundColor: '#00AACC',
               borderRadius: '12px', padding: '16px'
             }}>
-              <IonIcon icon={basketballOutline} style={{ fontSize: '32px', color: '#E67E22', marginBottom: '8px' }} />
-              <h2 style={{ margin: '0', color: '#E67E22', fontSize: '18px', fontWeight: 'bold' }}>
+              <div style={{
+                width: '48px', height: '48px', margin: '0 auto 8px',
+                backgroundColor: 'white',
+                WebkitMaskImage: `url(${sporting})`,
+                maskImage: `url(${sporting})`,
+                WebkitMaskSize: 'contain',
+                maskSize: 'contain',
+                WebkitMaskRepeat: 'no-repeat',
+                maskRepeat: 'no-repeat',
+                WebkitMaskPosition: 'center',
+                maskPosition: 'center'
+              } as React.CSSProperties} />
+              <h2 style={{ margin: '0', color: 'white', fontSize: '18px', fontWeight: 'bold' }}>
                 Sports Equipment
               </h2>
-              <p style={{ margin: '4px 0 0 0', color: '#666', fontSize: '14px' }}>
+              <p style={{ margin: '4px 0 0 0', color: 'rgba(255,255,255,0.85)', fontSize: '14px' }}>
                 Equipment & gear for all sports
               </p>
             </div>

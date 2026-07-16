@@ -62,6 +62,7 @@ import chess from '../../assets/chess.svg';
 import robot from '../../assets/robot.svg';
 import jukskei from '../../assets/jukskei.svg';
 import bowling from '../../assets/bowling.svg';
+import clubIcon from '../../assets/schoolClub.png';
 
 interface ClubClothingProps {
   userType: 'seller' | 'buyer';
@@ -514,6 +515,7 @@ const ClubClothingComponent: React.FC<ClubClothingProps> = ({ userType, onItemSe
       backgroundColor: 'rgba(231, 76, 60, 0.1)', border: '2px solid #E74C3C',
       borderRadius: '12px', padding: '12px'
     }}>
+      <img src={clubIcon} alt="club" style={{ width: '48px', height: '48px', objectFit: 'contain', marginBottom: '8px', filter: 'invert(27%) sepia(99%) saturate(1500%) hue-rotate(330deg) brightness(95%)' }} />
       <h3 style={{ margin: '0', color: '#E74C3C', fontSize: '16px', fontWeight: 'bold' }}>
         {clubName || propClubName}
       </h3>
@@ -785,7 +787,7 @@ const ClubClothingComponent: React.FC<ClubClothingProps> = ({ userType, onItemSe
     <div>
       <div style={{
         marginBottom: '16px', textAlign: 'center',
-        backgroundColor: '#E74C3C',
+        backgroundColor: '#FFA020',
         borderRadius: '12px', padding: '16px'
       }}>
         <div style={{

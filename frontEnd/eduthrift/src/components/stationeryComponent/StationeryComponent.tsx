@@ -267,7 +267,7 @@ const StationeryComponent: React.FC<StationeryComponentProps> = ({ userType, onI
   };
 
   const banner = (
-    <div style={{ marginBottom: '16px', textAlign: 'center', backgroundColor: '#F39C12', borderRadius: '12px', padding: '16px' }}>
+    <div style={{ marginBottom: '16px', textAlign: 'center', backgroundColor: '#FFA020', borderRadius: '12px', padding: '16px' }}>
       <div style={{
         width: '48px', height: '48px', margin: '0 auto 8px',
         backgroundColor: 'white',

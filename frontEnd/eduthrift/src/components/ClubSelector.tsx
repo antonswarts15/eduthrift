@@ -16,6 +16,7 @@ import {
 } from '@ionic/react';
 import { locationOutline, fitnessOutline } from 'ionicons/icons';
 import LocationService, { Club } from '../services/location';
+import clubIcon from '../assets/schoolClub.png';
 import { useAuthStore } from '../stores/authStore';
 import { useAuthPromptStore } from '../stores/authPromptStore';
 import { SA_PROVINCES } from '../utils/provinces';
@@ -367,7 +368,7 @@ const ClubSelector: React.FC<ClubSelectorProps> = ({ value, onClubChange, placeh
                         backgroundColor: value === club.name ? '#e3f2fd' : 'transparent'
                       }}
                     >
-                      <IonIcon icon={fitnessOutline} slot="start" />
+                     <img src={clubIcon} alt="club" slot="start" style={{ width: '24px', height: '24px', objectFit: 'contain' }} />
                       <IonLabel>
                         <h3>{club.name}</h3>
                         <p>{club.address}</p>
@@ -461,7 +462,7 @@ const ClubSelector: React.FC<ClubSelectorProps> = ({ value, onClubChange, placeh
                             backgroundColor: value === club ? '#e3f2fd' : 'transparent'
                           }}
                         >
-                          <IonIcon icon={fitnessOutline} slot="start" />
+                          <img src={clubIcon} alt="club" slot="start" style={{ width: '24px', height: '24px', objectFit: 'contain' }} />
                           <IonLabel>
                             <h3>{club}</h3>
                             <p>{selectedTown}, {selectedProvince}</p>

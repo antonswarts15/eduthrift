@@ -29,6 +29,7 @@ import { useCartStore } from '../../stores/cartStore';
 import { useListingsStore, Listing } from '../../stores/listingsStore';
 import { validateImageFile } from '../../utils/imageEnhancer';
 import schoolClothing from '../../assets/schoolClothing.png';
+import schoolIcon from '../../assets/school.png';
 import rugby from '../../assets/rugby.svg';
 import netball from '../../assets/netball.svg';
 import hockey from '../../assets/hockey.svg';
@@ -747,6 +748,7 @@ const SchoolUniformComponent: React.FC<SchoolUniformProps> = ({ userType, onItem
       getFilteredItems().filter(i => i.item === itemName && i.sport === selectedSport).reduce((sum, i) => sum + i.quantity, 0);
     const schoolHeader = schoolName && (
       <div style={{ marginBottom: '16px', textAlign: 'center', backgroundColor: 'rgba(0, 74, 173, 0.1)', border: '2px solid #004aad', borderRadius: '12px', padding: '12px' }}>
+        <img src={schoolIcon} alt="school" style={{ width: '48px', height: '48px', objectFit: 'contain', marginBottom: '8px', filter: 'invert(18%) sepia(99%) saturate(2000%) hue-rotate(200deg) brightness(90%)' }} />
         <h3 style={{ margin: '0', color: '#004aad', fontSize: '16px', fontWeight: 'bold' }}>{schoolName}</h3>
         <p style={{ margin: '2px 0 0 0', color: '#666', fontSize: '12px' }}>Selected School</p>
       </div>
@@ -862,7 +864,7 @@ const SchoolUniformComponent: React.FC<SchoolUniformProps> = ({ userType, onItem
 
         {propSchoolName && (
           <div style={{ marginBottom: '16px', textAlign: 'center', backgroundColor: 'rgba(0, 74, 173, 0.1)', border: '2px solid #004aad', borderRadius: '12px', padding: '12px' }}>
-            <IonIcon icon={schoolOutline} style={{ fontSize: '24px', color: '#004aad', marginBottom: '4px' }} />
+            <img src={schoolIcon} alt="school" style={{ width: '48px', height: '48px', objectFit: 'contain', marginBottom: '8px', filter: 'invert(18%) sepia(99%) saturate(2000%) hue-rotate(200deg) brightness(90%)' }} />
             <h3 style={{ margin: '0', color: '#004aad', fontSize: '16px', fontWeight: 'bold' }}>{propSchoolName}</h3>
             <p style={{ margin: '2px 0 0 0', color: '#666', fontSize: '12px' }}>Selected School</p>
           </div>
@@ -919,14 +921,7 @@ const SchoolUniformComponent: React.FC<SchoolUniformProps> = ({ userType, onItem
             borderRadius: '12px', 
             padding: '16px' 
           }}>
-            <IonIcon 
-              icon={schoolOutline} 
-              style={{ 
-                fontSize: '32px', 
-                color: '#004aad', 
-                marginBottom: '8px' 
-              }} 
-            />
+            <img src={schoolIcon} alt="school" style={{ width: '48px', height: '48px', objectFit: 'contain', marginBottom: '8px', filter: 'invert(18%) sepia(99%) saturate(2000%) hue-rotate(200deg) brightness(90%)' }} />
             <h2 style={{ 
               margin: '0', 
               color: '#004aad', 
@@ -1023,14 +1018,7 @@ const SchoolUniformComponent: React.FC<SchoolUniformProps> = ({ userType, onItem
             borderRadius: '12px',
             padding: '16px'
           }}>
-            <IonIcon
-              icon={schoolOutline}
-              style={{
-                fontSize: '32px',
-                color: '#004aad',
-                marginBottom: '8px'
-              }}
-            />
+            <img src={schoolIcon} alt="school" style={{ width: '48px', height: '48px', objectFit: 'contain', marginBottom: '8px', filter: 'invert(18%) sepia(99%) saturate(2000%) hue-rotate(200deg) brightness(90%)' }} />
             <h2 style={{
               margin: '0',
               color: '#004aad',
@@ -1254,10 +1242,10 @@ const SchoolUniformComponent: React.FC<SchoolUniformProps> = ({ userType, onItem
           maskPosition: 'center'
         } as React.CSSProperties} />
         <h2 style={{ margin: '0', color: 'white', fontSize: '18px', fontWeight: 'bold' }}>
-          School & Sport Uniform
+          {categoryFilter === 'clothing' ? 'School Uniform' : 'School & Sport Uniform'}
         </h2>
         <p style={{ margin: '4px 0 0 0', color: 'rgba(255,255,255,0.85)', fontSize: '14px' }}>
-          School uniforms, sports kits & accessories
+          {categoryFilter === 'clothing' ? 'School uniforms & accessories' : 'School uniforms, sports kits & accessories'}
         </p>
       </div>
 
@@ -1271,14 +1259,7 @@ const SchoolUniformComponent: React.FC<SchoolUniformProps> = ({ userType, onItem
           borderRadius: '12px', 
           padding: '16px' 
         }}>
-          <IonIcon 
-            icon={schoolOutline} 
-            style={{ 
-              fontSize: '32px', 
-              color: '#004aad', 
-              marginBottom: '8px' 
-            }} 
-          />
+          <img src={schoolIcon} alt="school" style={{ width: '48px', height: '48px', objectFit: 'contain', marginBottom: '8px', filter: 'invert(18%) sepia(99%) saturate(2000%) hue-rotate(200deg) brightness(90%)' }} />
           <h2 style={{ 
             margin: '0', 
             color: '#004aad', 

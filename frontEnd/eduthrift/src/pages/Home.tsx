@@ -27,7 +27,9 @@ import {
   notificationsOutline,
   cameraOutline,
   libraryOutline,
-  bagOutline
+  bagOutline,
+  timeOutline,
+  gridOutline
 } from 'ionicons/icons';
 import { useHistory } from 'react-router-dom';
 import logo from '../assets/logo.png';
@@ -149,7 +151,10 @@ const Home: React.FC = () => {
         {/* Just Listed */}
         <IonCard>
           <IonCardContent style={{ padding: '16px' }}>
-            <h3 style={{ color: '#2C3E50', marginTop: 0, marginBottom: '16px', textAlign: 'left' }}>Just Listed</h3>
+            <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+              <IonIcon icon={timeOutline} style={{ fontSize: '40px', color: '#004aad', marginBottom: '12px' }} />
+              <h3 style={{ color: '#2C3E50', margin: '0' }}>Just Listed</h3>
+            </div>
             {isLoading ? (
               <div style={{ textAlign: 'center', padding: '20px' }}><IonSpinner /></div>
             ) : recentItems.length === 0 ? (
@@ -196,7 +201,10 @@ const Home: React.FC = () => {
         {/* Browse Categories */}
         <IonCard>
           <IonCardContent style={{ padding: '16px' }}>
-            <h3 style={{ color: '#2C3E50', marginTop: 0, marginBottom: '16px', textAlign: 'left' }}>Browse Categories</h3>
+            <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+              <IonIcon icon={gridOutline} style={{ fontSize: '40px', color: '#FFA020', marginBottom: '12px' }} />
+              <h3 style={{ color: '#2C3E50', margin: '0' }}>Browse Categories</h3>
+            </div>
             <IonGrid style={{ padding: 0 }}>
               <IonRow>
                 {categories.map(cat => (
@@ -383,7 +391,8 @@ const Home: React.FC = () => {
  {/* What is Eduthrift */}
         <IonCard>
           <IonCardContent style={{ textAlign: 'center', padding: '20px' }}>
-            {/* <IonIcon icon={schoolOutline} style={{ fontSize: '48px', color: '#004aad', marginBottom: '16px' }} /> */}
+          
+            <img src={logo} alt="Eduthrift Logo" style={{ width: '50px', height: '50px', objectFit: 'contain', marginBottom: '16px' }} />
             <h2 style={{ color: '#2C3E50', marginBottom: '16px' }}>What is Eduthrift?</h2>
             <p style={{ color: '#666', lineHeight: '1.6' }}>
               Eduthrift is a secure anonymous marketplace for second-hand educational items in South Africa. 
